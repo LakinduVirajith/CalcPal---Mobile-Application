@@ -7,8 +7,7 @@ import 'dart:io';
 import 'dart:convert';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key, required this.title}) : super(key: key);
-  final String title;
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();

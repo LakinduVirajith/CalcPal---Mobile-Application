@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  intl: ^0.19.0
   flutter_svg: ^2.0.10+1
   flutter_launcher_icons: "^0.13.1"
   fluttertoast: ^8.2.5
@@ -70,7 +71,9 @@ flutter:
   assets:
     - assets/images/login_background.png
 
+    - assets/icons/user.svg
     - assets/icons/email.svg
+    - assets/icons/cake.svg
     - assets/icons/closed-eye.svg
     - assets/icons/open-eye.svg
 

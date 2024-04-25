@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class UserNameInput extends StatelessWidget {
-  const UserNameInput({
+class EmailInput extends StatelessWidget {
+  const EmailInput({
     Key? key,
+    required this.placeholderText,
     required this.userNameController,
   }) : super(key: key);
 
+  final String placeholderText;
   final TextEditingController userNameController;
 
   @override
@@ -24,10 +26,10 @@ class UserNameInput extends StatelessWidget {
           Flexible(
             child: TextField(
               controller: userNameController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 border: InputBorder.none,
-                hintText: 'Name',
-                hintStyle: TextStyle(
+                hintText: placeholderText,
+                hintStyle: const TextStyle(
                   color: Colors.black87,
                   fontSize: 14,
                 ),
@@ -38,7 +40,7 @@ class UserNameInput extends StatelessWidget {
             width: 20,
             height: 20,
             child: SvgPicture.asset(
-              'assets/icons/user.svg',
+              'assets/icons/email.svg',
               semanticsLabel: 'Email Icon',
             ),
           )
