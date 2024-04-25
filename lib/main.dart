@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CalcPal Application',
       theme: colorTheme,
-      home: const LoginScreen(title: 'Login Page'), // LOGIN SCREEN
+      home: const LoginScreen(), // LOGIN SCREEN
     );
   }
 }

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 
-class UserNameInput extends StatelessWidget {
-  const UserNameInput({
+class BirthDayInput extends StatelessWidget {
+  const BirthDayInput({
     Key? key,
-    required this.userNameController,
+    required this.birthDayController,
   }) : super(key: key);
 
-  final TextEditingController userNameController;
+  final TextEditingController birthDayController;
 
   @override
   Widget build(BuildContext context) {
@@ -23,22 +24,36 @@ class UserNameInput extends StatelessWidget {
         children: [
           Flexible(
             child: TextField(
-              controller: userNameController,
+              controller: birthDayController,
               decoration: const InputDecoration(
                 border: InputBorder.none,
-                hintText: 'Name',
+                hintText: 'Birthday',
                 hintStyle: TextStyle(
                   color: Colors.black87,
                   fontSize: 14,
                 ),
               ),
+              readOnly: true,
+              onTap: () async {
+                final DateTime? pickedDate = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(1900),
+                  lastDate: DateTime.now(),
+                );
+
+                if (pickedDate != null) {
+                  birthDayController.text =
+                      DateFormat('yyyy-MM-dd').format(pickedDate);
+                }
+              },
             ),
           ),
           SizedBox(
             width: 20,
             height: 20,
             child: SvgPicture.asset(
-              'assets/icons/user.svg',
+              'assets/icons/cake.svg',
               semanticsLabel: 'Email Icon',
             ),
           )

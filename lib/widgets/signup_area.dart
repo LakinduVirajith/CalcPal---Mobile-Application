@@ -1,19 +1,24 @@
-import 'package:calcpal/screens/forgot_password.dart';
-import 'package:calcpal/screens/sign_up.dart';
+import 'package:calcpal/screens/login.dart';
+import 'package:calcpal/widgets/birthday_input.dart';
 import 'package:calcpal/widgets/login_button.dart';
 import 'package:calcpal/widgets/password_input.dart';
 import 'package:calcpal/widgets/email_input.dart';
+import 'package:calcpal/widgets/user_name_input.dart';
 import 'package:flutter/material.dart';
 
-class LoginArea extends StatelessWidget {
-  const LoginArea({
+class SignUpArea extends StatelessWidget {
+  const SignUpArea({
     Key? key,
     required this.userNameController,
+    required this.emailController,
+    required this.birthDayController,
     required this.passwordController,
     required this.onPressed,
   }) : super(key: key);
 
   final TextEditingController userNameController;
+  final TextEditingController emailController;
+  final TextEditingController birthDayController;
   final TextEditingController passwordController;
   final VoidCallback onPressed;
 
@@ -34,7 +39,7 @@ class LoginArea extends StatelessWidget {
           Container(
             alignment: Alignment.centerLeft,
             child: const Text(
-              'Welcome Back!',
+              'Sign Up',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
@@ -42,40 +47,24 @@ class LoginArea extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 36),
+          UserNameInput(
+              userNameController: userNameController), // USER NAME INPUT
+          const SizedBox(height: 20),
           EmailInput(
-            placeholderText: 'User Name',
-            userNameController: userNameController,
-          ), // USERNAME INPUT
+            placeholderText: 'Email',
+            userNameController: emailController,
+          ), // EMAIL INPUT
+          const SizedBox(height: 20),
+          BirthDayInput(
+              birthDayController: birthDayController), // BIRTHDAY INPUT
           const SizedBox(height: 20),
           PasswordInput(
-            passwordController: passwordController,
-          ), // PASSWORD INPUT
-          const SizedBox(height: 10),
-          Container(
-            alignment: Alignment.centerRight,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const ForgotPasswordScreen()),
-                );
-              },
-              child: Text(
-                'Forgot Password',
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
+              passwordController: passwordController), // PASSWORD INPUT
           const SizedBox(height: 20),
           LoginButton(
-            buttonText: 'Login',
+            buttonText: 'Sign Up',
             onPressed: onPressed,
-          ), // LOGIN BUTTON
+          ), // SIGNUP BUTTON
           const SizedBox(height: 20),
           Container(
             alignment: Alignment.center,
@@ -83,7 +72,7 @@ class LoginArea extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
-                  'Don’t have an account? ',
+                  'Already have an account? ',
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 13,
@@ -94,11 +83,11 @@ class LoginArea extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const SignUpScreen()),
+                          builder: (context) => const LoginScreen()),
                     );
                   },
                   child: Text(
-                    'Sign Up',
+                    'Login',
                     style: TextStyle(
                       color: Theme.of(context).primaryColor,
                       fontSize: 13,
