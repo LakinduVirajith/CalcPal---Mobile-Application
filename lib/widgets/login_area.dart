@@ -20,7 +20,10 @@ class LoginArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 48),
+      padding: const EdgeInsets.symmetric(
+        vertical: 32,
+        horizontal: 48,
+      ),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
