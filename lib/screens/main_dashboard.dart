@@ -22,19 +22,6 @@ class MainDashboardScreen extends StatelessWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            double flexTop, flexBottom;
-
-            if (constraints.maxWidth > 1200) {
-              flexTop = constraints.maxHeight * 0.25;
-              flexBottom = constraints.maxHeight * 0.1;
-            } else if (constraints.maxWidth > 700) {
-              flexTop = constraints.maxHeight * 0.35;
-              flexBottom = constraints.maxHeight * 0.1;
-            } else {
-              flexTop = constraints.maxHeight * 0.4;
-              flexBottom = constraints.maxHeight * 0.15;
-            }
-
             return Stack(
               children: [
                 Container(
@@ -46,70 +33,69 @@ class MainDashboardScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                // BACK BUTTON
+                // BACK BUTTON & PROFILE
                 Positioned(
-                  top: constraints.maxHeight * 0.02,
+                  top: 0,
                   left: 0,
-                  right: constraints.maxWidth * 0.83,
-                  bottom: constraints.maxHeight * 0.82,
-                  child: Stack(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LoginScreen(),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage('assets/icons/back.png'),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // PROFILE
-                Positioned(
-                  top: constraints.maxHeight * 0.02,
-                  left: constraints.maxWidth * 0.75,
                   right: 0,
-                  bottom: constraints.maxHeight * 0.82,
-                  child: Stack(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ProfileScreen(),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage('assets/icons/profile.png'),
+                  bottom: constraints.maxHeight * 0.75,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: constraints.maxHeight * 0.09),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: constraints.maxWidth * 0.08,
+                            height: constraints.maxWidth * 0.08,
+                            decoration: const BoxDecoration(
+                              image: DecorationImage(
+                                image: AssetImage('assets/icons/back.png'),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ProfileScreen(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: constraints.maxWidth * 0.14,
+                            height: constraints.maxWidth * 0.07,
+                            decoration: const BoxDecoration(
+                              image: DecorationImage(
+                                image: AssetImage('assets/icons/profile.png'),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                // DIAGNOSE QUIZ 1
                 Positioned(
-                  top: flexTop,
+                  top: constraints.maxHeight * 0.25,
                   left: 0,
-                  right: constraints.maxWidth * 0.7,
-                  bottom: flexBottom,
-                  child: Stack(
+                  right: 0,
+                  bottom: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // DIAGNOSE QUIZ 1
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -121,6 +107,8 @@ class MainDashboardScreen extends StatelessWidget {
                           );
                         },
                         child: Container(
+                          width: constraints.maxWidth * 0.24,
+                          height: constraints.maxWidth * 0.24,
                           decoration: const BoxDecoration(
                             image: DecorationImage(
                               image: AssetImage(
@@ -129,17 +117,7 @@ class MainDashboardScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                // DIAGNOSE QUIZ 2
-                Positioned(
-                  top: flexTop,
-                  left: 0,
-                  right: constraints.maxWidth * 0.23,
-                  bottom: flexBottom,
-                  child: Stack(
-                    children: [
+                      // DIAGNOSE QUIZ 2
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -151,6 +129,8 @@ class MainDashboardScreen extends StatelessWidget {
                           );
                         },
                         child: Container(
+                          width: constraints.maxWidth * 0.24,
+                          height: constraints.maxWidth * 0.24,
                           decoration: const BoxDecoration(
                             image: DecorationImage(
                               image: AssetImage(
@@ -159,17 +139,7 @@ class MainDashboardScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                // DIAGNOSE QUIZ 3
-                Positioned(
-                  top: flexTop,
-                  left: constraints.maxWidth * 0.23,
-                  right: 0,
-                  bottom: flexBottom,
-                  child: Stack(
-                    children: [
+                      // DIAGNOSE QUIZ 3
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -181,6 +151,8 @@ class MainDashboardScreen extends StatelessWidget {
                           );
                         },
                         child: Container(
+                          width: constraints.maxWidth * 0.24,
+                          height: constraints.maxWidth * 0.24,
                           decoration: const BoxDecoration(
                             image: DecorationImage(
                               image: AssetImage(
@@ -189,17 +161,7 @@ class MainDashboardScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                // DIAGNOSE QUIZ 4
-                Positioned(
-                  top: flexTop,
-                  left: constraints.maxWidth * 0.7,
-                  right: 0,
-                  bottom: flexBottom,
-                  child: Stack(
-                    children: [
+                      // DIAGNOSE QUIZ 4
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -211,6 +173,8 @@ class MainDashboardScreen extends StatelessWidget {
                           );
                         },
                         child: Container(
+                          width: constraints.maxWidth * 0.24,
+                          height: constraints.maxWidth * 0.24,
                           decoration: const BoxDecoration(
                             image: DecorationImage(
                               image: AssetImage(
