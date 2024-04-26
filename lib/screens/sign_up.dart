@@ -2,6 +2,7 @@ import 'package:calcpal/screens/main_dashboard.dart';
 import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/widgets/signup_area.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'dart:convert';
@@ -70,6 +71,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // FORCE PORTRAIT ORIENTATION
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
     return Scaffold(
       body: Stack(
         children: [

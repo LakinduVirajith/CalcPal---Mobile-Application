@@ -1,9 +1,8 @@
 import 'package:calcpal/screens/login.dart';
-import 'package:calcpal/widgets/birthday_input.dart';
-import 'package:calcpal/widgets/login_button.dart';
+import 'package:calcpal/widgets/date_input.dart';
+import 'package:calcpal/widgets/normal_button.dart';
 import 'package:calcpal/widgets/password_input.dart';
-import 'package:calcpal/widgets/email_input.dart';
-import 'package:calcpal/widgets/user_name_input.dart';
+import 'package:calcpal/widgets/normal_input.dart';
 import 'package:flutter/material.dart';
 
 class SignUpArea extends StatelessWidget {
@@ -47,21 +46,28 @@ class SignUpArea extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 36),
-          UserNameInput(
-              userNameController: userNameController), // USER NAME INPUT
+          NormalInput(
+            placeholderText: 'Name',
+            iconPath: 'assets/icons/user.svg',
+            normalController: userNameController,
+          ), // USER NAME INPUT
           const SizedBox(height: 20),
-          EmailInput(
+          NormalInput(
             placeholderText: 'Email',
-            userNameController: emailController,
+            iconPath: 'assets/icons/email.svg',
+            normalController: emailController,
           ), // EMAIL INPUT
           const SizedBox(height: 20),
-          BirthDayInput(
-              birthDayController: birthDayController), // BIRTHDAY INPUT
+          DateInput(
+            placeholderText: 'Birthday',
+            iconPath: 'assets/icons/cake.svg',
+            dateController: birthDayController,
+          ), // BIRTHDAY INPUT
           const SizedBox(height: 20),
           PasswordInput(
               passwordController: passwordController), // PASSWORD INPUT
           const SizedBox(height: 20),
-          LoginButton(
+          NormalButton(
             buttonText: 'Sign Up',
             onPressed: onPressed,
           ), // SIGNUP BUTTON
