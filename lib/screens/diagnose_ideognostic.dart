@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class DiagnoseQuiz2Screen extends StatelessWidget {
-  const DiagnoseQuiz2Screen({super.key});
+class DiagnoseIdeognosticScreen extends StatelessWidget {
+  const DiagnoseIdeognosticScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
