@@ -1,8 +1,8 @@
 import 'package:calcpal/screens/forgot_password.dart';
 import 'package:calcpal/screens/sign_up.dart';
-import 'package:calcpal/widgets/login_button.dart';
+import 'package:calcpal/widgets/normal_button.dart';
+import 'package:calcpal/widgets/normal_input.dart';
 import 'package:calcpal/widgets/password_input.dart';
-import 'package:calcpal/widgets/email_input.dart';
 import 'package:flutter/material.dart';
 
 class LoginArea extends StatelessWidget {
@@ -42,9 +42,10 @@ class LoginArea extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 36),
-          EmailInput(
+          NormalInput(
             placeholderText: 'User Name',
-            userNameController: userNameController,
+            iconPath: 'assets/icons/email.svg',
+            normalController: userNameController,
           ), // USERNAME INPUT
           const SizedBox(height: 20),
           PasswordInput(
@@ -72,7 +73,7 @@ class LoginArea extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          LoginButton(
+          NormalButton(
             buttonText: 'Login',
             onPressed: onPressed,
           ), // LOGIN BUTTON
