@@ -1,7 +1,7 @@
-import 'package:calcpal/screens/diagnose_quiz_1.dart';
-import 'package:calcpal/screens/diagnose_quiz_2.dart';
-import 'package:calcpal/screens/diagnose_quiz_3.dart';
-import 'package:calcpal/screens/diagnose_quiz_4.dart';
+import 'package:calcpal/screens/diagnose_verbal.dart';
+import 'package:calcpal/screens/diagnose_operational.dart';
+import 'package:calcpal/screens/diagnose_graphical.dart';
+import 'package:calcpal/screens/diagnose_visual_spatial.dart';
 import 'package:calcpal/screens/login.dart';
 import 'package:calcpal/screens/profile.dart';
 import 'package:flutter/material.dart';
@@ -115,7 +115,8 @@ class MainDashboardScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const DiagnoseQuiz1Screen(),
+                              builder: (context) =>
+                                  const DiagnoseVerbalScreen(),
                             ),
                           );
                         },
@@ -144,7 +145,8 @@ class MainDashboardScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const DiagnoseQuiz2Screen(),
+                              builder: (context) =>
+                                  const DiagnoseOperationalScreen(),
                             ),
                           );
                         },
@@ -173,7 +175,8 @@ class MainDashboardScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const DiagnoseQuiz3Screen(),
+                              builder: (context) =>
+                                  const DiagnoseGraphicalScreen(),
                             ),
                           );
                         },
@@ -202,7 +205,8 @@ class MainDashboardScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const DiagnoseQuiz4Screen(),
+                              builder: (context) =>
+                                  const DiagnoseVisualSpatialScreen(),
                             ),
                           );
                         },
