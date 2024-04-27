@@ -33,6 +33,7 @@ dependencies:
   intl: ^0.19.0
   flutter_svg: ^2.0.10+1
   flutter_launcher_icons: "^0.13.1"
+  audioplayers: ^6.0.0
   fluttertoast: ^8.2.5
   http: ^1.2.1
 
@@ -84,6 +85,8 @@ flutter:
     - assets/icons/open-eye.svg
     - assets/icons/back.png
     - assets/icons/profile.png
+    - assets/icons/play-button.svg
+    - assets/icons/pause-button.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -94,10 +97,25 @@ flutter:
   fonts:
     - family: Aclonica
       fonts:
-        - asset: assets/fonts/AclonicaRegular.ttf
+        - asset: assets/fonts/Aclonica-Regular.ttf
     - family: Inter
       fonts:
-        - asset: assets/fonts/InterBold.ttf
+        - asset: assets/fonts/Inter-Black.ttf
+        - asset: assets/fonts/Inter-Bold.ttf
+        - asset: assets/fonts/Inter-ExtraBold.ttf
+        - asset: assets/fonts/Inter-ExtraLight.ttf
+        - asset: assets/fonts/Inter-Light.ttf
+        - asset: assets/fonts/Inter-Medium.ttf
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-SemiBold.ttf
+        - asset: assets/fonts/Inter-Thin.ttf
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Bold.ttf
+        - asset: assets/fonts/Roboto-Light.ttf
+        - asset: assets/fonts/Roboto-Medium.ttf
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Thin.ttf
 
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

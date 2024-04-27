@@ -39,6 +39,7 @@ class _PasswordInputState extends State<PasswordInput> {
                 hintStyle: TextStyle(
                   color: Colors.black87,
                   fontSize: 14,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
