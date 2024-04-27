@@ -41,7 +41,7 @@ class SignUpArea extends StatelessWidget {
               'Sign Up',
               style: TextStyle(
                 fontSize: 24,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -82,6 +82,7 @@ class SignUpArea extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 13,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 GestureDetector(
@@ -97,6 +98,7 @@ class SignUpArea extends StatelessWidget {
                     style: TextStyle(
                       color: Theme.of(context).primaryColor,
                       fontSize: 13,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),

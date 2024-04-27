@@ -34,6 +34,7 @@ class NormalInput extends StatelessWidget {
                 hintStyle: const TextStyle(
                   color: Colors.black87,
                   fontSize: 14,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),

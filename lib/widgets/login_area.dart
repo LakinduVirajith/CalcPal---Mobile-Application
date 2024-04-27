@@ -40,7 +40,7 @@ class LoginArea extends StatelessWidget {
               'Welcome Back!',
               style: TextStyle(
                 fontSize: 24,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -70,7 +70,7 @@ class LoginArea extends StatelessWidget {
                 style: TextStyle(
                   color: Theme.of(context).primaryColor,
                   fontSize: 13,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -89,9 +89,9 @@ class LoginArea extends StatelessWidget {
                 const Text(
                   'Don’t have an account? ',
                   style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 13,
-                  ),
+                      color: Colors.black,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700),
                 ),
                 GestureDetector(
                   onTap: () {
@@ -104,9 +104,9 @@ class LoginArea extends StatelessWidget {
                   child: Text(
                     'Sign Up',
                     style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontSize: 13,
-                    ),
+                        color: Theme.of(context).primaryColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700),
                   ),
                 ),
               ],
