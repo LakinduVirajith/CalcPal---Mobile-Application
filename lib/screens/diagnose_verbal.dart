@@ -13,11 +13,11 @@ class DiagnoseVerbalScreen extends StatefulWidget {
   const DiagnoseVerbalScreen({super.key});
 
   static late String voiceUrl;
-  static late String questionText;
-  static late List<int> answerArray;
-  static late int answer;
+  static late String question;
+  static late List<String> answers;
+  static late String correctAnswer;
 
-  static late List<bool> answers;
+  static late List<bool> userAnswers;
   static int questionNumber = 1;
 
   static bool isPlaying = false;
@@ -43,7 +43,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
       try {
         final response = await http.post(
           Uri.parse(
-              'https://api/v1/diagnose/verbal/${DiagnoseVerbalScreen.questionNumber}'),
+              'https://api/v1/verbal/question/${DiagnoseVerbalScreen.questionNumber}'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },
@@ -56,10 +56,10 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
 
           // EXTRACT THE VALUES
           DiagnoseVerbalScreen.voiceUrl = data['voiceUrl'] as String;
-          DiagnoseVerbalScreen.questionText = data['questionText'] as String;
-          DiagnoseVerbalScreen.answerArray =
-              List<int>.from(data['answerArray'] as List<dynamic>);
-          DiagnoseVerbalScreen.answer = data['answer'] as int;
+          DiagnoseVerbalScreen.question = data['question'] as String;
+          DiagnoseVerbalScreen.answers =
+              List<String>.from(data['answers'] as List<dynamic>);
+          DiagnoseVerbalScreen.correctAnswer = data['correctAnswer'] as String;
 
           // PLAYING AUDIO
           await player.play(UrlSource(DiagnoseVerbalScreen.voiceUrl));
@@ -91,12 +91,17 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
       });
     }
 
-    Future<void> answerHandler(int userAsnwer) async {
-      if (userAsnwer == DiagnoseVerbalScreen.answer) {
+    Future<void> answerHandler(String userAsnwer) async {
+      if (userAsnwer == DiagnoseVerbalScreen.correctAnswer) {
         DiagnoseVerbalScreen.questionNumber =
             DiagnoseVerbalScreen.questionNumber++;
-        DiagnoseVerbalScreen.answers
-            .add(true); // ADDING THE USER'S ANSWER TO THE LIST
+        DiagnoseVerbalScreen.userAnswers.add(true);
+        apiHandler();
+      } else {
+        DiagnoseVerbalScreen.questionNumber =
+            DiagnoseVerbalScreen.questionNumber++;
+        DiagnoseVerbalScreen.userAnswers
+            .add(false); // ADDING THE USER'S ANSWER TO THE LIST
         apiHandler(); // PLAYING THE NEXT QUESTION
       }
     }
@@ -163,7 +168,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             GestureDetector(
-                              onTap: () => answerHandler(10),
+                              onTap: () => answerHandler("10"),
                               child: const AnswerBox(
                                 width: 60.0,
                                 height: 60,
@@ -172,7 +177,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                               ),
                             ),
                             GestureDetector(
-                              onTap: () => answerHandler(9),
+                              onTap: () => answerHandler("9"),
                               child: const AnswerBox(
                                 width: 60.0,
                                 height: 60,
@@ -181,7 +186,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                               ),
                             ),
                             GestureDetector(
-                              onTap: () => answerHandler(8),
+                              onTap: () => answerHandler("8"),
                               child: const AnswerBox(
                                 width: 60.0,
                                 height: 60,
@@ -190,7 +195,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                               ),
                             ),
                             GestureDetector(
-                              onTap: () => answerHandler(11),
+                              onTap: () => answerHandler("11"),
                               child: const AnswerBox(
                                 width: 60.0,
                                 height: 60,
