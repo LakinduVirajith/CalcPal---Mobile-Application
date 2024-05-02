@@ -34,12 +34,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://api/v1/signup'),
+        Uri.parse('https://api/v1/user/register'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, String>{
-          'userName': userName,
+          'name': userName,
           'email': email,
           'birthDay': birthDay,
           'password': password,
