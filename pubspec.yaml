@@ -76,6 +76,8 @@ flutter:
     - assets/images/diagnose_quiz_4.png
     - assets/images/diagnose_background_v1.png
     - assets/images/diagnose_op_background.png
+    - assets/images/diagnose_id_background.png
+    - assets/images/q1_img.png
 
     - assets/icons/user.svg
     - assets/icons/email.svg
