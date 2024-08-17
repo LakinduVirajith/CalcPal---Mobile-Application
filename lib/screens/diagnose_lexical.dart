@@ -33,6 +33,8 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
       DeviceOrientation.landscapeRight,
     ]);
 
+    final ToastService _toastService = ToastService();
+
     // API HANDLING
     Future<void> apiHandler() async {
       try {
@@ -55,13 +57,13 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
         }
       } on SocketException catch (_) {
         // CONNECTION ERROR
-        ToastService.showErrorToast("Failed to connect to the server");
+        _toastService.errorToast("Failed to connect to the server");
       } on HttpException catch (_) {
         // HTTP ERROR
-        ToastService.showErrorToast("An HTTP error occurred during login");
+        _toastService.errorToast("An HTTP error occurred during login");
       } catch (e) {
         // OTHER ERRORS
-        ToastService.showErrorToast("An error occurred during login");
+        _toastService.errorToast("An error occurred during login");
       }
     }
 

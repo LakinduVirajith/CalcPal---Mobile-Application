@@ -1,4 +1,4 @@
-import 'package:calcpal/screens/main_dashboard.dart';
+import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/widgets/signup_area.dart';
 import 'package:flutter/material.dart';
@@ -27,9 +27,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final String birthDay = _birthDayController.text;
     final String password = _passwordController.text;
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const MainDashboardScreen()),
+    final ToastService _toastService = ToastService();
+
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      mainDashboardRoute,
+      (route) => false,
     );
 
     try {
@@ -47,25 +49,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
 
       if (response.statusCode == 200) {
-        ToastService.showSuccessToast("SignUp successful");
+        _toastService.successToast("SignUp successful");
 
-        Navigator.push(
-          // ignore: use_build_context_synchronously
-          context,
-          MaterialPageRoute(builder: (context) => const MainDashboardScreen()),
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          mainDashboardRoute,
+          (route) => false,
         );
       } else {
-        ToastService.showErrorToast("SignUp failed");
+        _toastService.errorToast("SignUp failed");
       }
     } on SocketException catch (_) {
       // CONNECTION ERROR
-      ToastService.showErrorToast("Failed to connect to the server");
+      _toastService.errorToast("Failed to connect to the server");
     } on HttpException catch (_) {
       // HTTP ERROR
-      ToastService.showErrorToast("An HTTP error occurred during login");
+      _toastService.errorToast("An HTTP error occurred during login");
     } catch (e) {
       // OTHER ERRORS
-      ToastService.showErrorToast("An error occurred during login");
+      _toastService.errorToast("An error occurred during login");
     }
   }
 

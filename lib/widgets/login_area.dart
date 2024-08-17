@@ -1,5 +1,4 @@
-import 'package:calcpal/screens/forgot_password.dart';
-import 'package:calcpal/screens/sign_up.dart';
+import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/widgets/normal_button.dart';
 import 'package:calcpal/widgets/normal_input.dart';
 import 'package:calcpal/widgets/password_input.dart';
@@ -59,11 +58,7 @@ class LoginArea extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: GestureDetector(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const ForgotPasswordScreen()),
-                );
+                Navigator.of(context).pushNamed(forgotPasswordRoute);
               },
               child: Text(
                 'Forgot Password',
@@ -95,11 +90,7 @@ class LoginArea extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const SignUpScreen()),
-                    );
+                    Navigator.of(context).pushNamed(signUpRoute);
                   },
                   child: Text(
                     'Sign Up',

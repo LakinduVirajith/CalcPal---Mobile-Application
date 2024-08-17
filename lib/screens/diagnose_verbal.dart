@@ -1,32 +1,154 @@
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:audioplayers/audioplayers.dart';
-import 'package:calcpal/services/toast_service.dart';
+import 'package:calcpal/services/verbal_service.dart';
 import 'package:calcpal/widgets/answer_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class DiagnoseVerbalScreen extends StatefulWidget {
   const DiagnoseVerbalScreen({super.key});
 
-  static late String voiceUrl;
   static late String question;
   static late List<String> answers;
   static late String correctAnswer;
 
-  static late List<bool> userAnswers;
-  static int questionNumber = 1;
+  static List<bool> userResponses = [];
+  static int currentQuestionNumber = 1;
+  static String selectedLanguage = 'English';
 
-  static bool isPlaying = false;
+  static bool isAudioPlaying = false;
+  static bool isDataLoaded = false;
 
   @override
   State<DiagnoseVerbalScreen> createState() => _DiagnoseVerbalScreenState();
 }
 
 class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
+  // INITIALIZING TEXT-TO-SPEECH
+  final FlutterTts flutterTts = FlutterTts();
+  // INITIALIZING THE VERBAL SERVICE
+  final VerbalService questionService = VerbalService();
+  // FUTURE THAT HOLDS THE STATE OF THE QUESTION LOADING PROCESS
+  late Future<void> _questionFuture;
+  // STOPWATCH INSTANCE FOR TIMING
+  final Stopwatch _stopwatch = Stopwatch();
+
+  @override
+  void initState() {
+    super.initState();
+    // INITIALIZE TTS WITH LANGUAGE SETTINGS
+    _initializeTtsLanguage();
+    // LOAD THE FIRST QUESTION WHEN THE WIDGET IS INITIALIZED
+    _questionFuture = _loadQuestion();
+  }
+
+  @override
+  void dispose() {
+    DiagnoseVerbalScreen.currentQuestionNumber = 1;
+    DiagnoseVerbalScreen.isAudioPlaying = false;
+    _stopwatch.reset();
+    super.dispose();
+  }
+
+  // FUNCTION TO SET LANGUAGE CODE BASED ON SELECTED LANGUAGE
+  Future<void> _initializeTtsLanguage() async {
+    String languageCode;
+
+    switch (DiagnoseVerbalScreen.selectedLanguage) {
+      case 'English':
+        languageCode = 'en';
+        break;
+      case 'Sinhala':
+        languageCode = 'si';
+        break;
+      case 'Tamil':
+        languageCode = 'ta';
+        break;
+      default:
+        languageCode = 'en';
+    }
+
+    await flutterTts.setLanguage(languageCode);
+  }
+
+  // FUNCTION TO LOAD AND PLAY QUESTION
+  Future<void> _loadQuestion() async {
+    final question = await questionService.fetchQuestion(
+      DiagnoseVerbalScreen.currentQuestionNumber,
+      DiagnoseVerbalScreen.selectedLanguage,
+    );
+
+    if (question != null) {
+      setState(() {
+        DiagnoseVerbalScreen.isDataLoaded = true;
+        DiagnoseVerbalScreen.question = question.question;
+        DiagnoseVerbalScreen.answers = question.answers[0]
+            .split(',')
+            .map((answer) => answer.trim())
+            .toList();
+        DiagnoseVerbalScreen.correctAnswer = question.correctAnswer;
+      });
+
+      // START THE TIMER WHEN QUESTION IS LOADED
+      _stopwatch.start();
+    } else {
+      setState(() {
+        DiagnoseVerbalScreen.isDataLoaded = false;
+      });
+    }
+  }
+
+  // FUNCTION TO TOGGLE AUDIO PLAYBACK
+  Future<void> _toggleAudioPlayback() async {
+    if (DiagnoseVerbalScreen.isAudioPlaying) {
+      await flutterTts.stop();
+    } else {
+      await flutterTts.speak(DiagnoseVerbalScreen.question);
+
+      flutterTts.setCompletionHandler(() {
+        setState(() {
+          DiagnoseVerbalScreen.isAudioPlaying = false;
+        });
+      });
+    }
+
+    setState(() {
+      DiagnoseVerbalScreen.isAudioPlaying =
+          !DiagnoseVerbalScreen.isAudioPlaying;
+    });
+  }
+
+  // FUNCTION TO HANDLE USER ANSWERS
+  Future<void> _handleAnswer(String userAnswer) async {
+    // CHECK IF THE USER'S ANSWER IS CORRECT
+    if (userAnswer == DiagnoseVerbalScreen.correctAnswer) {
+      DiagnoseVerbalScreen.userResponses.add(true);
+    } else {
+      DiagnoseVerbalScreen.userResponses.add(false);
+    }
+
+    // CHECK IF THERE ARE MORE QUESTIONS LEFT
+    if (DiagnoseVerbalScreen.currentQuestionNumber != 5) {
+      DiagnoseVerbalScreen.currentQuestionNumber++;
+      _loadQuestion();
+    } else {
+      _submitResultsToMLModel();
+    }
+  }
+
+  // FUNCTION TO SUBMIT RESULTS TO MACHINE LEARNING MODEL
+  Future<void> _submitResultsToMLModel() async {
+    // STOP THE TIMER AND RECORD ELAPSED TIME IN SECONDS
+    _stopwatch.stop();
+    final elapsedTimeInSeconds = _stopwatch.elapsedMilliseconds / 1000;
+
+    // ROUND TO THE NEAREST WHOLE SECOND
+    final roundedElapsedTimeInSeconds = elapsedTimeInSeconds.round();
+
+    print(DiagnoseVerbalScreen.userResponses);
+    print(roundedElapsedTimeInSeconds);
+  }
+
   @override
   Widget build(BuildContext context) {
     // FORCE LANDSCAPE ORIENTATION
@@ -35,182 +157,129 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
       DeviceOrientation.landscapeRight,
     ]);
 
-    // CREATING AN INSTANCE OF AUDIOPLAYER FOR AUDIO PLAYBACK
-    final player = AudioPlayer();
-
-    // API HANDLING
-    Future<void> apiHandler() async {
-      try {
-        final response = await http.post(
-          Uri.parse(
-              'https://api/v1/verbal/question/${DiagnoseVerbalScreen.questionNumber}'),
-          headers: <String, String>{
-            'Content-Type': 'application/json; charset=UTF-8',
-          },
-        );
-
-        if (response.statusCode == 200) {
-          // PARSE THE JSON RESPONSE
-          final jsonResponse = response.body;
-          final data = jsonDecode(jsonResponse);
-
-          // EXTRACT THE VALUES
-          DiagnoseVerbalScreen.voiceUrl = data['voiceUrl'] as String;
-          DiagnoseVerbalScreen.question = data['question'] as String;
-          DiagnoseVerbalScreen.answers =
-              List<String>.from(data['answers'] as List<dynamic>);
-          DiagnoseVerbalScreen.correctAnswer = data['correctAnswer'] as String;
-
-          // PLAYING AUDIO
-          await player.play(UrlSource(DiagnoseVerbalScreen.voiceUrl));
-          setState(() {
-            DiagnoseVerbalScreen.isPlaying = true;
-          });
-        }
-      } on SocketException catch (_) {
-        // CONNECTION ERROR
-        ToastService.showErrorToast("Failed to connect to the server");
-      } on HttpException catch (_) {
-        // HTTP ERROR
-        ToastService.showErrorToast("An HTTP error occurred during login");
-      } catch (e) {
-        // OTHER ERRORS
-        ToastService.showErrorToast("An error occurred during login");
-      }
-    }
-
-    Future<void> toggleAudio() async {
-      if (DiagnoseVerbalScreen.isPlaying) {
-        await player.pause(); // PAUSING AUDIO PLAYBACK IF IT'S PLAYING
-      } else {
-        await apiHandler(); // OTHERWISE, PLAY THE AUDIO
-      }
-      setState(() {
-        DiagnoseVerbalScreen.isPlaying =
-            !DiagnoseVerbalScreen.isPlaying; // TOGGLING ISPLAYING FLAG
-      });
-    }
-
-    Future<void> answerHandler(String userAsnwer) async {
-      if (userAsnwer == DiagnoseVerbalScreen.correctAnswer) {
-        DiagnoseVerbalScreen.questionNumber =
-            DiagnoseVerbalScreen.questionNumber++;
-        DiagnoseVerbalScreen.userAnswers.add(true);
-        apiHandler();
-      } else {
-        DiagnoseVerbalScreen.questionNumber =
-            DiagnoseVerbalScreen.questionNumber++;
-        DiagnoseVerbalScreen.userAnswers
-            .add(false); // ADDING THE USER'S ANSWER TO THE LIST
-        apiHandler(); // PLAYING THE NEXT QUESTION
-      }
-    }
-
     return Scaffold(
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Stack(
-              children: [
-                // SET BACKGROUND IMAGE
-                Container(
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(
-                          'assets/images/diagnose_background_v1.png'),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: constraints.maxHeight * 0.1,
-                  right: constraints.maxWidth * 0.25,
-                  left: constraints.maxWidth * 0.25,
-                  bottom: constraints.maxHeight * 0.1,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 24.0,
-                      horizontal: 36.0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color.fromRGBO(96, 96, 96, 1),
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: Column(
-                      children: [
-                        // DISPLAY QUESTION
-                        const Text(
-                          'Listen and answer the question',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w500),
-                        ),
-                        const SizedBox(height: 24.0),
-                        // PLAY AUDIO
-                        GestureDetector(
-                          onTap: toggleAudio,
-                          child: SizedBox(
-                            width: 60,
-                            height: 60,
-                            child: SvgPicture.asset(
-                              DiagnoseVerbalScreen.isPlaying
-                                  ? 'assets/icons/pause-button.svg'
-                                  : 'assets/icons/play-button.svg',
-                              semanticsLabel: 'Play Icon',
-                            ),
+        child: FutureBuilder(
+          future: _questionFuture,
+          builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+            // SHOW LOADER WHILE WAITING FOR THE QUESTION TO LOAD
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            // SHOW QUESTION AND ANSWERS IF LOADING SUCCEEDED
+            else {
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  return Stack(
+                    children: [
+                      // SET BACKGROUND IMAGE
+                      Container(
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage(
+                                'assets/images/diagnose_background_v1.png'),
+                            fit: BoxFit.cover,
                           ),
                         ),
-                        const SizedBox(height: 48.0),
-                        // QUESTION ANSWERS
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            GestureDetector(
-                              onTap: () => answerHandler("10"),
-                              child: const AnswerBox(
-                                width: 60.0,
-                                height: 60,
-                                value: '10',
-                                size: 32.0,
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () => answerHandler("9"),
-                              child: const AnswerBox(
-                                width: 60.0,
-                                height: 60,
-                                value: '9',
-                                size: 32.0,
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () => answerHandler("8"),
-                              child: const AnswerBox(
-                                width: 60.0,
-                                height: 60,
-                                value: '8',
-                                size: 32.0,
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () => answerHandler("11"),
-                              child: const AnswerBox(
-                                width: 60.0,
-                                height: 60,
-                                value: '11',
-                                size: 32.0,
-                              ),
-                            ),
-                          ],
+                      ),
+                      Positioned(
+                        top: constraints.maxHeight * 0.1,
+                        right: constraints.maxWidth * 0.25,
+                        left: constraints.maxWidth * 0.25,
+                        bottom: constraints.maxHeight * 0.1,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 24.0,
+                            horizontal: 36.0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color.fromRGBO(96, 96, 96, 1),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: (snapshot.hasError ||
+                                  !DiagnoseVerbalScreen.isDataLoaded)
+                              ? // DISPLAY ERROR IF LOADING FAILED
+                              const Center(
+                                  child: Text(
+                                    'Failed to load question. Please try again.',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontFamily: 'Roboto',
+                                        fontWeight: FontWeight.w400),
+                                  ),
+                                )
+                              // DISPLAY QUESTION INSTRUCTIONS
+                              : Column(
+                                  children: [
+                                    const Text(
+                                      'Listen and answer the question',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 24,
+                                          fontFamily: 'Roboto',
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                    const SizedBox(height: 24.0),
+                                    // PLAY AUDIO BUTTON
+                                    AnimatedSwitcher(
+                                      duration:
+                                          const Duration(milliseconds: 300),
+                                      child: GestureDetector(
+                                        key: ValueKey<bool>(DiagnoseVerbalScreen
+                                            .isAudioPlaying),
+                                        onTap: _toggleAudioPlayback,
+                                        child: Opacity(
+                                          opacity: 0.7,
+                                          child: SizedBox(
+                                            width: 180,
+                                            height: 90,
+                                            child: SvgPicture.asset(
+                                              DiagnoseVerbalScreen
+                                                      .isAudioPlaying
+                                                  ? 'assets/icons/pause-button.svg'
+                                                  : 'assets/icons/play-button.svg',
+                                              semanticsLabel: 'Play Icon',
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 48.0),
+                                    // ANSWER OPTIONS
+                                    AnimatedSwitcher(
+                                      duration:
+                                          const Duration(milliseconds: 300),
+                                      child: Row(
+                                        key: ValueKey<int>(DiagnoseVerbalScreen
+                                            .currentQuestionNumber),
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: DiagnoseVerbalScreen.answers
+                                            .map((answer) {
+                                          return GestureDetector(
+                                            onTap: () => _handleAnswer(answer),
+                                            child: AnswerBox(
+                                              width: 60.0,
+                                              height: 60,
+                                              value: answer,
+                                              size: 32.0,
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            );
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
           },
         ),
       ),

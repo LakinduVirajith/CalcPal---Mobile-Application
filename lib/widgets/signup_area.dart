@@ -1,4 +1,4 @@
-import 'package:calcpal/screens/login.dart';
+import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/widgets/date_input.dart';
 import 'package:calcpal/widgets/normal_button.dart';
 import 'package:calcpal/widgets/password_input.dart';
@@ -87,11 +87,7 @@ class SignUpArea extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const LoginScreen()),
-                    );
+                    Navigator.of(context).pushNamed(loginRoute);
                   },
                   child: Text(
                     'Login',
