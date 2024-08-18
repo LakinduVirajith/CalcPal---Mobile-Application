@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:calcpal/models/verbal_diagnosis.dart';
 import 'package:calcpal/models/verbal_question.dart';
 import 'package:calcpal/services/toast_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -34,6 +35,36 @@ class VerbalService {
     } catch (e) {
       _toastService.errorToast('An unexpected error occurred.');
       return null;
+    }
+  }
+
+  // SUBMIT A DIAGNOSIS RESULT TO THE SERVER
+  Future<bool> addDiagnosisResult(VerbalDiagnosis result) async {
+    final url = Uri.parse('$_baseUrl/verbal/diagnosis/');
+
+    try {
+      final body = jsonEncode(result.toJson());
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        return false;
+      }
+    } on http.ClientException {
+      _toastService
+          .errorToast('Network error occurred. Please check your connection.');
+      return false;
+    } catch (e) {
+      _toastService.errorToast('An unexpected error occurred.');
+      return false;
     }
   }
 }
