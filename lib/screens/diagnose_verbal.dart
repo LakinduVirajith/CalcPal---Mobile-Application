@@ -193,7 +193,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
       diagnoseResultRoute,
       (route) => false,
       arguments: {
-        'diagnoseType': 'Verbal',
+        'diagnoseType': 'verbal',
         'totalScore': totalScore,
         'elapsedTime': roundedElapsedTimeInSeconds,
       },
