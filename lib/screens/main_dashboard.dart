@@ -1,9 +1,7 @@
-import 'package:calcpal/screens/diagnose_verbal.dart';
+import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/screens/diagnose_operational.dart';
 import 'package:calcpal/screens/diagnose_graphical.dart';
 import 'package:calcpal/screens/diagnose_visual_spatial.dart';
-import 'package:calcpal/screens/login.dart';
-import 'package:calcpal/screens/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -47,11 +45,9 @@ class MainDashboardScreen extends StatelessWidget {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginScreen(),
-                              ),
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              loginRoute,
+                              (route) => false,
                             );
                           },
                           child: Container(
@@ -66,12 +62,7 @@ class MainDashboardScreen extends StatelessWidget {
                         ),
                         GestureDetector(
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ProfileScreen(),
-                              ),
-                            );
+                            Navigator.of(context).pushNamed(profileRoute);
                           },
                           child: Container(
                             width: constraints.maxWidth * 0.14,
@@ -98,13 +89,7 @@ class MainDashboardScreen extends StatelessWidget {
                       // DIAGNOSE QUIZ 1
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const DiagnoseVerbalScreen(),
-                            ),
-                          );
+                          Navigator.of(context).pushNamed(diagnoseVerbalRoute);
                         },
                         child: Container(
                           width: constraints.maxWidth * 0.24,
