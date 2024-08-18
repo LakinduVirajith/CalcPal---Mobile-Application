@@ -1,6 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:calcpal/constants/routes.dart';
-import 'package:calcpal/models/verbal_diagnosis.dart';
+import 'package:calcpal/models/diagnosis_result.dart';
 import 'package:calcpal/services/text_to_speech_service.dart';
 import 'package:calcpal/services/verbal_service.dart';
 import 'package:calcpal/widgets/answer_box.dart';
@@ -170,7 +170,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
 
     // SUBMIT THE DIAGNOSIS RESULT TO THE SERVICE
     final status = await _questionService.addDiagnosisResult(
-      VerbalDiagnosis(
+      DiagnosisResult(
         userEmail: 'userEmail',
         timeSeconds: roundedElapsedTimeInSeconds,
         q1: DiagnoseVerbalScreen.userResponses[0],

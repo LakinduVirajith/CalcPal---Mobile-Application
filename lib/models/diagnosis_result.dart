@@ -1,4 +1,4 @@
-class VerbalDiagnosis {
+class DiagnosisResult {
   final String userEmail;
   final int timeSeconds;
   final bool q1;
@@ -9,7 +9,7 @@ class VerbalDiagnosis {
   final String totalScore;
   final bool label;
 
-  VerbalDiagnosis({
+  DiagnosisResult({
     required this.userEmail,
     required this.timeSeconds,
     required this.q1,
@@ -21,7 +21,7 @@ class VerbalDiagnosis {
     required this.label,
   });
 
-  // CONVERT THE VerbalDiagnosis OBJECT TO JSON
+  // CONVERT THE DiagnosisResult OBJECT TO JSON
   Map<String, dynamic> toJson() {
     return {
       'userEmail': userEmail,
