@@ -89,7 +89,7 @@ class MainDashboardScreen extends StatelessWidget {
                       // DIAGNOSE QUIZ 1
                       GestureDetector(
                         onTap: () {
-                          Navigator.of(context).pushNamed(verbalDiagnoseRoute);
+                          Navigator.of(context).pushNamed(diagnoseVerbalRoute);
                         },
                         child: Container(
                           width: constraints.maxWidth * 0.24,

@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/models/verbal_diagnosis.dart';
 import 'package:calcpal/services/text_to_speech_service.dart';
 import 'package:calcpal/services/verbal_service.dart';
@@ -186,6 +187,17 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
     print(DiagnoseVerbalScreen.userResponses);
     print(roundedElapsedTimeInSeconds);
     print(status);
+
+    // NAVIGATE TO THE RESULT PAGE AND PASS THE TOTAL SCORE AND ELAPSED TIME
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      diagnoseResultRoute,
+      (route) => false,
+      arguments: {
+        'diagnoseType': 'Verbal',
+        'totalScore': totalScore,
+        'elapsedTime': roundedElapsedTimeInSeconds,
+      },
+    );
   }
 
   @override

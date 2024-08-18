@@ -1,5 +1,6 @@
 import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/screens/diagnose_lexical.dart';
+import 'package:calcpal/screens/diagnose_result.dart';
 import 'package:calcpal/screens/diagnose_verbal.dart';
 import 'package:calcpal/screens/forgot_password.dart';
 import 'package:calcpal/screens/login.dart';
@@ -35,8 +36,9 @@ class MyApp extends StatelessWidget {
           forgotPasswordRoute: (context) => const ForgotPasswordScreen(),
           profileRoute: (context) => const ProfileScreen(),
           mainDashboardRoute: (context) => const MainDashboardScreen(),
-          verbalDiagnoseRoute: (context) => const DiagnoseVerbalScreen(),
-          lexicalDiagnoseRoute: (context) => const DiagnoseLexicalScreen(),
+          diagnoseVerbalRoute: (context) => const DiagnoseVerbalScreen(),
+          diagnoseLexicalRoute: (context) => const DiagnoseLexicalScreen(),
+          diagnoseResultRoute: (context) => const DiagnoseResultScreen(),
         },
       ),
     );
