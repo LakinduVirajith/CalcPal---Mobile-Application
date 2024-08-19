@@ -1,7 +1,4 @@
 import 'package:calcpal/constants/routes.dart';
-import 'package:calcpal/screens/diagnose_operational.dart';
-import 'package:calcpal/screens/diagnose_graphical.dart';
-import 'package:calcpal/screens/diagnose_visual_spatial.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -15,6 +12,14 @@ class MainDashboardScreen extends StatelessWidget {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        systemNavigationBarColor: Colors.black,
+      ),
+    );
 
     return Scaffold(
       body: SafeArea(
@@ -105,13 +110,8 @@ class MainDashboardScreen extends StatelessWidget {
                       // DIAGNOSE QUIZ 2
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const DiagnoseOperationalScreen(),
-                            ),
-                          );
+                          Navigator.of(context)
+                              .pushNamed(diagnoseOperationalRoute);
                         },
                         child: Container(
                           width: constraints.maxWidth * 0.24,
@@ -127,13 +127,8 @@ class MainDashboardScreen extends StatelessWidget {
                       // DIAGNOSE QUIZ 3
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const DiagnoseGraphicalScreen(),
-                            ),
-                          );
+                          Navigator.of(context)
+                              .pushNamed(diagnoseGraphicalRoute);
                         },
                         child: Container(
                           width: constraints.maxWidth * 0.24,
@@ -149,13 +144,8 @@ class MainDashboardScreen extends StatelessWidget {
                       // DIAGNOSE QUIZ 4
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const DiagnoseVisualSpatialScreen(),
-                            ),
-                          );
+                          Navigator.of(context)
+                              .pushNamed(diagnoseSequentialRoute);
                         },
                         child: Container(
                           width: constraints.maxWidth * 0.24,

@@ -24,6 +24,15 @@ class _DiagnoseResultScreenState extends State<DiagnoseResultScreen> {
           (route) => false,
         );
         break;
+      case 'lexical':
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          diagnoseReportRoute,
+          (route) => false,
+          arguments: {
+            'quizType': 'quiz1',
+          },
+        );
+        break;
       default:
         Navigator.of(context).pushNamedAndRemoveUntil(
           mainDashboardRoute,

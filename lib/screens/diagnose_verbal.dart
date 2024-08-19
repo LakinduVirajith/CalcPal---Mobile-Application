@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:calcpal/constants/routes.dart';
-import 'package:calcpal/models/verbal_diagnosis.dart';
+import 'package:calcpal/models/diagnosis_result.dart';
+import 'package:calcpal/services/common_service.dart';
 import 'package:calcpal/services/text_to_speech_service.dart';
 import 'package:calcpal/services/verbal_service.dart';
 import 'package:calcpal/widgets/answer_box.dart';
@@ -57,20 +58,6 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
     super.dispose();
   }
 
-  // RETURNS THE LANGUAGE CODE FOR THE GIVEN LANGUAGE NAME.
-  String _getLanguageCode(String language) {
-    switch (language) {
-      case 'English':
-        return 'en-US';
-      case 'Sinhala':
-        return 'si-LK';
-      case 'Tamil':
-        return 'ta-IN';
-      default:
-        return 'en-US';
-    }
-  }
-
   // FUNCTION TO LOAD AND PLAY QUESTION
   Future<void> _loadQuestion() async {
     try {
@@ -96,7 +83,9 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
         DiagnoseVerbalScreen.questionVoice =
             await _textToSpeechService.synthesizeSpeech(
           DiagnoseVerbalScreen.question,
-          _getLanguageCode(DiagnoseVerbalScreen.selectedLanguage),
+          CommonService.getLanguageCode(
+            DiagnoseVerbalScreen.selectedLanguage,
+          ),
         );
         await _toggleAudioPlayback();
 
@@ -104,14 +93,15 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
         if (DiagnoseVerbalScreen.currentQuestionNumber == 1) {
           _stopwatch.start();
         }
+      } else {
+        setState(() {
+          DiagnoseVerbalScreen.isErrorOccurred = true;
+          DiagnoseVerbalScreen.isDataLoading = false;
+        });
       }
     } catch (e) {
       setState(() {
         DiagnoseVerbalScreen.isErrorOccurred = true;
-        DiagnoseVerbalScreen.isDataLoading = false;
-      });
-    } finally {
-      setState(() {
         DiagnoseVerbalScreen.isDataLoading = false;
       });
     }
@@ -170,7 +160,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
 
     // SUBMIT THE DIAGNOSIS RESULT TO THE SERVICE
     final status = await _questionService.addDiagnosisResult(
-      VerbalDiagnosis(
+      DiagnosisResult(
         userEmail: 'userEmail',
         timeSeconds: roundedElapsedTimeInSeconds,
         q1: DiagnoseVerbalScreen.userResponses[0],
@@ -304,8 +294,8 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                                             const Duration(milliseconds: 300),
                                         child: GestureDetector(
                                           key: ValueKey<bool>(
-                                              DiagnoseVerbalScreen
-                                                  .isAudioPlaying),
+                                            DiagnoseVerbalScreen.isAudioPlaying,
+                                          ),
                                           onTap: _toggleAudioPlayback,
                                           child: Opacity(
                                             opacity: 0.65,
@@ -336,8 +326,9 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                                             const Duration(milliseconds: 300),
                                         child: Row(
                                           key: ValueKey<int>(
-                                              DiagnoseVerbalScreen
-                                                  .currentQuestionNumber),
+                                            DiagnoseVerbalScreen
+                                                .currentQuestionNumber,
+                                          ),
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceAround,
                                           children: DiagnoseVerbalScreen.answers

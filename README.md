@@ -1,4 +1,4 @@
-# calcpal_mobile_application
+# CalcPal---Mobile-Application
 
 A new Flutter project.
 
@@ -14,3 +14,35 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## DEV Commands
+
+```
+flutter clean
+```
+- **Purpose:** Removes the `build` directory and its contents in your Flutter project.
+- **Explanation:** Useful for clearing build artifacts and ensuring a clean build environment without affecting your source code.
+
+```
+flutter pub get
+```
+  - **Purpose:** Fetches dependencies listed in your `pubspec.yaml` file and updates your `pubspec.lock` file.
+  - **Explanation:** Ensures all necessary dependencies are installed and resolves version constraints after modifications to `pubspec.yaml`.
+
+```
+dart run build_runner build
+```
+  - **Purpose:** Generates code based on annotations in your Dart files using the `build_runner` package.
+  - **Explanation:** Essential for tasks like JSON serialization, Hive type adapters, and other code generation tasks defined in your project.
+
+```
+flutter pub run flutter_launcher_icons
+```
+  - **Purpose:** Updates Flutter app launcher icons to custom icons specified in `pubspec.yaml`.
+  - **Explanation:** Generates platform-specific launcher icons for Android and iOS based on custom icon paths specified in `pubspec.yaml`.
+
+```
+flutter build apk --build-name=1.0.0 --build-number=1 --split-per-abi
+```
+  - **Purpose:** Builds a release APK for your Flutter app targeting Android, splitting the APK by CPU architecture (ABI).
+  - **Explanation:** Prepares your app for deployment by optimizing APK size and performance across different Android device architectures (`armeabi-v7a`, `arm64-v8a`, `x86`, `x86_64`).
