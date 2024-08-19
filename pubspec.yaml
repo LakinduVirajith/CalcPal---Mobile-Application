@@ -77,7 +77,7 @@ flutter_launcher_icons:
   # Configuration for customizing app launcher icons for both Android and iOS
   android: "launcher_icon"
   ios: true
-  image_path: "assets/icon/app-icon.jpg"
+  image_path: "assets/icons/app-icon.jpg"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
