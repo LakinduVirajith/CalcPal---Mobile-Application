@@ -1,15 +1,23 @@
+import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/models/diagnosis_result.dart';
+import 'package:calcpal/services/common_service.dart';
 import 'package:calcpal/services/lexical_service.dart';
+import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/widgets/answer_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:speech_to_text/speech_to_text.dart';
+import 'dart:developer' as developer;
 
 class DiagnoseLexicalScreen extends StatefulWidget {
   const DiagnoseLexicalScreen({super.key});
 
   static late String question;
+  static late List<String> answers;
+
+  static List<bool> userResponses = [];
   static int currentQuestionNumber = 1;
   static String selectedLanguage = 'English';
 
@@ -30,7 +38,9 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
   final Stopwatch _stopwatch = Stopwatch();
 
   // INITIALIZING SPEECH-TO-TEXT SERVICE
-  final stt.SpeechToText _speechToText = stt.SpeechToText();
+  final SpeechToText _speechToText = SpeechToText();
+  // TOAST SERVICE TO SHOW MESSAGES
+  final ToastService _toastService = ToastService();
 
   @override
   void initState() {
@@ -56,51 +66,147 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
       if (question != null) {
         setState(() {
           DiagnoseLexicalScreen.question = question.question;
+          DiagnoseLexicalScreen.answers = question.answers;
         });
+        // AWAIT THE ASYNCHRONOUS OPERATION TO CAPTURE THE USER'S VOICE
+        await _captureVoice();
 
         // START THE STOPWATCH FOR THE FIRST QUESTION ONLY
         if (DiagnoseLexicalScreen.currentQuestionNumber == 1) {
           _stopwatch.start();
         }
+      } else {
+        setState(() {
+          DiagnoseLexicalScreen.isErrorOccurred = true;
+        });
       }
     } catch (e) {
       setState(() {
         DiagnoseLexicalScreen.isErrorOccurred = true;
       });
-    } finally {
-      setState(() {
-        DiagnoseLexicalScreen.isErrorOccurred = false;
-      });
     }
   }
 
-  Future<void> captureVoice() async {
+  // FUNCTION TO HANDLE VOICE CAPTURE
+  Future<void> _captureVoice() async {
+    // TOGGLE MICROPHONE STATE
     setState(() {
-      DiagnoseLexicalScreen.isMicrophoneOn =
-          !DiagnoseLexicalScreen.isMicrophoneOn; // TOGGLING ISPLAYING FLAG
+      DiagnoseLexicalScreen.isMicrophoneOn = true;
     });
 
+    // CHECK IF MICROPHONE IS TURNED ON
     if (DiagnoseLexicalScreen.isMicrophoneOn) {
+      // INITIALIZE THE SPEECH TO TEXT SERVICE
       bool available = await _speechToText.initialize(
-        onError: (error) => print('Error: $error'),
+        onError: (error) {
+          setState(() {
+            DiagnoseLexicalScreen.isMicrophoneOn = false;
+          });
+          _toastService.infoToast("No speech detected. Let's try that again!");
+          developer.log('Error: $error');
+        },
+        onStatus: (status) => developer.log('Status: $status'),
       );
 
       if (available) {
-        _speechToText.listen(
-          onResult: (result) {
-            setState(() {
-              print(result.recognizedWords);
-            });
+        // SET LOCALEID BASED ON SELECTED LANGUAGE
+        String localeId = CommonService.getLanguageCode(
+          DiagnoseLexicalScreen.selectedLanguage,
+        );
 
-            _speechToText.stop();
+        // START LISTENING FOR SPEECH INPUT
+        _speechToText.listen(
+          localeId: localeId,
+          onResult: (result) {
+            // LOG RECOGNIZED WORDS
+            developer.log(result.recognizedWords);
+
+            // COMPARE RECOGNIZED WORDS WITH THE EXPECTED QUESTION OR ANY OF THE POSSIBLE ANSWERS (CASE-INSENSITIVE)
+            if (result.recognizedWords
+                    .toLowerCase()
+                    .contains(DiagnoseLexicalScreen.question.toLowerCase()) ||
+                DiagnoseLexicalScreen.answers.any((answer) => result
+                    .recognizedWords
+                    .toLowerCase()
+                    .contains(answer.toLowerCase()))) {
+              DiagnoseLexicalScreen.userResponses.add(true);
+            } else {
+              DiagnoseLexicalScreen.userResponses.add(false);
+            }
+
+            // CHECK IF THERE ARE MORE QUESTIONS LEFT
+            if (DiagnoseLexicalScreen.currentQuestionNumber != 5) {
+              DiagnoseLexicalScreen.currentQuestionNumber++;
+              _loadQuestion();
+            } else {
+              _submitResultsToMLModel();
+            }
+
+            // STOP LISTENING AFTER PROCESSING THE RESULT
+            _speechToText.stop().then((_) {
+              // TOGGLE MICROPHONE STATE TO FALSE AFTER STOPPING
+              setState(() {
+                DiagnoseLexicalScreen.isMicrophoneOn = false;
+              });
+            });
           },
         );
       } else {
-        print('The user has denied the use of speech recognition');
+        developer.log('The user has denied the use of speech recognition');
+        _toastService
+            .errorToast('You must allow microphone access to continue.');
+        // ENSURE MICROPHONE STATE IS TURNED OFF IF INITIALIZATION FAILS
+        setState(() {
+          DiagnoseLexicalScreen.isMicrophoneOn = false;
+        });
       }
-    } else {
-      _speechToText.stop();
     }
+  }
+
+  // FUNCTION TO SUBMIT RESULTS TO MACHINE LEARNING MODEL
+  Future<void> _submitResultsToMLModel() async {
+    // STOP THE TIMER AND RECORD ELAPSED TIME IN SECONDS
+    _stopwatch.stop();
+    final elapsedTimeInSeconds = _stopwatch.elapsedMilliseconds / 1000;
+
+    // ROUND TO THE NEAREST WHOLE SECOND
+    final roundedElapsedTimeInSeconds = elapsedTimeInSeconds.round();
+
+    // CALCULATE THE TOTAL SCORE BASED ON TRUE RESPONSES
+    final int totalScore = DiagnoseLexicalScreen.userResponses
+        .where((response) => response)
+        .length;
+
+    // SUBMIT THE DIAGNOSIS RESULT TO THE SERVICE
+    final status = await _questionService.addDiagnosisResult(
+      DiagnosisResult(
+        userEmail: 'userEmail',
+        timeSeconds: roundedElapsedTimeInSeconds,
+        q1: DiagnoseLexicalScreen.userResponses[0],
+        q2: DiagnoseLexicalScreen.userResponses[1],
+        q3: DiagnoseLexicalScreen.userResponses[2],
+        q4: DiagnoseLexicalScreen.userResponses[3],
+        q5: DiagnoseLexicalScreen.userResponses[4],
+        totalScore: totalScore.toString(),
+        label: false,
+      ),
+    );
+
+    // DEBUGGING INFORMATION
+    print(DiagnoseLexicalScreen.userResponses);
+    print(roundedElapsedTimeInSeconds);
+    print(status);
+
+    // NAVIGATE TO THE RESULT PAGE AND PASS THE TOTAL SCORE AND ELAPSED TIME
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      diagnoseResultRoute,
+      (route) => false,
+      arguments: {
+        'diagnoseType': 'lexical',
+        'totalScore': totalScore,
+        'elapsedTime': roundedElapsedTimeInSeconds,
+      },
+    );
   }
 
   @override
@@ -230,19 +336,35 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
                       right: constraints.maxWidth * 0.25,
                       left: constraints.maxWidth * 0.6,
                       bottom: constraints.maxHeight * 0.15,
-                      child: GestureDetector(
-                        onTap: captureVoice,
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: SvgPicture.asset(
-                            DiagnoseLexicalScreen.isMicrophoneOn
-                                ? 'assets/icons/microphone-radio.svg'
-                                : 'assets/icons/microphone.svg',
-                            semanticsLabel: 'Microphone Icon',
-                          ),
-                        ),
-                      ),
+                      child: (snapshot.hasError ||
+                              DiagnoseLexicalScreen.isErrorOccurred)
+                          ? Container()
+                          : AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              child: GestureDetector(
+                                key: ValueKey<bool>(
+                                  DiagnoseLexicalScreen.isMicrophoneOn,
+                                ),
+                                onTap: _captureVoice,
+                                child: Opacity(
+                                  opacity: 0.65,
+                                  child: Container(
+                                    height: 60,
+                                    width: 60,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: SvgPicture.asset(
+                                      DiagnoseLexicalScreen.isMicrophoneOn
+                                          ? 'assets/icons/microphone-radio.svg'
+                                          : 'assets/icons/microphone.svg',
+                                      semanticsLabel: 'Microphone Icon',
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                     ),
                   ],
                 );
