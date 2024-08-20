@@ -1,13 +1,13 @@
 class SignUp {
   final String name;
   final String email;
-  final String birthDay;
+  final String birthday;
   final String password;
 
   SignUp({
     required this.name,
     required this.email,
-    required this.birthDay,
+    required this.birthday,
     required this.password,
   });
 
@@ -15,7 +15,7 @@ class SignUp {
     return {
       'name': name,
       'email': email,
-      'birthDay': birthDay,
+      'birthday': birthday,
       'password': password,
     };
   }

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'dart:developer' as developer;
 
@@ -177,10 +178,13 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
         .where((response) => response)
         .length;
 
+    // GET THE INSTANCE OF SHARED PREFERENCES
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
     // SUBMIT THE DIAGNOSIS RESULT TO THE SERVICE
     final status = await _questionService.addDiagnosisResult(
       DiagnosisResult(
-        userEmail: 'userEmail',
+        userEmail: prefs.getString('user-email') ?? '',
         timeSeconds: roundedElapsedTimeInSeconds,
         q1: DiagnoseLexicalScreen.userResponses[0],
         q2: DiagnoseLexicalScreen.userResponses[1],

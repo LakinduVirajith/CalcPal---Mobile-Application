@@ -1,9 +1,69 @@
 import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class MainDashboardScreen extends StatelessWidget {
+class MainDashboardScreen extends StatefulWidget {
   const MainDashboardScreen({super.key});
+
+  @override
+  State<MainDashboardScreen> createState() => _MainDashboardScreenState();
+}
+
+class _MainDashboardScreenState extends State<MainDashboardScreen> {
+  // INITIALIZING THE USER SERVICE
+  final UserService _userService = UserService();
+
+  Future<void> _logout() async {
+    // SHOW A CONFIRMATION DIALOG TO THE USER
+    final bool? confirmLogout = await showDialog<bool>(
+      context: context,
+      barrierDismissible:
+          false, // PREVENT DISMISSING THE DIALOG BY TAPPING OUTSIDE
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Logout'),
+          content: const Text('Are you sure you want to log out?'),
+          backgroundColor: Colors.white,
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
+
+    // CHECK IF THE USER CONFIRMED LOGOUT
+    if (confirmLogout == true) {
+      // GET THE INSTANCE OF SHARED PREFERENCES
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      final accessToken = prefs.getString('access_token');
+      if (accessToken != null) {
+        // LOG OUT THE USER BY CALLING THE LOGOUT SERVICE
+        final status = await _userService.logout(accessToken);
+
+        if (status) {
+          // REMOVE THE STORED ACCESS TOKEN AND REFRESH TOKEN FROM SHARED PREFERENCES
+          await prefs.remove('access_token');
+          await prefs.remove('refresh_token');
+
+          // NAVIGATE TO THE LOGIN SCREEN AND REMOVE ALL PREVIOUS ROUTES FROM THE STACK
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            loginRoute,
+            (route) => false,
+          );
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,12 +109,7 @@ class MainDashboardScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                              loginRoute,
-                              (route) => false,
-                            );
-                          },
+                          onTap: _logout,
                           child: Container(
                             width: constraints.maxWidth * 0.08,
                             height: constraints.maxWidth * 0.08,

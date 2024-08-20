@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DiagnoseVerbalScreen extends StatefulWidget {
   const DiagnoseVerbalScreen({super.key});
@@ -158,10 +159,13 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
     final int totalScore =
         DiagnoseVerbalScreen.userResponses.where((response) => response).length;
 
+    // GET THE INSTANCE OF SHARED PREFERENCES
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
     // SUBMIT THE DIAGNOSIS RESULT TO THE SERVICE
     final status = await _questionService.addDiagnosisResult(
       DiagnosisResult(
-        userEmail: 'userEmail',
+        userEmail: prefs.getString('user-email') ?? '',
         timeSeconds: roundedElapsedTimeInSeconds,
         q1: DiagnoseVerbalScreen.userResponses[0],
         q2: DiagnoseVerbalScreen.userResponses[1],
