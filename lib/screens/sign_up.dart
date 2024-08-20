@@ -1,72 +1,85 @@
 import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/models/sign_up.dart';
 import 'package:calcpal/services/toast_service.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/widgets/signup_area.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
-import 'dart:io';
-import 'dart:convert';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
+
+  static bool isLoading = false;
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  // CONTROLLERS FOR FORM FIELDS
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _birthDayController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-// SIGNUP HANDLER
+  // INITIALIZING THE USER SERVICE
+  final UserService _userService = UserService();
+  // TOAST SERVICE TO SHOW MESSAGES
+  final ToastService _toastService = ToastService();
+
+  @override
+  void dispose() {
+    // DISPOSE CONTROLLERS TO FREE UP RESOURCES
+    _userNameController.dispose();
+    _emailController.dispose();
+    _birthDayController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  // HANDLER FOR THE SIGN-UP PROCESS
   Future<void> _signup() async {
-    final String userName = _userNameController.text;
-    final String email = _emailController.text;
-    final String birthDay = _birthDayController.text;
-    final String password = _passwordController.text;
-
-    final ToastService _toastService = ToastService();
-
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      mainDashboardRoute,
-      (route) => false,
-    );
-
     try {
-      final response = await http.post(
-        Uri.parse('https://api/v1/user/register'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{
-          'name': userName,
-          'email': email,
-          'birthDay': birthDay,
-          'password': password,
-        }),
-      );
+      setState(() {
+        SignUpScreen.isLoading = true;
+      });
 
-      if (response.statusCode == 200) {
-        _toastService.successToast("SignUp successful");
+      final String userName = _userNameController.text;
+      final String email = _emailController.text;
+      final String birthDay = _birthDayController.text;
+      final String password = _passwordController.text;
 
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          mainDashboardRoute,
-          (route) => false,
-        );
+      if (userName.isEmpty ||
+          email.isEmpty ||
+          birthDay.isEmpty ||
+          password.isEmpty) {
+        _toastService.errorToast("Please fill in all fields.");
       } else {
-        _toastService.errorToast("SignUp failed");
+        // CALL THE SIGN-UP SERVICE
+        final status = await _userService.signUp(
+          SignUp(
+            name: userName,
+            email: email,
+            birthDay: birthDay,
+            password: password,
+          ),
+        );
+
+        if (status) {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            loginRoute,
+            (route) => false,
+          );
+        }
       }
-    } on SocketException catch (_) {
-      // CONNECTION ERROR
-      _toastService.errorToast("Failed to connect to the server");
-    } on HttpException catch (_) {
-      // HTTP ERROR
-      _toastService.errorToast("An HTTP error occurred during login");
     } catch (e) {
-      // OTHER ERRORS
-      _toastService.errorToast("An error occurred during login");
+      setState(() {
+        SignUpScreen.isLoading = false;
+      });
+    } finally {
+      setState(() {
+        SignUpScreen.isLoading = false;
+      });
     }
   }
 
@@ -115,6 +128,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               emailController: _emailController,
               birthDayController: _birthDayController,
               passwordController: _passwordController,
+              isLoading: SignUpScreen.isLoading,
               onPressed: _signup,
             ),
           )

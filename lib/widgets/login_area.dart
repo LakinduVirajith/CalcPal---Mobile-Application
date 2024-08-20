@@ -9,11 +9,13 @@ class LoginArea extends StatelessWidget {
     Key? key,
     required this.userNameController,
     required this.passwordController,
+    required this.isLoading,
     required this.onPressed,
   }) : super(key: key);
 
   final TextEditingController userNameController;
   final TextEditingController passwordController;
+  final bool isLoading;
   final VoidCallback onPressed;
 
   @override
@@ -73,6 +75,7 @@ class LoginArea extends StatelessWidget {
           const SizedBox(height: 20),
           NormalButton(
             buttonText: 'Login',
+            isLoading: isLoading,
             onPressed: onPressed,
           ), // LOGIN BUTTON
           const SizedBox(height: 20),

@@ -12,6 +12,7 @@ class SignUpArea extends StatelessWidget {
     required this.emailController,
     required this.birthDayController,
     required this.passwordController,
+    required this.isLoading,
     required this.onPressed,
   }) : super(key: key);
 
@@ -19,6 +20,7 @@ class SignUpArea extends StatelessWidget {
   final TextEditingController emailController;
   final TextEditingController birthDayController;
   final TextEditingController passwordController;
+  final bool isLoading;
   final VoidCallback onPressed;
 
   @override
@@ -69,6 +71,7 @@ class SignUpArea extends StatelessWidget {
           const SizedBox(height: 20),
           NormalButton(
             buttonText: 'Sign Up',
+            isLoading: isLoading,
             onPressed: onPressed,
           ), // SIGNUP BUTTON
           const SizedBox(height: 20),
