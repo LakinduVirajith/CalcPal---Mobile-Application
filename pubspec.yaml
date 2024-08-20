@@ -68,6 +68,9 @@ dependencies:
   # A package for storing simple data such as user preferences
   shared_preferences: ^2.3.2
 
+  # A package for decoding JWT tokens and checking expiration
+  jwt_decoder: ^2.0.1
+
 dev_dependencies:
   # Flutter testing framework
   flutter_test:

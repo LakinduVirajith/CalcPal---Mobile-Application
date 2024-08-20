@@ -1,4 +1,5 @@
 import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/models/auth_response.dart';
 import 'package:calcpal/screens/diagnose_graphical.dart';
 import 'package:calcpal/screens/diagnose_ideognostic.dart';
 import 'package:calcpal/screens/diagnose_lexical.dart';
@@ -14,13 +15,18 @@ import 'package:calcpal/screens/login.dart';
 import 'package:calcpal/screens/main_dashboard.dart';
 import 'package:calcpal/screens/profile.dart';
 import 'package:calcpal/screens/sign_up.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/themes/color_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   // LOAD THE ENVIRONMENT VARIABLES FROM THE .ENV FILE TO ACCESS CONFIGURATION DETAILS
   await dotenv.load(fileName: ".env");
 
@@ -45,7 +51,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'CalcPal Application',
         theme: colorTheme,
-        home: const LoginScreen(), // LOGIN SCREEN
+        home: const ValidationScreen(),
         routes: {
           loginRoute: (context) => const LoginScreen(),
           signUpRoute: (context) => const SignUpScreen(),
@@ -69,6 +75,83 @@ class MyApp extends StatelessWidget {
           diagnoseReportRoute: (context) => const DiagnoseReportScreen(),
         },
         debugShowCheckedModeBanner: true,
+      ),
+    );
+  }
+}
+
+class ValidationScreen extends StatefulWidget {
+  const ValidationScreen({super.key});
+
+  @override
+  State<ValidationScreen> createState() => _ValidationScreenState();
+}
+
+class _ValidationScreenState extends State<ValidationScreen> {
+  // INITIALIZING THE SERVICES
+  final UserService _userService = UserService();
+  late Future<void> _initialRoute;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialRoute = _determineInitialRoute();
+  }
+
+  Future<void> _determineInitialRoute() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // CHECK IF USER HAS REGISTERED
+    final String? userEmail = prefs.getString('user-email');
+    if (userEmail == null) {
+      // USER IS NEW, GO TO REGISTER SCREEN
+      Navigator.of(context).pushNamed(signUpRoute);
+      return;
+    }
+
+    // CHECK IF USER HAS AN ACCESS TOKEN
+    final String? accessToken = prefs.getString('access_token');
+    if (accessToken != null && !JwtDecoder.isExpired(accessToken)) {
+      // ACCESS TOKEN IS VALID, GO TO MAIN DASHBOARD
+      Navigator.of(context).pushNamed(mainDashboardRoute);
+      return;
+    }
+
+    // ACCESS TOKEN IS INVALID, CHECK REFRESH TOKEN
+    final String? refreshToken = prefs.getString('refresh_token');
+    if (refreshToken != null && !JwtDecoder.isExpired(refreshToken)) {
+      // TRY TO REFRESH THE ACCESS TOKEN USING THE REFRESH TOKEN
+      final AuthResponse? newToken = await _userService.generateNewToken(
+        refreshToken,
+      );
+      if (newToken != null) {
+        // NEW ACCESS TOKEN ACQUIRED, SAVE IT AND GO TO MAIN DASHBOARD
+        await prefs.setString('access_token', newToken.accessToken);
+        await prefs.setString('refresh_token', newToken.refreshToken);
+        Navigator.of(context).pushNamed(mainDashboardRoute);
+        return;
+      }
+    }
+
+    // IF NO ACCESS TOKEN OR REFRESH TOKEN IS INVALID, GO TO LOGIN SCREEN
+    Navigator.of(context).pushNamed(loginRoute);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: FutureBuilder(
+          future: _initialRoute,
+          builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              // SHOW LOADING INDICATOR WHILE DETERMINING INITIAL ROUTE
+              return const CircularProgressIndicator();
+            } else {
+              return Container();
+            }
+          },
+        ),
       ),
     );
   }

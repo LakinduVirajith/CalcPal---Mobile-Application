@@ -17,9 +17,9 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   // CONTROLLERS FOR FORM FIELDS
-  final TextEditingController _userNameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _birthDayController = TextEditingController();
+  final TextEditingController _birthdayController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   // INITIALIZING THE USER SERVICE
@@ -30,9 +30,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void dispose() {
     // DISPOSE CONTROLLERS TO FREE UP RESOURCES
-    _userNameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
-    _birthDayController.dispose();
+    _birthdayController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -44,23 +44,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
         SignUpScreen.isLoading = true;
       });
 
-      final String userName = _userNameController.text;
+      final String username = _usernameController.text;
       final String email = _emailController.text;
-      final String birthDay = _birthDayController.text;
+      final String birthday = _birthdayController.text;
       final String password = _passwordController.text;
 
-      if (userName.isEmpty ||
+      if (username.isEmpty ||
           email.isEmpty ||
-          birthDay.isEmpty ||
+          birthday.isEmpty ||
           password.isEmpty) {
         _toastService.errorToast("Please fill in all fields.");
       } else {
         // CALL THE SIGN-UP SERVICE
         final status = await _userService.signUp(
           SignUp(
-            name: userName,
+            name: username,
             email: email,
-            birthDay: birthDay,
+            birthday: birthday,
             password: password,
           ),
         );
@@ -92,47 +92,49 @@ class _SignUpScreenState extends State<SignUpScreen> {
     ]);
 
     return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            // SIGNUP BACKGROUND
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/login_background.png'),
-                fit: BoxFit.fill,
-              ),
-            ),
-          ),
-          const Positioned(
-            top: 50,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Text(
-                'CalcPal',
-                style: TextStyle(
-                  fontSize: 48,
-                  fontFamily: 'Aclonica',
-                  color: Colors.white,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Container(
+              // SIGNUP BACKGROUND
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/login_background.png'),
+                  fit: BoxFit.fill,
                 ),
               ),
             ),
-          ),
-          Positioned(
-            // SIGNUP AREA
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: SignUpArea(
-              userNameController: _userNameController,
-              emailController: _emailController,
-              birthDayController: _birthDayController,
-              passwordController: _passwordController,
-              isLoading: SignUpScreen.isLoading,
-              onPressed: _signup,
+            const Positioned(
+              top: 50,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Text(
+                  'CalcPal',
+                  style: TextStyle(
+                    fontSize: 48,
+                    fontFamily: 'Aclonica',
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
-          )
-        ],
+            Positioned(
+              // SIGNUP AREA
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SignUpArea(
+                userNameController: _usernameController,
+                emailController: _emailController,
+                birthDayController: _birthdayController,
+                passwordController: _passwordController,
+                isLoading: SignUpScreen.isLoading,
+                onPressed: _signup,
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
