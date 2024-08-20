@@ -65,6 +65,9 @@ dependencies:
   # Customizable loading indicators
   flutter_spinkit: ^5.2.1
 
+  # A package for storing simple data such as user preferences
+  shared_preferences: ^2.3.2
+
 dev_dependencies:
   # Flutter testing framework
   flutter_test:

@@ -10,6 +10,8 @@ import 'dart:convert';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
+  static bool isLoading = false;
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -108,6 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: LoginArea(
               userNameController: _userNameController,
               passwordController: _passwordController,
+              isLoading: LoginScreen.isLoading,
               onPressed: _login,
             ),
           ),
