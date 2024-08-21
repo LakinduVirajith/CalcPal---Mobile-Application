@@ -23,7 +23,8 @@ class LexicalService {
         final data = jsonDecode(response.body);
         return LexicalQuestion.fromJson(data);
       } else {
-        _toastService.errorToast('Failed to load question');
+        _toastService
+            .errorToast('No questions found for the given question number');
         return null;
       }
     } on http.ClientException {
@@ -31,7 +32,7 @@ class LexicalService {
           .errorToast('Network error occurred. Please check your connection.');
       return null;
     } catch (e) {
-      _toastService.errorToast('An unexpected error occurred.');
+      _toastService.errorToast('An unexpected error occurred');
       return null;
     }
   }
@@ -61,7 +62,7 @@ class LexicalService {
           .errorToast('Network error occurred. Please check your connection.');
       return false;
     } catch (e) {
-      _toastService.errorToast('An unexpected error occurred.');
+      _toastService.errorToast('An unexpected error occurred');
       return false;
     }
   }

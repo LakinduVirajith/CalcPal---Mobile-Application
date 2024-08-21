@@ -22,8 +22,8 @@ class LoginArea extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        vertical: 32,
-        horizontal: 48,
+        horizontal: 48.0,
+        vertical: 32.0,
       ),
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -60,7 +60,12 @@ class LoginArea extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: GestureDetector(
               onTap: () {
-                Navigator.of(context).pushNamed(forgotPasswordRoute);
+                Navigator.of(context).pushNamed(
+                  forgotPasswordRoute,
+                  arguments: {
+                    'email': userNameController.text,
+                  },
+                );
               },
               child: Text(
                 'Forgot Password',
