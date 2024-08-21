@@ -77,32 +77,24 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
           _stopwatch.start();
         }
       } else {
-        setState(() {
-          DiagnoseLexicalScreen.isErrorOccurred = true;
-        });
+        setState(() => DiagnoseLexicalScreen.isErrorOccurred = true);
       }
     } catch (e) {
-      setState(() {
-        DiagnoseLexicalScreen.isErrorOccurred = true;
-      });
+      setState(() => DiagnoseLexicalScreen.isErrorOccurred = true);
     }
   }
 
   // FUNCTION TO HANDLE VOICE CAPTURE
   Future<void> _captureVoice() async {
     // TOGGLE MICROPHONE STATE
-    setState(() {
-      DiagnoseLexicalScreen.isMicrophoneOn = true;
-    });
+    setState(() => DiagnoseLexicalScreen.isMicrophoneOn = true);
 
     // CHECK IF MICROPHONE IS TURNED ON
     if (DiagnoseLexicalScreen.isMicrophoneOn) {
       // INITIALIZE THE SPEECH TO TEXT SERVICE
       bool available = await _speechToText.initialize(
         onError: (error) {
-          setState(() {
-            DiagnoseLexicalScreen.isMicrophoneOn = false;
-          });
+          setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
           _toastService.infoToast("No speech detected. Let's try that again!");
           developer.log('Error: $error');
         },
@@ -146,9 +138,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
             // STOP LISTENING AFTER PROCESSING THE RESULT
             _speechToText.stop().then((_) {
               // TOGGLE MICROPHONE STATE TO FALSE AFTER STOPPING
-              setState(() {
-                DiagnoseLexicalScreen.isMicrophoneOn = false;
-              });
+              setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
             });
           },
         );
@@ -157,9 +147,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
         _toastService
             .errorToast('You must allow microphone access to continue.');
         // ENSURE MICROPHONE STATE IS TURNED OFF IF INITIALIZATION FAILS
-        setState(() {
-          DiagnoseLexicalScreen.isMicrophoneOn = false;
-        });
+        setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
       }
     }
   }

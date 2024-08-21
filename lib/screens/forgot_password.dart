@@ -1,4 +1,6 @@
+import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/services/toast_service.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/widgets/normal_button.dart';
 import 'package:calcpal/widgets/normal_input_lockable.dart';
 import 'package:calcpal/widgets/otp_box.dart';
@@ -30,6 +32,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
   final TextEditingController _inputOTP3Controller = TextEditingController();
   final TextEditingController _inputOTP4Controller = TextEditingController();
 
+  // INITIALIZING THE USER SERVICE
+  final UserService _userService = UserService();
   // TOAST SERVICE TO SHOW MESSAGES
   final ToastService _toastService = ToastService();
 
@@ -103,11 +107,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       if (userEmail.isEmpty) {
         _toastService.errorToast("Please provide your email address");
       } else {
-        // SIMULATE OTP SENDING PROCESS
-        await Future.delayed(const Duration(seconds: 2));
-        setState(() => ForgotPasswordScreen.isOTPSent = true);
-        // START THE ANIMATION
-        _animationController.forward();
+        // CALL THE USER SERVICE TO SEND THE OTP
+        final status = await _userService.sendOTP(userEmail);
+        if (status) {
+          setState(() => ForgotPasswordScreen.isOTPSent = true);
+          // START THE ANIMATION
+          _animationController.forward();
+        }
       }
     } catch (e) {
       _toastService.errorToast("An error occurred while sending OTP");
@@ -125,16 +131,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       final String otp2 = _inputOTP2Controller.text;
       final String otp3 = _inputOTP3Controller.text;
       final String otp4 = _inputOTP4Controller.text;
+      final String userEmail = _userEmailController.text;
       if (otp1.isEmpty || otp2.isEmpty || otp3.isEmpty || otp4.isEmpty) {
         _toastService.errorToast("Please fill in all OTP fields");
       } else {
         final combinedOtp = otp1 + otp2 + otp3 + otp4;
-        final otpValue = int.tryParse(combinedOtp);
-        // SIMULATE OTP VERIFYING PROCESS
-        await Future.delayed(const Duration(seconds: 2));
-        setState(() => ForgotPasswordScreen.isOTPValidated = true);
-        // START THE ANIMATION
-        _animationController.forward();
+        // CALL THE USER SERVICE TO VALIDATE THE OTP
+        final status = await _userService.validatOTP(
+          userEmail,
+          combinedOtp,
+        );
+        if (status) {
+          setState(() => ForgotPasswordScreen.isOTPValidated = true);
+          // START THE ANIMATION
+          _animationController.forward();
+        }
       }
     } catch (e) {
       _toastService.errorToast("An error occurred while verifying OTP");
@@ -153,8 +164,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       if (userEmail.isEmpty || password.isEmpty) {
         _toastService.errorToast("Don't forget to provide your new password");
       } else {
-        // SIMULATE PASSWORD RESET PROCESS
-        await Future.delayed(const Duration(seconds: 2));
+        // CALL THE USER SERVICE TO RESET THE PASSWORD
+        final status = await _userService.resetPassword(
+          userEmail,
+          password,
+        );
+        if (status) {
+          setState(() => ForgotPasswordScreen.isOTPValidated = true);
+          // NAVIGATE TO THE LOGIN ROUTE AND REMOVE ALL PREVIOUS ROUTES
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            loginRoute,
+            (route) => false,
+          );
+        }
       }
     } catch (e) {
       _toastService

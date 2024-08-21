@@ -50,9 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
   // HANDLER FOR THE LOGIN PROCESS
   Future<void> _login() async {
     try {
-      setState(() {
-        LoginScreen.isLoading = true;
-      });
+      setState(() => LoginScreen.isLoading = true);
 
       final String username = _userNameController.text;
       final String password = _passwordController.text;
@@ -67,7 +65,6 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (authResponse != null) {
-          print(authResponse);
           // STORE TOKEN IN SHAREDPREFERENCES
           await _prefs.setString('user-email', username);
           await _prefs.setString('access_token', authResponse.accessToken);
@@ -80,13 +77,9 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       }
     } catch (e) {
-      setState(() {
-        LoginScreen.isLoading = false;
-      });
+      setState(() => LoginScreen.isLoading = false);
     } finally {
-      setState(() {
-        LoginScreen.isLoading = false;
-      });
+      setState(() => LoginScreen.isLoading = false);
     }
   }
 
