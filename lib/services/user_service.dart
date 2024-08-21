@@ -72,7 +72,7 @@ class UserService {
         'Login successful! Welcome back.',
         {
           403:
-              'Your account is not activated. Please verify your email to activate your account.',
+              'Your account is not activated. Please check your email to verify your account first.',
           404: 'Resource not found. Please check the details and try again.',
           500: 'Server error occurred. Please try again later.',
         },
@@ -107,10 +107,9 @@ class UserService {
       // HANDLE HTTP RESPONSE
       _handleHttpResponse(
         response,
-        'Login successful! Welcome back.',
+        'Authentication was successful using the refresh token.',
         {
-          400:
-              'The token you provided is invalid. Please check the token and try again.',
+          400: 'The provided refresh token is invalid or expired.',
           404: 'Resource not found. Please check the details and try again.',
           500: 'Server error occurred. Please try again later.',
         },
