@@ -107,6 +107,7 @@ flutter:
     - assets/images/diagnose_background_v1.png
     - assets/images/diagnose_background_v2.png
     - assets/images/diagnose_result_background.png
+    - assets/images/diagnose_report_background.png
 
     - assets/icons/user.svg
     - assets/icons/email.svg

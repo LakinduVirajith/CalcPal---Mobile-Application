@@ -33,6 +33,51 @@ class _DiagnoseResultScreenState extends State<DiagnoseResultScreen> {
           },
         );
         break;
+      case 'operational':
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          diagnoseIdeognosticRoute,
+          (route) => false,
+        );
+        break;
+      case 'ideognostic':
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          diagnoseReportRoute,
+          (route) => false,
+          arguments: {
+            'quizType': 'quiz2',
+          },
+        );
+        break;
+      case 'graphical':
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          diagnosePractognosticRoute,
+          (route) => false,
+        );
+        break;
+      case 'practognostic':
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          diagnoseReportRoute,
+          (route) => false,
+          arguments: {
+            'quizType': 'quiz3',
+          },
+        );
+        break;
+      case 'visual-spatial':
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          diagnoseSequentialRoute,
+          (route) => false,
+        );
+        break;
+      case 'sequential':
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          diagnoseReportRoute,
+          (route) => false,
+          arguments: {
+            'quizType': 'quiz4',
+          },
+        );
+        break;
       default:
         Navigator.of(context).pushNamedAndRemoveUntil(
           mainDashboardRoute,
