@@ -163,6 +163,115 @@ class UserService {
     return false;
   }
 
+// SENDS AN OTP TO THE PROVIDED EMAIL ADDRESS.
+  Future<bool> sendOTP(String email) async {
+    final url = Uri.parse('$_baseUrl/user/reset-password-otp?email=$email');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      // HANDLE HTTP RESPONSE
+      _handleHttpResponse(
+        response,
+        'Forgot password email sent successfully',
+        {
+          404: 'Invalid user email account',
+          500: 'Email service error. Please try again.',
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      }
+    } on http.ClientException {
+      _handleNetworkError();
+    } catch (e) {
+      _handleException(e);
+    }
+    return false;
+  }
+
+  // VALIDATES THE OTP FOR THE PROVIDED EMAIL ADDRESS.
+  Future<bool> validatOTP(String email, String otpString) async {
+    final otp = int.tryParse(otpString);
+    final url = Uri.parse(
+        '$_baseUrl/user/reset-password-validation?email=$email&otp=$otp');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      // HANDLE HTTP RESPONSE
+      _handleHttpResponse(
+        response,
+        'User OTP validated successfully',
+        {
+          400: 'Invalid OTP. Please try again.',
+          404: 'Invalid user email account',
+          410: 'OTP has expired. Please request a new one.',
+          500: 'Email service error. Please try again.',
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      }
+    } on http.ClientException {
+      _handleNetworkError();
+    } catch (e) {
+      _handleException(e);
+    }
+    return false;
+  }
+
+  // RESETS THE PASSWORD FOR THE PROVIDED EMAIL ADDRESS.
+  Future<bool> resetPassword(String email, String password) async {
+    final url = Uri.parse('$_baseUrl/user/reset-password');
+
+    try {
+      final body = jsonEncode({
+        "email": email,
+        "password": password,
+      });
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
+      );
+
+      // HANDLE HTTP RESPONSE
+      _handleHttpResponse(
+        response,
+        'Password reset successfully',
+        {
+          404: 'Invalid user email account',
+          500: 'Email service error. Please try again.',
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      }
+    } on http.ClientException {
+      _handleNetworkError();
+    } catch (e) {
+      _handleException(e);
+    }
+    return false;
+  }
+
   // HANDLE HTTP RESPONSE
   void _handleHttpResponse(http.Response response, String successMessage,
       Map<int, String> errorMessages) {

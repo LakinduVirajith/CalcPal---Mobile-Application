@@ -116,16 +116,12 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
       await _audioPlayer.play(DiagnoseVerbalScreen.questionVoice);
 
       _audioPlayer.onPlayerComplete.listen((event) {
-        setState(() {
-          DiagnoseVerbalScreen.isAudioPlaying = false;
-        });
+        setState(() => DiagnoseVerbalScreen.isAudioPlaying = false);
       });
     }
 
-    setState(() {
-      DiagnoseVerbalScreen.isAudioPlaying =
-          !DiagnoseVerbalScreen.isAudioPlaying;
-    });
+    setState(() => DiagnoseVerbalScreen.isAudioPlaying =
+        !DiagnoseVerbalScreen.isAudioPlaying);
   }
 
   // FUNCTION TO HANDLE USER ANSWERS

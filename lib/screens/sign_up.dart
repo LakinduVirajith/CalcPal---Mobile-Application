@@ -40,9 +40,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   // HANDLER FOR THE SIGN-UP PROCESS
   Future<void> _signup() async {
     try {
-      setState(() {
-        SignUpScreen.isLoading = true;
-      });
+      setState(() => SignUpScreen.isLoading = true);
 
       final String username = _usernameController.text;
       final String email = _emailController.text;
@@ -73,13 +71,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         }
       }
     } catch (e) {
-      setState(() {
-        SignUpScreen.isLoading = false;
-      });
+      setState(() => SignUpScreen.isLoading = false);
     } finally {
-      setState(() {
-        SignUpScreen.isLoading = false;
-      });
+      setState(() => SignUpScreen.isLoading = false);
     }
   }
 
