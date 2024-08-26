@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:calcpal/enums/disorder.dart';
 import 'package:calcpal/models/auth_response.dart';
 import 'package:calcpal/models/sign_up.dart';
+import 'package:calcpal/models/user.dart';
 import 'package:calcpal/services/toast_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -31,11 +33,6 @@ class UserService {
       _handleHttpResponse(
         response,
         'Registration successful! Please verify your email before logging in.',
-        {
-          404: 'Resource not found. Please check the details and try again.',
-          409: 'Email already in use. Please log in or use a different email.',
-          500: 'Server error occurred. Please try again later.',
-        },
       );
 
       return response.statusCode == 200 || response.statusCode == 201;
@@ -70,12 +67,6 @@ class UserService {
       _handleHttpResponse(
         response,
         'Login successful! Welcome back.',
-        {
-          403:
-              'Your account is not activated. Please check your email to verify your account first.',
-          404: 'Resource not found. Please check the details and try again.',
-          500: 'Server error occurred. Please try again later.',
-        },
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -108,11 +99,6 @@ class UserService {
       _handleHttpResponse(
         response,
         'Authentication was successful using the refresh token.',
-        {
-          400: 'The provided refresh token is invalid or expired.',
-          404: 'Resource not found. Please check the details and try again.',
-          500: 'Server error occurred. Please try again later.',
-        },
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -145,11 +131,6 @@ class UserService {
       _handleHttpResponse(
         response,
         'Logout successful. You have been logged out.',
-        {
-          400: 'Invalid logout request.',
-          404: 'Resource not found. Please check the details and try again.',
-          500: 'Server error occurred. Please try again later.',
-        },
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -179,10 +160,6 @@ class UserService {
       _handleHttpResponse(
         response,
         'Forgot password email sent successfully',
-        {
-          404: 'Invalid user email account',
-          500: 'Email service error. Please try again.',
-        },
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -214,12 +191,6 @@ class UserService {
       _handleHttpResponse(
         response,
         'User OTP validated successfully',
-        {
-          400: 'Invalid OTP. Please try again.',
-          404: 'Invalid user email account',
-          410: 'OTP has expired. Please request a new one.',
-          500: 'Email service error. Please try again.',
-        },
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -255,10 +226,6 @@ class UserService {
       _handleHttpResponse(
         response,
         'Password reset successfully',
-        {
-          404: 'Invalid user email account',
-          500: 'Email service error. Please try again.',
-        },
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -272,15 +239,75 @@ class UserService {
     return false;
   }
 
+  // UPDATES THE DISORDER TYPE FOR THE USER
+  Future<bool> updateDisorderType(Disorder disorder, String accessToken) async {
+    final url =
+        Uri.parse('$_baseUrl/user/update/disorder?disorder=${disorder.name}');
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      // HANDLE HTTP RESPONSE
+      _handleHttpResponse(
+        response,
+        'Disorder types updated successfully',
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      }
+    } on http.ClientException {
+      _handleNetworkError();
+    } catch (e) {
+      _handleException(e);
+    }
+    return false;
+  }
+
+  // GET THE USER DETAILS
+  Future<User?> getUser(String accessToken) async {
+    final url = Uri.parse('$_baseUrl/user/details');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // DECODE JSON RESPONSE
+        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        return User.fromJson(jsonResponse);
+      }
+    } on http.ClientException {
+      _handleNetworkError();
+    } catch (e) {
+      _handleException(e);
+    }
+    return null;
+  }
+
   // HANDLE HTTP RESPONSE
-  void _handleHttpResponse(http.Response response, String successMessage,
-      Map<int, String> errorMessages) {
+  void _handleHttpResponse(http.Response response, String successMessage) {
     if (response.statusCode == 200 || response.statusCode == 201) {
       _toastService.successToast(successMessage);
     } else {
-      final errorMessage =
-          errorMessages[response.statusCode] ?? 'An unexpected error occurred.';
-      _toastService.errorToast(errorMessage);
+      if (response.body.isNotEmpty) {
+        _toastService.errorToast(response.body);
+      } else if (response.body.isEmpty) {
+        _toastService.errorToast(
+          'An unexpected error occurred. Please try again later.',
+        );
+      }
     }
   }
 

@@ -71,6 +71,9 @@ dependencies:
   # A package for decoding JWT tokens and checking expiration
   jwt_decoder: ^2.0.1
 
+  # A package to handle runtime permissions for accessing device features like the microphone, camera, etc.
+  permission_handler: ^11.3.1
+
 dev_dependencies:
   # Flutter testing framework
   flutter_test:

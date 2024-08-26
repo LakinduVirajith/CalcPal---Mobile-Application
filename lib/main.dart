@@ -1,5 +1,13 @@
 import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/models/auth_response.dart';
+import 'package:calcpal/screens/activity_graphical.dart';
+import 'package:calcpal/screens/activity_ideognostic.dart';
+import 'package:calcpal/screens/activity_lexical.dart';
+import 'package:calcpal/screens/activity_operational.dart';
+import 'package:calcpal/screens/activity_practonostic.dart';
+import 'package:calcpal/screens/activity_sequential.dart';
+import 'package:calcpal/screens/activity_verbal.dart';
+import 'package:calcpal/screens/activity_visual_spatial.dart';
 import 'package:calcpal/screens/diagnose_graphical.dart';
 import 'package:calcpal/screens/diagnose_ideognostic.dart';
 import 'package:calcpal/screens/diagnose_lexical.dart';
@@ -73,6 +81,19 @@ class MyApp extends StatelessWidget {
               const DiagnoseVisualSpatialScreen(),
           diagnoseResultRoute: (context) => const DiagnoseResultScreen(),
           diagnoseReportRoute: (context) => const DiagnoseReportScreen(),
+          activityVerbalRoute: (context) => const ActivityVerbalScreen(),
+          activityLexicalRoute: (context) => const ActivityLexicalScreen(),
+          activityOperationalRoute: (context) =>
+              const ActivityOperationalScreen(),
+          activityIdeognosticRoute: (context) =>
+              const ActivityIdeognosticScreen(),
+          activityGraphicalRoute: (context) => const ActivityGraphicalScreen(),
+          activityPractognosticRoute: (context) =>
+              const ActivityPractonosticScreen(),
+          activitySequentialRoute: (context) =>
+              const ActivitySequentialScreen(),
+          activityVisualSpatialRoute: (context) =>
+              const ActivityVisualSpatialScreen(),
         },
         debugShowCheckedModeBanner: true,
       ),

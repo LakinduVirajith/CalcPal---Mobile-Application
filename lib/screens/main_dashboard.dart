@@ -48,19 +48,17 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
       final accessToken = prefs.getString('access_token');
       if (accessToken != null) {
         // LOG OUT THE USER BY CALLING THE LOGOUT SERVICE
-        final status = await _userService.logout(accessToken);
+        await _userService.logout(accessToken);
 
-        if (status) {
-          // REMOVE THE STORED ACCESS TOKEN AND REFRESH TOKEN FROM SHARED PREFERENCES
-          await prefs.remove('access_token');
-          await prefs.remove('refresh_token');
+        // REMOVE THE STORED ACCESS TOKEN AND REFRESH TOKEN FROM SHARED PREFERENCES
+        await prefs.remove('access_token');
+        await prefs.remove('refresh_token');
 
-          // NAVIGATE TO THE LOGIN SCREEN AND REMOVE ALL PREVIOUS ROUTES FROM THE STACK
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            loginRoute,
-            (route) => false,
-          );
-        }
+        // NAVIGATE TO THE LOGIN SCREEN AND REMOVE ALL PREVIOUS ROUTES FROM THE STACK
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          loginRoute,
+          (route) => false,
+        );
       }
     }
   }
