@@ -6,11 +6,13 @@ class NormalButton extends StatelessWidget {
     required this.buttonText,
     required this.isLoading,
     required this.onPressed,
+    this.height = 48.0,
   });
 
   final String buttonText;
   final bool isLoading;
   final VoidCallback onPressed;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
@@ -18,15 +20,15 @@ class NormalButton extends StatelessWidget {
       onPressed: isLoading ? null : onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: Theme.of(context).primaryColor,
-        minimumSize: const Size(double.infinity, 48),
+        minimumSize: Size(double.infinity, height),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.0),
         ),
       ),
       child: isLoading
           ? const SizedBox(
-              width: 24,
-              height: 24,
+              width: 24.0,
+              height: 24.0,
               child: CircularProgressIndicator(
                 color: Colors.white,
                 strokeWidth: 2,
@@ -37,7 +39,7 @@ class NormalButton extends StatelessWidget {
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
-                fontSize: 16,
+                fontSize: 16.0,
               ),
             ),
     );

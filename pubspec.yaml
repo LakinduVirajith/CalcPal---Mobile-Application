@@ -143,6 +143,8 @@ flutter:
     - assets/icons/microphone.svg
     - assets/icons/microphone-radio.svg
     - assets/icons/well-done.png
+    - assets/icons/score.svg
+    - assets/icons/age.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
