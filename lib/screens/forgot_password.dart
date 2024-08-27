@@ -194,6 +194,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       DeviceOrientation.portraitDown,
     ]);
 
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        systemNavigationBarColor: Colors.black,
+      ),
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(

@@ -6,7 +6,7 @@ class TextToSpeechService {
   // RETRIEVE THE API KEY FROM ENVIRONMENT VARIABLES
   final String _apiKey = dotenv.env['SPEECH_SERVICE_API_KEY'] ?? '';
   final String _region = 'centralindia';
-  bool _isInitialized = false;
+  static bool _isInitialized = false;
 
   Future<BytesSource> synthesizeSpeech(String text, String languageCode) async {
     // INITIALIZE THE TTS SERVICE

@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'package:calcpal/enums/disorder.dart';
+import 'package:calcpal/enums/disorder_types.dart';
 import 'package:calcpal/models/auth_response.dart';
 import 'package:calcpal/models/sign_up.dart';
 import 'package:calcpal/models/user.dart';
-import 'package:calcpal/services/toast_service.dart';
+import 'package:calcpal/services/common_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
@@ -11,8 +11,8 @@ class UserService {
   // RETRIEVE THE BASE URL FROM ENVIRONMENT VARIABLES
   final String _baseUrl = dotenv.env['USER_BASE_URL'] ?? '';
 
-  // TOAST SERVICE TO SHOW MESSAGES
-  final ToastService _toastService = ToastService();
+  // COMMON SERVICE HANDLE HTTP RESPONSE
+  final CommonService _commonService = CommonService();
 
   // SUBMIT THE SIGN-UP DATA TO THE SERVER FOR REGISTRATION
   Future<bool> signUp(SignUp signUp) async {
@@ -30,17 +30,23 @@ class UserService {
       );
 
       // HANDLE HTTP RESPONSE
-      _handleHttpResponse(
-        response,
-        'Registration successful! Please verify your email before logging in.',
-      );
+      _commonService.handleHttpResponse(
+          response,
+          'Sign-up successful! Please check your email to verify your account before logging in.',
+          {
+            409:
+                'Email already in use. Please log in or use a different email.',
+            403:
+                'Invalid email address. Please provide a valid email to proceed.',
+            500: 'Error sending activation email. Please try again later.'
+          });
 
       return response.statusCode == 200 || response.statusCode == 201;
     } on http.ClientException {
-      _handleNetworkError();
+      _commonService.handleNetworkError();
       return false;
     } catch (e) {
-      _handleException(e);
+      _commonService.handleException(e);
       return false;
     }
   }
@@ -64,10 +70,14 @@ class UserService {
       );
 
       // HANDLE HTTP RESPONSE
-      _handleHttpResponse(
-        response,
-        'Login successful! Welcome back.',
-      );
+      _commonService
+          .handleHttpResponse(response, 'Login successful! Welcome back.', {
+        401: 'Incorrect password. Please check and try again.',
+        403:
+            'Your account is not activated. Please check your email and verify your account.',
+        404: 'No user found with the provided email address.',
+        500: 'Error sending activation email. Please try again later.',
+      });
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         // DECODE JSON RESPONSE
@@ -75,9 +85,9 @@ class UserService {
         return AuthResponse.fromJson(jsonResponse);
       }
     } on http.ClientException {
-      _handleNetworkError();
+      _commonService.handleNetworkError();
     } catch (e) {
-      _handleException(e);
+      _commonService.handleException(e);
     }
     return null;
   }
@@ -96,10 +106,14 @@ class UserService {
       );
 
       // HANDLE HTTP RESPONSE
-      _handleHttpResponse(
-        response,
-        'Authentication was successful using the refresh token.',
-      );
+      _commonService.handleHttpResponse(
+          response, 'Authentication successful. New tokens have been issued.', {
+        400: 'Refresh token is invalid or expired. Please log in again.',
+        403:
+            'Your account is not activated. Please activate your account to proceed.',
+        404:
+            'User account not found. Please check your email or register a new account.',
+      });
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         // DECODE JSON RESPONSE
@@ -107,9 +121,9 @@ class UserService {
         return AuthResponse.fromJson(jsonResponse);
       }
     } on http.ClientException {
-      _handleNetworkError();
+      _commonService.handleNetworkError();
     } catch (e) {
-      _handleException(e);
+      _commonService.handleException(e);
     }
     return null;
   }
@@ -128,18 +142,18 @@ class UserService {
       );
 
       // HANDLE HTTP RESPONSE
-      _handleHttpResponse(
-        response,
-        'Logout successful. You have been logged out.',
-      );
+      _commonService.handleHttpResponse(response,
+          'You\'ve been successfully logged out. See you next time!', {
+        400: 'Invalid logout request',
+      });
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       }
     } on http.ClientException {
-      _handleNetworkError();
+      _commonService.handleNetworkError();
     } catch (e) {
-      _handleException(e);
+      _commonService.handleException(e);
     }
     return false;
   }
@@ -157,18 +171,22 @@ class UserService {
       );
 
       // HANDLE HTTP RESPONSE
-      _handleHttpResponse(
-        response,
-        'Forgot password email sent successfully',
-      );
+      _commonService.handleHttpResponse(
+          response,
+          'A password reset email has been sent. Please check your inbox for further instructions.',
+          {
+            404: 'No account found with the provided email.',
+            500:
+                'An error occurred while sending the reset email. Please try again.',
+          });
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       }
     } on http.ClientException {
-      _handleNetworkError();
+      _commonService.handleNetworkError();
     } catch (e) {
-      _handleException(e);
+      _commonService.handleException(e);
     }
     return false;
   }
@@ -188,18 +206,20 @@ class UserService {
       );
 
       // HANDLE HTTP RESPONSE
-      _handleHttpResponse(
-        response,
-        'User OTP validated successfully',
-      );
+      _commonService
+          .handleHttpResponse(response, 'OTP validated successfully.', {
+        400: 'The OTP provided is incorrect. Please try again.',
+        404: 'No account found with the provided email.',
+        410: 'The OTP has expired. Please request a new one.',
+      });
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       }
     } on http.ClientException {
-      _handleNetworkError();
+      _commonService.handleNetworkError();
     } catch (e) {
-      _handleException(e);
+      _commonService.handleException(e);
     }
     return false;
   }
@@ -223,24 +243,25 @@ class UserService {
       );
 
       // HANDLE HTTP RESPONSE
-      _handleHttpResponse(
-        response,
-        'Password reset successfully',
-      );
+      _commonService.handleHttpResponse(
+          response, 'Your password has been reset successfully.', {
+        404: 'No account found with the provided email.',
+      });
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       }
     } on http.ClientException {
-      _handleNetworkError();
+      _commonService.handleNetworkError();
     } catch (e) {
-      _handleException(e);
+      _commonService.handleException(e);
     }
     return false;
   }
 
   // UPDATES THE DISORDER TYPE FOR THE USER
-  Future<bool> updateDisorderType(Disorder disorder, String accessToken) async {
+  Future<bool> updateDisorderType(
+      DisorderTypes disorder, String accessToken) async {
     final url =
         Uri.parse('$_baseUrl/user/update/disorder?disorder=${disorder.name}');
 
@@ -253,19 +274,13 @@ class UserService {
         },
       );
 
-      // HANDLE HTTP RESPONSE
-      _handleHttpResponse(
-        response,
-        'Disorder types updated successfully',
-      );
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       }
     } on http.ClientException {
-      _handleNetworkError();
+      _commonService.handleNetworkError();
     } catch (e) {
-      _handleException(e);
+      _commonService.handleException(e);
     }
     return false;
   }
@@ -289,39 +304,10 @@ class UserService {
         return User.fromJson(jsonResponse);
       }
     } on http.ClientException {
-      _handleNetworkError();
+      _commonService.handleNetworkError();
     } catch (e) {
-      _handleException(e);
+      _commonService.handleException(e);
     }
     return null;
-  }
-
-  // HANDLE HTTP RESPONSE
-  void _handleHttpResponse(http.Response response, String successMessage) {
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      _toastService.successToast(successMessage);
-    } else {
-      if (response.body.isNotEmpty) {
-        _toastService.errorToast(response.body);
-      } else if (response.body.isEmpty) {
-        _toastService.errorToast(
-          'An unexpected error occurred. Please try again later.',
-        );
-      }
-    }
-  }
-
-  // HANDLE NETWORK ERRORS
-  void _handleNetworkError() {
-    _toastService.errorToast(
-      'Network error occurred. Please check your connection.',
-    );
-  }
-
-  // HANDLE OTHER EXCEPTIONS
-  void _handleException(dynamic e) {
-    _toastService.errorToast(
-      'An unexpected error occurred: ${e.toString()}',
-    );
   }
 }

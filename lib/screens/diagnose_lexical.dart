@@ -1,5 +1,7 @@
+import 'dart:convert';
+
 import 'package:calcpal/constants/routes.dart';
-import 'package:calcpal/enums/disorder.dart';
+import 'package:calcpal/enums/disorder_types.dart';
 import 'package:calcpal/models/diagnosis.dart';
 import 'package:calcpal/models/diagnosis_result.dart';
 import 'package:calcpal/models/flask_diagnosis_result.dart';
@@ -37,8 +39,6 @@ class DiagnoseLexicalScreen extends StatefulWidget {
 class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
   // FUTURE THAT HOLDS THE STATE OF THE QUESTION LOADING PROCESS
   late Future<void> _questionFuture;
-  // VARIABLE TO STORE THE LAST RECOGNIZED WORD TO AVOID DUPLICATES
-  String _previousRecognizedWord = '';
   // COUNTER TO TRACK THE NUMBER OF VOICE ATTEMPTS
   int _voiceAttempt = 1;
 
@@ -80,6 +80,8 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
           DiagnoseLexicalScreen.question = question.question;
           DiagnoseLexicalScreen.answers = question.answers;
         });
+        // DECODE BASE64 ENCODED ANSWERS
+        await _decodeAnswers(DiagnoseLexicalScreen.answers);
         // AWAIT THE ASYNCHRONOUS OPERATION TO CAPTURE THE USER'S VOICE
         _voiceAttempt = 1;
         await _captureVoice();
@@ -92,7 +94,22 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
         setState(() => DiagnoseLexicalScreen.isErrorOccurred = true);
       }
     } catch (e) {
+      developer.log(e.toString());
       setState(() => DiagnoseLexicalScreen.isErrorOccurred = true);
+    }
+  }
+
+  // FUNCTION TO DECODE BASE64 ENCODED ANSWERS
+  Future _decodeAnswers(List<String> characters) async {
+    try {
+      setState(() {
+        DiagnoseLexicalScreen.answers[2] =
+            utf8.decode(base64Decode(characters[2]));
+        DiagnoseLexicalScreen.answers[3] =
+            utf8.decode(base64Decode(characters[3]));
+      });
+    } catch (e) {
+      developer.log('Error decoding answers: ${e.toString()}');
     }
   }
 
@@ -127,44 +144,39 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
 
       // START LISTENING FOR SPEECH INPUT
       _speechService.startListening(
-        localeId: localeId,
-        onResult: (recognizedWords) async {
-          String recognizedWord = recognizedWords.split(' ').first;
+          localeId: localeId,
+          onResult: (recognizedWords) async {
+            if (recognizedWords.isNotEmpty) {
+              developer.log('recognizedWord: $recognizedWords');
 
-          // STOP LISTENING
-          await _speechService.stopListening();
-          setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
+              // COMPARE RECOGNIZED WORDS WITH THE EXPECTED
+              bool isCorrectAnswer = DiagnoseLexicalScreen.answers.any(
+                  (answer) =>
+                      recognizedWords.toLowerCase().trim() ==
+                      answer.toLowerCase().trim());
 
-          if (recognizedWord.isNotEmpty &&
-              recognizedWord != _previousRecognizedWord) {
-            // UPDATE THE PREVIOUS RECOGNIZED WORD
-            _previousRecognizedWord = recognizedWord;
-
-            // COMPARE RECOGNIZED WORDS WITH THE EXPECTED
-            bool isCorrectAnswer = DiagnoseLexicalScreen.answers.any((answer) =>
-                recognizedWord.toLowerCase().trim() ==
-                answer.toLowerCase().trim());
-
-            // HANDLE RESPONSE BASED ON ATTEMPT
-            if (_voiceAttempt == 1 && !isCorrectAnswer) {
-              _toastService.errorToast(
-                  "That didn't seem right. Please try saying it again.");
-              _voiceAttempt = 2;
-              await _captureVoice(); // RETRY ON FAILURE
-            } else {
-              DiagnoseLexicalScreen.userResponses.add(isCorrectAnswer);
-
-              // CHECK IF THERE ARE MORE QUESTIONS LEFT
-              if (DiagnoseLexicalScreen.currentQuestionNumber < 5) {
-                DiagnoseLexicalScreen.currentQuestionNumber++;
-                await _loadQuestion();
+              // HANDLE RESPONSE BASED ON ATTEMPT
+              if (_voiceAttempt == 1 && !isCorrectAnswer) {
+                _toastService.errorToast(
+                    "That didn't seem right. Please try saying it again.");
+                _voiceAttempt = 2;
+                await _captureVoice(); // RETRY ON FAILURE
               } else {
-                await _submitResultsToMLModel();
+                DiagnoseLexicalScreen.userResponses.add(isCorrectAnswer);
+
+                // CHECK IF THERE ARE MORE QUESTIONS LEFT
+                if (DiagnoseLexicalScreen.currentQuestionNumber < 5) {
+                  DiagnoseLexicalScreen.currentQuestionNumber++;
+                  await _loadQuestion();
+                } else {
+                  await _submitResultsToMLModel();
+                }
               }
             }
-          }
-        },
-      );
+          },
+          onDone: () async {
+            setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
+          });
     } else {
       _toastService.errorToast(
           'Failed to initialize the voice recognition service. Please try again.');
@@ -230,7 +242,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
       diagnoseStatus = diagnosis.prediction!;
     } else {
       _handleErrorAndRedirect(
-          'Something went wrong. Please log in to your account.');
+          'Unable to fetch diagnosis results. Please log in to your account.');
       return;
     }
 
@@ -252,7 +264,12 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
     // UPDATE USER DISORDER TYPE IN THE SERVICE
     if (diagnoseStatus) {
       updateStatus = await _userService.updateDisorderType(
-        Disorder.lexical,
+        DisorderTypes.lexical,
+        accessToken,
+      );
+    } else {
+      updateStatus = await _userService.updateDisorderType(
+        DisorderTypes.noLexical,
         accessToken,
       );
     }
@@ -294,8 +311,18 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
       DeviceOrientation.landscapeRight,
     ]);
 
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        systemNavigationBarColor: Colors.black,
+      ),
+    );
+
     return Scaffold(
       body: SafeArea(
+        right: false,
+        left: false,
         child: FutureBuilder(
           future: _questionFuture,
           builder: (BuildContext context, AsyncSnapshot<void> snapshot) {

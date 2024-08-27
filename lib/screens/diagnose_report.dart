@@ -1,5 +1,5 @@
 import 'package:calcpal/constants/routes.dart';
-import 'package:calcpal/enums/disorder.dart';
+import 'package:calcpal/enums/disorder_types.dart';
 import 'package:calcpal/models/user.dart';
 import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/services/user_service.dart';
@@ -61,22 +61,25 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
       case 'quiz1':
         diagnoseType1 = 'Verbal';
         diagnoseType2 = 'Lexical';
-        await _processBaseType(Disorder.verbal, Disorder.lexical);
+        await _processBaseType(DisorderTypes.verbal, DisorderTypes.lexical);
         break;
       case 'quiz2':
         diagnoseType1 = 'Operational';
         diagnoseType2 = 'Ideognostic';
-        await _processBaseType(Disorder.operational, Disorder.ideognostic);
+        await _processBaseType(
+            DisorderTypes.operational, DisorderTypes.ideognostic);
         break;
       case 'quiz3':
         diagnoseType1 = 'Graphical';
         diagnoseType2 = 'Practognostic';
-        await _processBaseType(Disorder.graphical, Disorder.practognostic);
+        await _processBaseType(
+            DisorderTypes.graphical, DisorderTypes.practognostic);
         break;
       case 'quiz4':
         diagnoseType1 = 'Visual Spatial';
         diagnoseType2 = 'Sequential';
-        await _processBaseType(Disorder.visualSpatial, Disorder.sequential);
+        await _processBaseType(
+            DisorderTypes.visualSpatial, DisorderTypes.sequential);
         break;
       default:
         // INVALID QUIZ TYPE - POP THE CURRENT ROUTE
@@ -85,7 +88,8 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
   }
 
   // PROCESS THE BASED ON THE GIVEN DISORDER TYPES
-  Future<void> _processBaseType(Disorder type1, Disorder type2) async {
+  Future<void> _processBaseType(
+      DisorderTypes type1, DisorderTypes type2) async {
     try {
       // GET SHARED PREFERENCES INSTANCE
       final prefs = await SharedPreferences.getInstance();
@@ -158,6 +162,8 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
 
     return Scaffold(
       body: SafeArea(
+        left: false,
+        right: false,
         child: FutureBuilder(
           future: _resultFuture,
           builder: (BuildContext context, AsyncSnapshot<void> snapshot) {

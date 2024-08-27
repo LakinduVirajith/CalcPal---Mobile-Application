@@ -1,6 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:calcpal/constants/routes.dart';
-import 'package:calcpal/enums/disorder.dart';
+import 'package:calcpal/enums/disorder_types.dart';
 import 'package:calcpal/models/diagnosis.dart';
 import 'package:calcpal/models/diagnosis_result.dart';
 import 'package:calcpal/models/flask_diagnosis_result.dart';
@@ -16,6 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:developer' as developer;
 
 class DiagnoseVerbalScreen extends StatefulWidget {
   const DiagnoseVerbalScreen({super.key});
@@ -112,6 +113,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
         });
       }
     } catch (e) {
+      developer.log(e.toString());
       setState(() {
         DiagnoseVerbalScreen.isErrorOccurred = true;
         DiagnoseVerbalScreen.isDataLoading = false;
@@ -210,7 +212,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
       diagnoseStatus = diagnosis.prediction!;
     } else {
       _handleErrorAndRedirect(
-          'Something went wrong. Please log in to your account.');
+          'Unable to fetch diagnosis results. Please log in to your account.');
       return;
     }
 
@@ -232,7 +234,12 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
     // UPDATE USER DISORDER TYPE IN THE SERVICE
     if (diagnoseStatus) {
       updateStatus = await _userService.updateDisorderType(
-        Disorder.verbal,
+        DisorderTypes.verbal,
+        accessToken,
+      );
+    } else {
+      updateStatus = await _userService.updateDisorderType(
+        DisorderTypes.noVerbal,
         accessToken,
       );
     }
@@ -271,8 +278,18 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
       DeviceOrientation.landscapeRight,
     ]);
 
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        systemNavigationBarColor: Colors.black,
+      ),
+    );
+
     return Scaffold(
       body: SafeArea(
+        right: false,
+        left: false,
         child: FutureBuilder(
           future: _questionFuture,
           builder: (BuildContext context, AsyncSnapshot<void> snapshot) {

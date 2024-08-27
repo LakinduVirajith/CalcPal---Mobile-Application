@@ -81,6 +81,8 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
 
     return Scaffold(
       body: SafeArea(
+        right: false,
+        left: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
             return Stack(

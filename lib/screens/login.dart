@@ -39,6 +39,12 @@ class _LoginScreenState extends State<LoginScreen> {
     // DISPOSE CONTROLLERS TO FREE UP RESOURCES
     _userNameController.dispose();
     _passwordController.dispose();
+
+    // FORCE LANDSCAPE ORIENTATION
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     super.dispose();
   }
 
@@ -91,8 +97,20 @@ class _LoginScreenState extends State<LoginScreen> {
       DeviceOrientation.portraitDown,
     ]);
 
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
+
     return Scaffold(
       body: SafeArea(
+        top: false,
+        bottom: false,
         child: Stack(
           children: [
             Container(
