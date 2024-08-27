@@ -1,4 +1,8 @@
+import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/models/update_user.dart';
+import 'package:calcpal/models/user.dart';
 import 'package:calcpal/services/toast_service.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/widgets/date_input.dart';
 import 'package:calcpal/widgets/normal_button.dart';
 import 'package:calcpal/widgets/normal_input.dart';
@@ -8,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'dart:developer' as developer;
 
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -30,6 +35,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _iqScoreController = TextEditingController();
 
+  // INITIALIZING THE USER SERVICE
+  final UserService _userService = UserService();
   // TOAST SERVICE TO SHOW MESSAGES
   final ToastService _toastService = ToastService();
 
@@ -44,13 +51,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // METHOD TO LOAD INITIAL DETAILS
   Future<void> _loadDetails() async {
-    _userNameController.text = 'Lakindu';
-    _emailController.text = 'lakinduvirajith@gmail.com';
-    _birthdayController.text = '200-10-31';
-    _ageController.text = '24';
-    _iqScoreController.text = '4';
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
 
-    // TODO: IMPLEMENT LOAD LOGIC HERE
+    if (accessToken != null) {
+      User? user = await _userService.getUser(accessToken);
+
+      if (user != null) {
+        _userNameController.text = user.name;
+        _emailController.text = user.email;
+        _birthdayController.text = user.birthday;
+        _ageController.text = user.age.toString();
+        if (user.iqScore != null) {
+          _iqScoreController.text = user.iqScore.toString();
+        }
+      } else {
+        _handleErrorAndRedirect(
+            'User information not available. Please log in.');
+        return;
+      }
+    } else {
+      _handleErrorAndRedirect('Access token not available. Please log in.');
+      return;
+    }
   }
 
   // HANDLER FOR THE UPDATE PROCESS
@@ -66,7 +89,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       } else if (birthday.isEmpty) {
         _toastService.errorToast("Please select your birthday.");
       } else {
-        // TODO: IMPLEMENT UPDATE LOGIC HERE
+        final prefs = await SharedPreferences.getInstance();
+        final accessToken = prefs.getString('access_token');
+
+        if (accessToken != null) {
+          _userService.updateUser(
+            accessToken,
+            UpdateUser(name: username, birthday: birthday),
+          );
+        } else {
+          _handleErrorAndRedirect('Access token not available. Please log in.');
+          return;
+        }
       }
     } catch (e) {
       developer.log(e.toString());
@@ -86,6 +120,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // FUNCTION TO SHOW ERROR TOAST WHEN ATTEMPTING TO EDIT A LOCKED FIELD
   Future<void> _notEditableError() async {
     _toastService.warningToast("This field cannot be edited.");
+  }
+
+  // FUNCTION TO HANDLE ERRORS AND REDIRECT TO LOGIN PAGE
+  void _handleErrorAndRedirect(String message) {
+    _toastService.warningToast(message);
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      loginRoute,
+      (route) => false,
+    );
   }
 
   @override
