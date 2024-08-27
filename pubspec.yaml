@@ -141,7 +141,7 @@ flutter:
     - assets/icons/play-button.svg
     - assets/icons/pause-button.svg
     - assets/icons/microphone.svg
-    - assets/icons/microphone-radio.svg
+    - assets/icons/sound-wave.gif
     - assets/icons/well-done.png
     - assets/icons/score.svg
     - assets/icons/age.svg

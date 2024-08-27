@@ -455,16 +455,22 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
                                   child: Container(
                                     height: 60,
                                     width: 60,
-                                    decoration: const BoxDecoration(
-                                      color: Colors.white,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          DiagnoseLexicalScreen.isMicrophoneOn
+                                              ? Colors.black
+                                              : Colors.white,
                                       shape: BoxShape.circle,
                                     ),
-                                    child: SvgPicture.asset(
-                                      DiagnoseLexicalScreen.isMicrophoneOn
-                                          ? 'assets/icons/microphone-radio.svg'
-                                          : 'assets/icons/microphone.svg',
-                                      semanticsLabel: 'Microphone Icon',
-                                    ),
+                                    child: DiagnoseLexicalScreen.isMicrophoneOn
+                                        ? Image.asset(
+                                            'assets/icons/sound-wave.gif',
+                                            fit: BoxFit.contain,
+                                          )
+                                        : SvgPicture.asset(
+                                            'assets/icons/microphone.svg',
+                                            semanticsLabel: 'microphone icon',
+                                          ),
                                   ),
                                 ),
                               ),
