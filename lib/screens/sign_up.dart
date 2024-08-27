@@ -85,8 +85,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
       DeviceOrientation.portraitDown,
     ]);
 
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
+
     return Scaffold(
       body: SafeArea(
+        top: false,
+        bottom: false,
         child: Stack(
           children: [
             Container(

@@ -1,8 +1,14 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/enums/disorder_types.dart';
+import 'package:calcpal/models/diagnosis.dart';
 import 'package:calcpal/models/diagnosis_result.dart';
+import 'package:calcpal/models/flask_diagnosis_result.dart';
+import 'package:calcpal/models/user.dart';
 import 'package:calcpal/services/common_service.dart';
 import 'package:calcpal/services/text_to_speech_service.dart';
+import 'package:calcpal/services/toast_service.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/services/verbal_service.dart';
 import 'package:calcpal/widgets/answer_box.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:developer' as developer;
 
 class DiagnoseVerbalScreen extends StatefulWidget {
   const DiagnoseVerbalScreen({super.key});
@@ -37,6 +44,10 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
 
   // INITIALIZING THE VERBAL SERVICE
   final VerbalService _questionService = VerbalService();
+  // INITIALIZING THE USER SERVICE
+  final UserService _userService = UserService();
+  // TOAST SERVICE TO SHOW MESSAGES
+  final ToastService _toastService = ToastService();
   // STOPWATCH INSTANCE FOR TIMING
   final Stopwatch _stopwatch = Stopwatch();
 
@@ -88,6 +99,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
             DiagnoseVerbalScreen.selectedLanguage,
           ),
         );
+
         await _toggleAudioPlayback();
 
         // START THE STOPWATCH FOR THE FIRST QUESTION ONLY
@@ -101,10 +113,13 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
         });
       }
     } catch (e) {
+      developer.log(e.toString());
       setState(() {
         DiagnoseVerbalScreen.isErrorOccurred = true;
         DiagnoseVerbalScreen.isDataLoading = false;
       });
+    } finally {
+      setState(() => DiagnoseVerbalScreen.isDataLoading = false);
     }
   }
 
@@ -147,8 +162,6 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
     // STOP THE TIMER AND RECORD ELAPSED TIME IN SECONDS
     _stopwatch.stop();
     final elapsedTimeInSeconds = _stopwatch.elapsedMilliseconds / 1000;
-
-    // ROUND TO THE NEAREST WHOLE SECOND
     final roundedElapsedTimeInSeconds = elapsedTimeInSeconds.round();
 
     // CALCULATE THE TOTAL SCORE BASED ON TRUE RESPONSES
@@ -157,11 +170,56 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
 
     // GET THE INSTANCE OF SHARED PREFERENCES
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
 
-    // SUBMIT THE DIAGNOSIS RESULT TO THE SERVICE
-    final status = await _questionService.addDiagnosisResult(
+    // CHECK IF ACCESS TOKEN IS AVAILABLE
+    if (accessToken == null) {
+      _handleErrorAndRedirect('Access token not available. Please log in.');
+      return;
+    }
+
+    // FETCH USER INFO
+    User? user = await _userService.getUser(accessToken);
+
+    // CHECK IF USER AND IQ SCORE ARE AVAILABLE
+    if (user == null || user.iqScore == null) {
+      _handleErrorAndRedirect(
+          'User information or IQ score not available. Please log in.');
+      return;
+    }
+
+    // VARIABLES TO STORE DIAGNOSIS AND UPDATE STATUS
+    late bool diagnoseStatus;
+    late bool status;
+    late bool updateStatus;
+
+    // PREPARE DIAGNOSIS DATA AND FETCH DIAGNOSIS RESULT FROM THE SERVICE
+    FlaskDiagnosisResult? diagnosis = await _questionService.getDiagnosisResult(
+      Diagnosis(
+        age: user.age,
+        iq: user.iqScore!,
+        q1: DiagnoseVerbalScreen.userResponses[0] ? 1 : 0,
+        q2: DiagnoseVerbalScreen.userResponses[1] ? 1 : 0,
+        q3: DiagnoseVerbalScreen.userResponses[2] ? 1 : 0,
+        q4: DiagnoseVerbalScreen.userResponses[3] ? 1 : 0,
+        q5: DiagnoseVerbalScreen.userResponses[4] ? 1 : 0,
+        seconds: roundedElapsedTimeInSeconds,
+      ),
+    );
+
+    // CHECK IF DIAGNOSIS RESULT IS VALID AND GET DIAGNOSE STATUS
+    if (diagnosis != null && diagnosis.prediction != null) {
+      diagnoseStatus = diagnosis.prediction!;
+    } else {
+      _handleErrorAndRedirect(
+          'Unable to fetch diagnosis results. Please log in to your account.');
+      return;
+    }
+
+    // UPDATE USER DISORDER STATUS IN THE DATABASE
+    status = await _questionService.addDiagnosisResult(
       DiagnosisResult(
-        userEmail: prefs.getString('user-email') ?? '',
+        userEmail: user.email,
         timeSeconds: roundedElapsedTimeInSeconds,
         q1: DiagnoseVerbalScreen.userResponses[0],
         q2: DiagnoseVerbalScreen.userResponses[1],
@@ -169,24 +227,46 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
         q4: DiagnoseVerbalScreen.userResponses[3],
         q5: DiagnoseVerbalScreen.userResponses[4],
         totalScore: totalScore.toString(),
-        label: false,
+        label: diagnoseStatus,
       ),
     );
 
-    // DEBUGGING INFORMATION
-    print(DiagnoseVerbalScreen.userResponses);
-    print(roundedElapsedTimeInSeconds);
-    print(status);
+    // UPDATE USER DISORDER TYPE IN THE SERVICE
+    if (diagnoseStatus) {
+      updateStatus = await _userService.updateDisorderType(
+        DisorderTypes.verbal,
+        accessToken,
+      );
+    } else {
+      updateStatus = await _userService.updateDisorderType(
+        DisorderTypes.noVerbal,
+        accessToken,
+      );
+    }
 
-    // NAVIGATE TO THE RESULT PAGE AND PASS THE TOTAL SCORE AND ELAPSED TIME
+    // NAVIGATE BASED ON THE STATUS OF UPDATES
+    if (status && updateStatus) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        diagnoseResultRoute,
+        (route) => false,
+        arguments: {
+          'diagnoseType': 'verbal',
+          'totalScore': totalScore,
+          'elapsedTime': roundedElapsedTimeInSeconds,
+        },
+      );
+    } else {
+      _handleErrorAndRedirect(
+          'Something went wrong. Please log in to your account.');
+    }
+  }
+
+  // FUNCTION TO HANDLE ERRORS AND REDIRECT TO LOGIN PAGE
+  void _handleErrorAndRedirect(String message) {
+    _toastService.warningToast(message);
     Navigator.of(context).pushNamedAndRemoveUntil(
-      diagnoseResultRoute,
+      loginRoute,
       (route) => false,
-      arguments: {
-        'diagnoseType': 'verbal',
-        'totalScore': totalScore,
-        'elapsedTime': roundedElapsedTimeInSeconds,
-      },
     );
   }
 
@@ -198,8 +278,18 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
       DeviceOrientation.landscapeRight,
     ]);
 
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        systemNavigationBarColor: Colors.black,
+      ),
+    );
+
     return Scaffold(
       body: SafeArea(
+        right: false,
+        left: false,
         child: FutureBuilder(
           future: _questionFuture,
           builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
@@ -257,10 +347,10 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                                                           .selectedLanguage ==
                                                       'Tamil'
                                                   ? 'கேள்வியை ஏற்ற முடியவில்லை. மீண்டும் முயற்சிக்கவும்.'
-                                                  : 'Listen and answer the question',
+                                                  : 'Failed to load question. Please try again.',
                                       style: const TextStyle(
                                           color: Colors.white,
-                                          fontSize: 18,
+                                          fontSize: 20,
                                           fontFamily: 'Roboto',
                                           fontWeight: FontWeight.w400),
                                     ),
@@ -283,7 +373,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                                                     : 'Listen and answer the question',
                                         style: const TextStyle(
                                             color: Colors.white,
-                                            fontSize: 24,
+                                            fontSize: 20,
                                             fontFamily: 'Roboto',
                                             fontWeight: FontWeight.w400),
                                       ),
@@ -340,7 +430,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                                                 width: 60.0,
                                                 height: 60,
                                                 value: answer,
-                                                size: 32.0,
+                                                size: 24.0,
                                               ),
                                             );
                                           }).toList(),

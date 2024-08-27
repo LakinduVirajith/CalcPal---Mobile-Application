@@ -105,6 +105,8 @@ class _DiagnoseResultScreenState extends State<DiagnoseResultScreen> {
 
     return Scaffold(
       body: SafeArea(
+        left: false,
+        right: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
             return Stack(

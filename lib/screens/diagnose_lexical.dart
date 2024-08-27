@@ -1,15 +1,22 @@
+import 'dart:convert';
+
 import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/enums/disorder_types.dart';
+import 'package:calcpal/models/diagnosis.dart';
 import 'package:calcpal/models/diagnosis_result.dart';
+import 'package:calcpal/models/flask_diagnosis_result.dart';
+import 'package:calcpal/models/user.dart';
 import 'package:calcpal/services/common_service.dart';
 import 'package:calcpal/services/lexical_service.dart';
+import 'package:calcpal/services/speech_to_text_service.dart';
 import 'package:calcpal/services/toast_service.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/widgets/answer_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:speech_to_text/speech_to_text.dart';
 import 'dart:developer' as developer;
 
 class DiagnoseLexicalScreen extends StatefulWidget {
@@ -32,14 +39,18 @@ class DiagnoseLexicalScreen extends StatefulWidget {
 class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
   // FUTURE THAT HOLDS THE STATE OF THE QUESTION LOADING PROCESS
   late Future<void> _questionFuture;
+  // COUNTER TO TRACK THE NUMBER OF VOICE ATTEMPTS
+  int _voiceAttempt = 1;
 
   // INITIALIZING THE VERBAL SERVICE
   final LexicalService _questionService = LexicalService();
+  // INITIALIZING THE USER SERVICE
+  final UserService _userService = UserService();
   // STOPWATCH INSTANCE FOR TIMING
   final Stopwatch _stopwatch = Stopwatch();
 
   // INITIALIZING SPEECH-TO-TEXT SERVICE
-  final SpeechToText _speechToText = SpeechToText();
+  final SpeechToTextService _speechService = SpeechToTextService();
   // TOAST SERVICE TO SHOW MESSAGES
   final ToastService _toastService = ToastService();
 
@@ -69,7 +80,10 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
           DiagnoseLexicalScreen.question = question.question;
           DiagnoseLexicalScreen.answers = question.answers;
         });
+        // DECODE BASE64 ENCODED ANSWERS
+        await _decodeAnswers(DiagnoseLexicalScreen.answers);
         // AWAIT THE ASYNCHRONOUS OPERATION TO CAPTURE THE USER'S VOICE
+        _voiceAttempt = 1;
         await _captureVoice();
 
         // START THE STOPWATCH FOR THE FIRST QUESTION ONLY
@@ -80,75 +94,93 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
         setState(() => DiagnoseLexicalScreen.isErrorOccurred = true);
       }
     } catch (e) {
+      developer.log(e.toString());
       setState(() => DiagnoseLexicalScreen.isErrorOccurred = true);
+    }
+  }
+
+  // FUNCTION TO DECODE BASE64 ENCODED ANSWERS
+  Future _decodeAnswers(List<String> characters) async {
+    try {
+      setState(() {
+        DiagnoseLexicalScreen.answers[2] =
+            utf8.decode(base64Decode(characters[2]));
+        DiagnoseLexicalScreen.answers[3] =
+            utf8.decode(base64Decode(characters[3]));
+      });
+    } catch (e) {
+      developer.log('Error decoding answers: ${e.toString()}');
     }
   }
 
   // FUNCTION TO HANDLE VOICE CAPTURE
   Future<void> _captureVoice() async {
+    // CHECK AND REQUEST MICROPHONE PERMISSION
+    bool isPermissionGranted =
+        await _speechService.checkAndRequestMicrophonePermission();
+    if (!isPermissionGranted) {
+      _toastService.errorToast('To proceed, please allow microphone access.');
+      return;
+    }
+
     // TOGGLE MICROPHONE STATE
     setState(() => DiagnoseLexicalScreen.isMicrophoneOn = true);
 
-    // CHECK IF MICROPHONE IS TURNED ON
-    if (DiagnoseLexicalScreen.isMicrophoneOn) {
-      // INITIALIZE THE SPEECH TO TEXT SERVICE
-      bool available = await _speechToText.initialize(
-        onError: (error) {
-          setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
-          _toastService.infoToast("No speech detected. Let's try that again!");
-          developer.log('Error: $error');
-        },
-        onStatus: (status) => developer.log('Status: $status'),
+    // INITIALIZE THE SPEECH TO TEXT SERVICE
+    bool isInitialized = await _speechService.initializeSpeechToText(
+      onError: (error) {
+        setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
+        _toastService.infoToast("No speech detected. Let's try that again!");
+        developer.log('Error: $error');
+      },
+      onStatus: (status) => developer.log('Status: $status'),
+    );
+
+    if (isInitialized) {
+      // SET LOCALEID BASED ON SELECTED LANGUAGE
+      String localeId = CommonService.getLanguageCode(
+        DiagnoseLexicalScreen.selectedLanguage,
       );
 
-      if (available) {
-        // SET LOCALEID BASED ON SELECTED LANGUAGE
-        String localeId = CommonService.getLanguageCode(
-          DiagnoseLexicalScreen.selectedLanguage,
-        );
-
-        // START LISTENING FOR SPEECH INPUT
-        _speechToText.listen(
+      // START LISTENING FOR SPEECH INPUT
+      _speechService.startListening(
           localeId: localeId,
-          onResult: (result) {
-            // LOG RECOGNIZED WORDS
-            developer.log(result.recognizedWords);
+          onResult: (recognizedWords) async {
+            if (recognizedWords.isNotEmpty) {
+              developer.log('recognizedWord: $recognizedWords');
 
-            // COMPARE RECOGNIZED WORDS WITH THE EXPECTED QUESTION OR ANY OF THE POSSIBLE ANSWERS (CASE-INSENSITIVE)
-            if (result.recognizedWords
-                    .toLowerCase()
-                    .contains(DiagnoseLexicalScreen.question.toLowerCase()) ||
-                DiagnoseLexicalScreen.answers.any((answer) => result
-                    .recognizedWords
-                    .toLowerCase()
-                    .contains(answer.toLowerCase()))) {
-              DiagnoseLexicalScreen.userResponses.add(true);
-            } else {
-              DiagnoseLexicalScreen.userResponses.add(false);
+              // COMPARE RECOGNIZED WORDS WITH THE EXPECTED
+              bool isCorrectAnswer = DiagnoseLexicalScreen.answers.any(
+                  (answer) =>
+                      recognizedWords.toLowerCase().trim() ==
+                      answer.toLowerCase().trim());
+
+              // HANDLE RESPONSE BASED ON ATTEMPT
+              if (_voiceAttempt == 1 && !isCorrectAnswer) {
+                _toastService.errorToast(
+                    "That didn't seem right. Please try saying it again.");
+                _voiceAttempt = 2;
+                await _captureVoice(); // RETRY ON FAILURE
+              } else {
+                DiagnoseLexicalScreen.userResponses.add(isCorrectAnswer);
+
+                // CHECK IF THERE ARE MORE QUESTIONS LEFT
+                if (DiagnoseLexicalScreen.currentQuestionNumber < 5) {
+                  DiagnoseLexicalScreen.currentQuestionNumber++;
+                  await _loadQuestion();
+                } else {
+                  await _submitResultsToMLModel();
+                }
+              }
             }
-
-            // CHECK IF THERE ARE MORE QUESTIONS LEFT
-            if (DiagnoseLexicalScreen.currentQuestionNumber != 5) {
-              DiagnoseLexicalScreen.currentQuestionNumber++;
-              _loadQuestion();
-            } else {
-              _submitResultsToMLModel();
-            }
-
-            // STOP LISTENING AFTER PROCESSING THE RESULT
-            _speechToText.stop().then((_) {
-              // TOGGLE MICROPHONE STATE TO FALSE AFTER STOPPING
-              setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
-            });
           },
-        );
-      } else {
-        developer.log('The user has denied the use of speech recognition');
-        _toastService
-            .errorToast('You must allow microphone access to continue.');
-        // ENSURE MICROPHONE STATE IS TURNED OFF IF INITIALIZATION FAILS
-        setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
-      }
+          onDone: () async {
+            setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
+          });
+    } else {
+      _toastService.errorToast(
+          'Failed to initialize the voice recognition service. Please try again.');
+      setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
     }
   }
 
@@ -168,11 +200,56 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
 
     // GET THE INSTANCE OF SHARED PREFERENCES
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
 
-    // SUBMIT THE DIAGNOSIS RESULT TO THE SERVICE
-    final status = await _questionService.addDiagnosisResult(
+    // CHECK IF ACCESS TOKEN IS AVAILABLE
+    if (accessToken == null) {
+      _handleErrorAndRedirect('Access token not available. Please log in.');
+      return;
+    }
+
+    // FETCH USER INFO
+    User? user = await _userService.getUser(accessToken);
+
+    // CHECK IF USER AND IQ SCORE ARE AVAILABLE
+    if (user == null || user.iqScore == null) {
+      _handleErrorAndRedirect(
+          'User information or IQ score not available. Please log in.');
+      return;
+    }
+
+    // VARIABLES TO STORE DIAGNOSIS AND UPDATE STATUS
+    late bool diagnoseStatus;
+    late bool status;
+    late bool updateStatus;
+
+    // PREPARE DIAGNOSIS DATA AND FETCH DIAGNOSIS RESULT FROM THE SERVICE
+    FlaskDiagnosisResult? diagnosis = await _questionService.getDiagnosisResult(
+      Diagnosis(
+        age: user.age,
+        iq: user.iqScore!,
+        q1: DiagnoseLexicalScreen.userResponses[0] ? 1 : 0,
+        q2: DiagnoseLexicalScreen.userResponses[1] ? 1 : 0,
+        q3: DiagnoseLexicalScreen.userResponses[2] ? 1 : 0,
+        q4: DiagnoseLexicalScreen.userResponses[3] ? 1 : 0,
+        q5: DiagnoseLexicalScreen.userResponses[4] ? 1 : 0,
+        seconds: roundedElapsedTimeInSeconds,
+      ),
+    );
+
+    // CHECK IF DIAGNOSIS RESULT IS VALID AND GET DIAGNOSE STATUS
+    if (diagnosis != null && diagnosis.prediction != null) {
+      diagnoseStatus = diagnosis.prediction!;
+    } else {
+      _handleErrorAndRedirect(
+          'Unable to fetch diagnosis results. Please log in to your account.');
+      return;
+    }
+
+    // UPDATE USER DISORDER STATUS IN THE DATABASE
+    status = await _questionService.addDiagnosisResult(
       DiagnosisResult(
-        userEmail: prefs.getString('user-email') ?? '',
+        userEmail: user.email,
         timeSeconds: roundedElapsedTimeInSeconds,
         q1: DiagnoseLexicalScreen.userResponses[0],
         q2: DiagnoseLexicalScreen.userResponses[1],
@@ -180,24 +257,49 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
         q4: DiagnoseLexicalScreen.userResponses[3],
         q5: DiagnoseLexicalScreen.userResponses[4],
         totalScore: totalScore.toString(),
-        label: false,
+        label: diagnoseStatus,
       ),
     );
 
-    // DEBUGGING INFORMATION
-    print(DiagnoseLexicalScreen.userResponses);
-    print(roundedElapsedTimeInSeconds);
-    print(status);
+    // UPDATE USER DISORDER TYPE IN THE SERVICE
+    if (diagnoseStatus) {
+      updateStatus = await _userService.updateDisorderType(
+        DisorderTypes.lexical,
+        accessToken,
+      );
+    } else {
+      updateStatus = await _userService.updateDisorderType(
+        DisorderTypes.noLexical,
+        accessToken,
+      );
+    }
 
-    // NAVIGATE TO THE RESULT PAGE AND PASS THE TOTAL SCORE AND ELAPSED TIME
+    // NAVIGATE BASED ON THE STATUS OF UPDATES
+    if (status && updateStatus) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        diagnoseResultRoute,
+        (route) => false,
+        arguments: {
+          'diagnoseType': 'lexical',
+          'totalScore': totalScore,
+          'elapsedTime': roundedElapsedTimeInSeconds,
+        },
+      );
+    } else {
+      _handleErrorAndRedirect(
+          'Something went wrong. Please log in to your account.');
+    }
+  }
+
+  // FUNCTION TO HANDLE ERRORS AND REDIRECT TO LOGIN PAGE
+  void _handleErrorAndRedirect(String message) {
+    // DISPLAY WARNING MESSAGE
+    _toastService.warningToast(message);
+
+    // REDIRECT TO LOGIN PAGE
     Navigator.of(context).pushNamedAndRemoveUntil(
-      diagnoseResultRoute,
+      loginRoute,
       (route) => false,
-      arguments: {
-        'diagnoseType': 'lexical',
-        'totalScore': totalScore,
-        'elapsedTime': roundedElapsedTimeInSeconds,
-      },
     );
   }
 
@@ -209,8 +311,18 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
       DeviceOrientation.landscapeRight,
     ]);
 
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        systemNavigationBarColor: Colors.black,
+      ),
+    );
+
     return Scaffold(
       body: SafeArea(
+        right: false,
+        left: false,
         child: FutureBuilder(
           future: _questionFuture,
           builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
@@ -315,7 +427,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
                                             height: 160.0,
                                             value:
                                                 DiagnoseLexicalScreen.question,
-                                            size: 96.0,
+                                            size: 64.0,
                                           ),
                                         ],
                                       ),

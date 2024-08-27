@@ -1,7 +1,12 @@
+import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/enums/disorder_types.dart';
+import 'package:calcpal/models/user.dart';
 import 'package:calcpal/services/toast_service.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DiagnoseReportScreen extends StatefulWidget {
   const DiagnoseReportScreen({super.key});
@@ -21,34 +26,33 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
   // FUTURE THAT HOLDS THE STATE OF THE RESULT LOADING PROCESS
   late Future<void> _resultFuture;
 
+  // INITIALIZING THE USER SERVICE
+  final UserService _userService = UserService();
   // TOAST SERVICE TO SHOW MESSAGES
   final ToastService _toastService = ToastService();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    // RETRIEVE THE ARGUMENTS PASSED FROM THE PREVIOUS SCREEN
     final arguments =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
     if (arguments == null ||
         !arguments.containsKey('quizType') ||
         arguments['quizType'].isEmpty) {
-      _toastService.errorToast(
-        'An unexpected error occurred. Please try again.',
-      );
-      // NAVIGATE TO PREVIOUS ROUTE
-      Navigator.of(context).pop();
-      // INITIALIZE WITH FALLBACK VALUE
-      _resultFuture = Future.value();
+      _showErrorAndPop();
       return;
     }
 
-    // INITIALIZE INSTANCE VARIABLES SAFELY
     quizType = arguments['quizType'];
-    // LOAD THE RESULT OF QUIZES WHEN THE WIDGET IS INITIALIZED
     _resultFuture = _loadResult();
+  }
+
+  void _showErrorAndPop() {
+    // SHOW ERROR MESSAGE AND POP THE CURRENT ROUTE
+    _toastService.errorToast('An unexpected error occurred. Please try again.');
+    Navigator.of(context).pop();
+    _resultFuture = Future.value();
   }
 
   // LOAD THE RESULT BASED ON THE QUIZ TYPE
@@ -57,50 +61,96 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
       case 'quiz1':
         diagnoseType1 = 'Verbal';
         diagnoseType2 = 'Lexical';
-        await _quizeType1();
+        await _processBaseType(DisorderTypes.verbal, DisorderTypes.lexical);
         break;
       case 'quiz2':
         diagnoseType1 = 'Operational';
         diagnoseType2 = 'Ideognostic';
-        await _quizeType2();
+        await _processBaseType(
+            DisorderTypes.operational, DisorderTypes.ideognostic);
         break;
       case 'quiz3':
         diagnoseType1 = 'Graphical';
         diagnoseType2 = 'Practognostic';
-        await _quizeType3();
+        await _processBaseType(
+            DisorderTypes.graphical, DisorderTypes.practognostic);
         break;
       case 'quiz4':
         diagnoseType1 = 'Visual Spatial';
         diagnoseType2 = 'Sequential';
-        await _quizeType4();
+        await _processBaseType(
+            DisorderTypes.visualSpatial, DisorderTypes.sequential);
         break;
       default:
-        // NAVIGATE TO PREVIOUS ROUTE IF QUIZ TYPE IS INVALID
+        // INVALID QUIZ TYPE - POP THE CURRENT ROUTE
         Navigator.of(context).pop();
     }
   }
 
-  // LOAD RESULT FOR QUIZ TYPE 1
-  Future<void> _quizeType1() async {
-    // ADD A 5-SECOND DELAY
-    await Future.delayed(const Duration(seconds: 5));
+  // PROCESS THE BASED ON THE GIVEN DISORDER TYPES
+  Future<void> _processBaseType(
+      DisorderTypes type1, DisorderTypes type2) async {
+    try {
+      // GET SHARED PREFERENCES INSTANCE
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
 
-    // ASSIGN VALUES AFTER DELAY
-    isDiagnoseType1 = true;
-    isDiagnoseType2 = false;
+      if (accessToken != null) {
+        User? user = await _userService.getUser(accessToken);
+        if (user != null && user.disorderTypes != null) {
+          // SET FLAGS BASED ON DISORDER TYPES
+          isDiagnoseType1 =
+              user.disorderTypes!.contains(type1.toString().split('.').last);
+          isDiagnoseType2 =
+              user.disorderTypes!.contains(type2.toString().split('.').last);
+        } else {
+          // HANDLE EMPTY DISORDER TYPES
+          isDiagnoseType1 = isDiagnoseType2 = false;
+        }
+      }
+    } catch (e) {
+      // SHOW ERROR MESSAGE ON EXCEPTION
+      _toastService.errorToast(
+        'An unexpected error occurred. Please try again.',
+      );
+    }
   }
 
-  // LOAD RESULT FOR QUIZ TYPE 2
-  Future<void> _quizeType2() async {}
-
-  // LOAD RESULT FOR QUIZ TYPE 3
-  Future<void> _quizeType3() async {}
-
-  // LOAD RESULT FOR QUIZ TYPE 4
-  Future<void> _quizeType4() async {}
-
   // METHOD TO HANDLE BUTTON PRESS ACTION
-  Future<void> _handleButtonPress() async {}
+  Future<void> _handleButtonPress() async {
+    // MAP OF DIAGNOSIS TYPES TO THEIR RESPECTIVE PAGES
+    final Map<String, String> diagnosisRoutes = {
+      'Verbal': activityVerbalRoute,
+      'Operational': activityLexicalRoute,
+      'Graphical': activityOperationalRoute,
+      'Visual Spatial': activityIdeognosticRoute,
+      'Lexical': activityGraphicalRoute,
+      'Ideognostic': activityPractognosticRoute,
+      'Practognostic': activitySequentialRoute,
+      'Sequential': activityVisualSpatialRoute,
+    };
+
+    // CHECK IF ANY DIAGNOSIS TYPE IS PRESENT
+    if (isDiagnoseType1 || isDiagnoseType2) {
+      // NAVIGATE BASED ON DIAGNOSIS TYPE 1
+      if (isDiagnoseType1 && diagnosisRoutes.containsKey(diagnoseType1)) {
+        Navigator.of(context).pushNamed(diagnosisRoutes[diagnoseType1]!);
+        return;
+      }
+
+      // NAVIGATE BASED ON DIAGNOSIS TYPE 2
+      if (isDiagnoseType2 && diagnosisRoutes.containsKey(diagnoseType2)) {
+        Navigator.of(context).pushNamed(diagnosisRoutes[diagnoseType2]!);
+        return;
+      }
+    }
+
+    // NAVIGATE TO MAIN DASHBOARD IF NO DIAGNOSIS TYPE
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      mainDashboardRoute,
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,6 +162,8 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
 
     return Scaffold(
       body: SafeArea(
+        left: false,
+        right: false,
         child: FutureBuilder(
           future: _resultFuture,
           builder: (BuildContext context, AsyncSnapshot<void> snapshot) {

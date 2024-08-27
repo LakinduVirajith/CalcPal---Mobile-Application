@@ -12,6 +12,10 @@ class DiagnoseSequentialScreen extends StatelessWidget {
       DeviceOrientation.landscapeRight,
     ]);
 
-    return const Placeholder();
+    return Scaffold(
+      body: SafeArea(
+        child: Container(),
+      ),
+    );
   }
 }
