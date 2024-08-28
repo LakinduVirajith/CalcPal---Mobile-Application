@@ -1,4 +1,6 @@
 import 'package:calcpal/services/toast_service.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 
 class CommonService {
@@ -10,17 +12,45 @@ class CommonService {
     switch (language) {
       case 'English':
         return 'en-US';
-      case 'Sinhala':
+      case 'සිංහල':
         return 'si-LK';
-      case 'Tamil':
+      case 'தமிழ்':
         return 'ta-IN';
       default:
         return 'en-US';
     }
   }
 
+  // METHOD TO GET LANGUAGE FROM CODE TO API
+  static String getLanguageForAPI(String language) {
+    switch (language) {
+      case 'en-US':
+        return 'English';
+      case 'si':
+        return 'Sinhala';
+      case 'ta':
+        return 'Tamil';
+      default:
+        return 'English';
+    }
+  }
+
+  // METHOD TO GET LANGUAGE FROM CODE
+  static String getLanguageFromCode(String code) {
+    switch (code) {
+      case 'en-US':
+        return 'English';
+      case 'si':
+        return 'සිංහල';
+      case 'ta':
+        return 'தமிழ்';
+      default:
+        return 'English';
+    }
+  }
+
   // HANDLE HTTP RESPONSE
-  void handleHttpResponse(http.Response response,
+  void handleHttpResponse(http.Response response, BuildContext context,
       [String? successMessage, Map<int, String>? errorMessages]) {
     if (response.statusCode == 200 || response.statusCode == 201) {
       if (successMessage != null) {
@@ -28,22 +58,22 @@ class CommonService {
       }
     } else {
       final errorMessage = errorMessages?[response.statusCode] ??
-          'An unexpected error occurred. Please try again later.';
+          AppLocalizations.of(context)!.commonServiceResponseError;
       _toastService.errorToast('${response.statusCode}: $errorMessage');
     }
   }
 
   // HANDLE NETWORK ERRORS
-  void handleNetworkError() {
+  void handleNetworkError(BuildContext context) {
     _toastService.errorToast(
-      'Network error occurred. Please check your connection.',
+      AppLocalizations.of(context)!.commonServiceNetworkError,
     );
   }
 
   // HANDLE OTHER EXCEPTIONS
-  void handleException(dynamic e) {
+  void handleException(dynamic e, BuildContext context) {
     _toastService.errorToast(
-      'An unexpected error occurred: ${e.toString()}',
+      '${AppLocalizations.of(context)!.commonServiceOtherError}: ${e.toString()}',
     );
   }
 }

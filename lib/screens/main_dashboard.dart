@@ -3,6 +3,7 @@ import 'package:calcpal/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MainDashboardScreen extends StatefulWidget {
   const MainDashboardScreen({super.key});
@@ -23,17 +24,17 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
           false, // PREVENT DISMISSING THE DIALOG BY TAPPING OUTSIDE
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Confirm Logout'),
-          content: const Text('Are you sure you want to log out?'),
+          title: Text(AppLocalizations.of(context)!.mainDashboardConfirmLogout),
+          content: Text(AppLocalizations.of(context)!.mainDashboardAreYouSure),
           backgroundColor: Colors.white,
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context)!.mainDashboardCancel),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Logout'),
+              child: Text(AppLocalizations.of(context)!.mainDashboardLogout),
             ),
           ],
         );
@@ -48,7 +49,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
       final accessToken = prefs.getString('access_token');
       if (accessToken != null) {
         // LOG OUT THE USER BY CALLING THE LOGOUT SERVICE
-        await _userService.logout(accessToken);
+        await _userService.logout(accessToken, context);
 
         // REMOVE THE STORED ACCESS TOKEN AND REFRESH TOKEN FROM SHARED PREFERENCES
         await prefs.remove('access_token');

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/enums/disorder_types.dart';
@@ -16,6 +18,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'dart:developer' as developer;
 
 class DiagnoseVerbalScreen extends StatefulWidget {
@@ -70,18 +73,27 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
     super.dispose();
   }
 
+  // FUNCTION TO SET THE SELECTED LANGUAGE BASED ON THE STORED LANGUAGE CODE
+  Future<void> _setupLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final languageCode = prefs.getString('language_code') ?? 'en-US';
+    DiagnoseVerbalScreen.selectedLanguage =
+        CommonService.getLanguageForAPI(languageCode);
+  }
+
   // FUNCTION TO LOAD AND PLAY QUESTION
   Future<void> _loadQuestion() async {
     try {
+      await _setupLanguage();
       setState(() {
         DiagnoseVerbalScreen.isErrorOccurred = false;
         DiagnoseVerbalScreen.isDataLoading = true;
       });
 
       final question = await _questionService.fetchQuestion(
-        DiagnoseVerbalScreen.currentQuestionNumber,
-        DiagnoseVerbalScreen.selectedLanguage,
-      );
+          DiagnoseVerbalScreen.currentQuestionNumber,
+          DiagnoseVerbalScreen.selectedLanguage,
+          context);
 
       if (question != null) {
         setState(() {
@@ -90,6 +102,10 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
           DiagnoseVerbalScreen.answers.shuffle();
           DiagnoseVerbalScreen.correctAnswer = question.correctAnswer;
         });
+        // DECODE BASE64 ENCODED QUESTION
+        if (DiagnoseVerbalScreen.selectedLanguage != 'English') {
+          _decodeQuestion(DiagnoseVerbalScreen.question);
+        }
 
         // SYNTHESIZE SPEECH FOR THE QUESTION AND STORE THE AUDIO DATA
         DiagnoseVerbalScreen.questionVoice =
@@ -120,6 +136,17 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
       });
     } finally {
       setState(() => DiagnoseVerbalScreen.isDataLoading = false);
+    }
+  }
+
+  // FUNCTION TO DECODE BASE64 ENCODED QUESTION
+  Future _decodeQuestion(String question) async {
+    try {
+      setState(() {
+        DiagnoseVerbalScreen.question = utf8.decode(base64Decode(question));
+      });
+    } catch (e) {
+      developer.log('Error decoding answers: ${e.toString()}');
     }
   }
 
@@ -174,17 +201,18 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
 
     // CHECK IF ACCESS TOKEN IS AVAILABLE
     if (accessToken == null) {
-      _handleErrorAndRedirect('Access token not available. Please log in.');
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.diagnoseVerbalMessagesAccessTokenError);
       return;
     }
 
     // FETCH USER INFO
-    User? user = await _userService.getUser(accessToken);
+    User? user = await _userService.getUser(accessToken, context);
 
     // CHECK IF USER AND IQ SCORE ARE AVAILABLE
     if (user == null || user.iqScore == null) {
       _handleErrorAndRedirect(
-          'User information or IQ score not available. Please log in.');
+          AppLocalizations.of(context)!.diagnoseVerbalMessagesIQScoreError);
       return;
     }
 
@@ -195,53 +223,49 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
 
     // PREPARE DIAGNOSIS DATA AND FETCH DIAGNOSIS RESULT FROM THE SERVICE
     FlaskDiagnosisResult? diagnosis = await _questionService.getDiagnosisResult(
-      Diagnosis(
-        age: user.age,
-        iq: user.iqScore!,
-        q1: DiagnoseVerbalScreen.userResponses[0] ? 1 : 0,
-        q2: DiagnoseVerbalScreen.userResponses[1] ? 1 : 0,
-        q3: DiagnoseVerbalScreen.userResponses[2] ? 1 : 0,
-        q4: DiagnoseVerbalScreen.userResponses[3] ? 1 : 0,
-        q5: DiagnoseVerbalScreen.userResponses[4] ? 1 : 0,
-        seconds: roundedElapsedTimeInSeconds,
-      ),
-    );
+        Diagnosis(
+          age: user.age,
+          iq: user.iqScore!,
+          q1: DiagnoseVerbalScreen.userResponses[0] ? 1 : 0,
+          q2: DiagnoseVerbalScreen.userResponses[1] ? 1 : 0,
+          q3: DiagnoseVerbalScreen.userResponses[2] ? 1 : 0,
+          q4: DiagnoseVerbalScreen.userResponses[3] ? 1 : 0,
+          q5: DiagnoseVerbalScreen.userResponses[4] ? 1 : 0,
+          seconds: roundedElapsedTimeInSeconds,
+        ),
+        context);
 
     // CHECK IF DIAGNOSIS RESULT IS VALID AND GET DIAGNOSE STATUS
     if (diagnosis != null && diagnosis.prediction != null) {
       diagnoseStatus = diagnosis.prediction!;
     } else {
       _handleErrorAndRedirect(
-          'Unable to fetch diagnosis results. Please log in to your account.');
+          AppLocalizations.of(context)!.diagnoseVerbalMessagesResultError);
       return;
     }
 
     // UPDATE USER DISORDER STATUS IN THE DATABASE
     status = await _questionService.addDiagnosisResult(
-      DiagnosisResult(
-        userEmail: user.email,
-        timeSeconds: roundedElapsedTimeInSeconds,
-        q1: DiagnoseVerbalScreen.userResponses[0],
-        q2: DiagnoseVerbalScreen.userResponses[1],
-        q3: DiagnoseVerbalScreen.userResponses[2],
-        q4: DiagnoseVerbalScreen.userResponses[3],
-        q5: DiagnoseVerbalScreen.userResponses[4],
-        totalScore: totalScore.toString(),
-        label: diagnoseStatus,
-      ),
-    );
+        DiagnosisResult(
+          userEmail: user.email,
+          timeSeconds: roundedElapsedTimeInSeconds,
+          q1: DiagnoseVerbalScreen.userResponses[0],
+          q2: DiagnoseVerbalScreen.userResponses[1],
+          q3: DiagnoseVerbalScreen.userResponses[2],
+          q4: DiagnoseVerbalScreen.userResponses[3],
+          q5: DiagnoseVerbalScreen.userResponses[4],
+          totalScore: totalScore.toString(),
+          label: diagnoseStatus,
+        ),
+        context);
 
     // UPDATE USER DISORDER TYPE IN THE SERVICE
     if (diagnoseStatus) {
       updateStatus = await _userService.updateDisorderType(
-        DisorderTypes.verbal,
-        accessToken,
-      );
+          DisorderTypes.verbal, accessToken, context);
     } else {
       updateStatus = await _userService.updateDisorderType(
-        DisorderTypes.noVerbal,
-        accessToken,
-      );
+          DisorderTypes.noVerbal, accessToken, context);
     }
 
     // NAVIGATE BASED ON THE STATUS OF UPDATES
@@ -257,7 +281,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
       );
     } else {
       _handleErrorAndRedirect(
-          'Something went wrong. Please log in to your account.');
+          AppLocalizations.of(context)!.diagnoseVerbalMessagesSomethingError);
     }
   }
 
@@ -336,18 +360,8 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                                 ? // DISPLAY ERROR IF LOADING FAILED
                                 Center(
                                     child: Text(
-                                      DiagnoseVerbalScreen.selectedLanguage ==
-                                              'English'
-                                          ? 'Failed to load question. Please try again.'
-                                          : DiagnoseVerbalScreen
-                                                      .selectedLanguage ==
-                                                  'Sinhala'
-                                              ? 'ප්‍රශ්නය පූරණය කිරීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.'
-                                              : DiagnoseVerbalScreen
-                                                          .selectedLanguage ==
-                                                      'Tamil'
-                                                  ? 'கேள்வியை ஏற்ற முடியவில்லை. மீண்டும் முயற்சிக்கவும்.'
-                                                  : 'Failed to load question. Please try again.',
+                                      AppLocalizations.of(context)!
+                                          .diagnoseVerbalMessagesLoadQuestion,
                                       style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 20,
@@ -359,18 +373,8 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                                 : Column(
                                     children: [
                                       Text(
-                                        DiagnoseVerbalScreen.selectedLanguage ==
-                                                'English'
-                                            ? 'Listen and answer the question'
-                                            : DiagnoseVerbalScreen
-                                                        .selectedLanguage ==
-                                                    'Sinhala'
-                                                ? 'ප්‍රශ්නයට සවන් දී පිළිතුරු දෙන්න.'
-                                                : DiagnoseVerbalScreen
-                                                            .selectedLanguage ==
-                                                        'Tamil'
-                                                    ? 'கேள்வியைக் கேட்டு பதில் சொல்லுங்கள்.'
-                                                    : 'Listen and answer the question',
+                                        AppLocalizations.of(context)!
+                                            .diagnoseVerbalMessagesListenAndAnswer,
                                         style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 20,

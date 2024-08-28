@@ -3,6 +3,7 @@ import 'package:calcpal/widgets/normal_button.dart';
 import 'package:calcpal/widgets/normal_input.dart';
 import 'package:calcpal/widgets/password_input.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginArea extends StatelessWidget {
   const LoginArea({
@@ -37,9 +38,9 @@ class LoginArea extends StatelessWidget {
         children: [
           Container(
             alignment: Alignment.centerLeft,
-            child: const Text(
-              'Welcome Back!',
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context)!.loginTitle,
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
               ),
@@ -47,7 +48,7 @@ class LoginArea extends StatelessWidget {
           ),
           const SizedBox(height: 36),
           NormalInput(
-            placeholderText: 'User Name',
+            placeholderText: AppLocalizations.of(context)!.loginUserName,
             iconPath: 'assets/icons/email.svg',
             normalController: userNameController,
           ), // USERNAME INPUT
@@ -68,7 +69,7 @@ class LoginArea extends StatelessWidget {
                 );
               },
               child: Text(
-                'Forgot Password',
+                AppLocalizations.of(context)!.loginForgotPassword,
                 style: TextStyle(
                   color: Theme.of(context).primaryColor,
                   fontSize: 13,
@@ -79,7 +80,7 @@ class LoginArea extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           NormalButton(
-            buttonText: 'Login',
+            buttonText: AppLocalizations.of(context)!.loginButton,
             isLoading: isLoading,
             onPressed: onPressed,
           ), // LOGIN BUTTON
@@ -89,9 +90,9 @@ class LoginArea extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'Don’t have an account? ',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)!.loginDontHaveAccount,
+                  style: const TextStyle(
                       color: Colors.black,
                       fontSize: 13,
                       fontWeight: FontWeight.w700),
@@ -101,7 +102,7 @@ class LoginArea extends StatelessWidget {
                     Navigator.of(context).pushNamed(signUpRoute);
                   },
                   child: Text(
-                    'Sign Up',
+                    AppLocalizations.of(context)!.loginSignup,
                     style: TextStyle(
                         color: Theme.of(context).primaryColor,
                         fontSize: 13,
