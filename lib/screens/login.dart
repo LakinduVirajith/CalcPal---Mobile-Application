@@ -6,6 +6,7 @@ import 'package:calcpal/widgets/login_area.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -31,6 +32,13 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+
+    // FORCE PORTRAIT ORIENTATION
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
     _initializeServices();
   }
 
@@ -62,13 +70,12 @@ class _LoginScreenState extends State<LoginScreen> {
       final String password = _passwordController.text;
 
       if (username.isEmpty || password.isEmpty) {
-        _toastService.errorToast("Please fill in all fields.");
+        _toastService
+            .errorToast(AppLocalizations.of(context)!.loginMessagesFillAll);
       } else {
         // CALL THE SIGN-UP SERVICE
-        final AuthResponse? authResponse = await _userService.login(
-          username,
-          password,
-        );
+        final AuthResponse? authResponse =
+            await _userService.login(username, password, context);
 
         if (authResponse != null) {
           // STORE TOKEN IN SHAREDPREFERENCES
@@ -91,12 +98,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // FORCE PORTRAIT ORIENTATION
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-
     // SET CUSTOM STATUS BAR COLOR
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(

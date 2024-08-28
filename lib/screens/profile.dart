@@ -1,6 +1,8 @@
 import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/main.dart';
 import 'package:calcpal/models/update_user.dart';
 import 'package:calcpal/models/user.dart';
+import 'package:calcpal/services/common_service.dart';
 import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/widgets/date_input.dart';
@@ -9,10 +11,10 @@ import 'package:calcpal/widgets/normal_input.dart';
 import 'package:calcpal/widgets/normal_input_lockable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:developer' as developer;
-
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'dart:developer' as developer;
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -49,13 +51,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _initialDetails = _loadDetails();
   }
 
+  @override
+  void dispose() {
+    // DISPOSE CONTROLLERS TO FREE UP RESOURCES
+    _userNameController.dispose();
+    _emailController.dispose();
+    _birthdayController.dispose();
+    _ageController.dispose();
+    _iqScoreController.dispose();
+
+    // FORCE LANDSCAPE ORIENTATION
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    super.dispose();
+  }
+
   // METHOD TO LOAD INITIAL DETAILS
   Future<void> _loadDetails() async {
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.getString('access_token');
 
     if (accessToken != null) {
-      User? user = await _userService.getUser(accessToken);
+      User? user = await _userService.getUser(accessToken, context);
 
       if (user != null) {
         _userNameController.text = user.name;
@@ -67,13 +86,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
       } else {
         _handleErrorAndRedirect(
-            'User information not available. Please log in.');
+            AppLocalizations.of(context)!.profileMessagesLoadDetailsError1);
         return;
       }
     } else {
-      _handleErrorAndRedirect('Access token not available. Please log in.');
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.profileMessagesLoadDetailsError2);
       return;
     }
+
+    // SET THE SELECTED LANGUAGE BASED ON THE STORED LANGUAGE CODE
+    final languageCode = prefs.getString('language_code') ?? 'en';
+    ProfileScreen.selectedLanguage =
+        CommonService.getLanguageFromCode(languageCode);
   }
 
   // HANDLER FOR THE UPDATE PROCESS
@@ -85,20 +110,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final String birthday = _birthdayController.text;
 
       if (username.isEmpty) {
-        _toastService.errorToast("Please enter your username.");
+        _toastService.errorToast(
+            AppLocalizations.of(context)!.profileMessagesUpdateDetailsError1);
       } else if (birthday.isEmpty) {
-        _toastService.errorToast("Please select your birthday.");
+        _toastService.errorToast(
+            AppLocalizations.of(context)!.profileMessagesUpdateDetailsError2);
       } else {
         final prefs = await SharedPreferences.getInstance();
         final accessToken = prefs.getString('access_token');
 
         if (accessToken != null) {
-          _userService.updateUser(
-            accessToken,
-            UpdateUser(name: username, birthday: birthday),
-          );
+          _userService.updateUser(accessToken,
+              UpdateUser(name: username, birthday: birthday), context);
         } else {
-          _handleErrorAndRedirect('Access token not available. Please log in.');
+          _handleErrorAndRedirect(
+              AppLocalizations.of(context)!.profileMessagesUpdateDetailsError3);
           return;
         }
       }
@@ -112,14 +138,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // CHANGES THE APP LANGUAGE TO BASED ON THE SELECTED VALUE.
   Future<void> _switchLanguage(String? newValue) async {
-    setState(() => ProfileScreen.selectedLanguage = newValue!);
+    if (newValue != null) {
+      String languageCode;
 
-    // TODO: IMPLEMENT UPDATE LANGUAGE LOGIC HERE
+      switch (newValue) {
+        case 'English':
+          languageCode = 'en';
+          break;
+        case 'සිංහල':
+          languageCode = 'si';
+          break;
+        case 'தமிழ்':
+          languageCode = 'ta';
+          break;
+        default:
+          languageCode = 'en';
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('language_code', languageCode);
+
+      setState(() {
+        ProfileScreen.selectedLanguage = newValue;
+        Locale newLocale = Locale(languageCode);
+        MyApp.setLocale(context, newLocale);
+      });
+    }
   }
 
   // FUNCTION TO SHOW ERROR TOAST WHEN ATTEMPTING TO EDIT A LOCKED FIELD
   Future<void> _notEditableError() async {
-    _toastService.warningToast("This field cannot be edited.");
+    _toastService.warningToast(
+        AppLocalizations.of(context)!.profileMessagesNotEditableError);
   }
 
   // FUNCTION TO HANDLE ERRORS AND REDIRECT TO LOGIN PAGE
@@ -176,9 +226,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // METHOD TO BUILD APP BAR
   AppBar _buildAppBar() {
     return AppBar(
-      title: const Text(
-        'Profile',
-        style: TextStyle(
+      title: Text(
+        AppLocalizations.of(context)!.profileTitle,
+        style: const TextStyle(
           color: Colors.white,
           fontSize: 18.0,
         ),
@@ -218,13 +268,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: EdgeInsets.symmetric(
               horizontal: constraints.maxWidth * 0.15,
             ),
-            child: const Text('General'),
+            child: Text(
+              AppLocalizations.of(context)!.profileToggleButton1,
+            ),
           ),
           Padding(
             padding: EdgeInsets.symmetric(
               horizontal: constraints.maxWidth * 0.15,
             ),
-            child: const Text('System'),
+            child: Text(
+              AppLocalizations.of(context)!.profileToggleButton2,
+            ),
           ),
         ],
       ),
@@ -256,40 +310,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 8.0),
-                  _buildInputLabel(' User Name:'),
+                  _buildInputLabel(
+                      AppLocalizations.of(context)!.profileUserName),
                   const SizedBox(height: 4.0),
                   NormalInput(
-                    placeholderText: 'Name',
+                    placeholderText: AppLocalizations.of(context)!
+                        .profileUserNamePlaceholder,
                     iconPath: 'assets/icons/user.svg',
                     normalController: _userNameController,
                   ), // USER NAME INPUT
                   const SizedBox(height: 16.0),
-                  _buildInputLabel(' Email:'),
+                  _buildInputLabel(AppLocalizations.of(context)!.profileEmail),
                   const SizedBox(height: 4.0),
                   GestureDetector(
                     onTap: _notEditableError,
                     child: NormalInputLockable(
-                      placeholderText: 'Email',
+                      placeholderText:
+                          AppLocalizations.of(context)!.profileEmailPlaceholder,
                       iconPath: 'assets/icons/email.svg',
                       normalController: _emailController,
                       lockable: true,
                     ),
                   ), // EMAIL INPUT
                   const SizedBox(height: 16.0),
-                  _buildInputLabel(' Birthday:'),
+                  _buildInputLabel(
+                      AppLocalizations.of(context)!.profileBirthday),
                   const SizedBox(height: 4.0),
                   DateInput(
-                    placeholderText: 'Birthday',
+                    placeholderText: AppLocalizations.of(context)!
+                        .profileBirthdayPlaceholder,
                     iconPath: 'assets/icons/cake.svg',
                     dateController: _birthdayController,
                   ), // BIRTHDAY INPUT
                   const SizedBox(height: 16.0),
-                  _buildInputLabel(' Age:'),
+                  _buildInputLabel(AppLocalizations.of(context)!.profileAge),
                   const SizedBox(height: 4.0),
                   GestureDetector(
                     onTap: _notEditableError,
                     child: NormalInputLockable(
-                      placeholderText: 'Age',
+                      placeholderText:
+                          AppLocalizations.of(context)!.profileAgePlaceholder,
                       iconPath: 'assets/icons/age.svg',
                       normalController: _ageController,
                       lockable: true,
@@ -297,12 +357,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ), // AGE INPUT
                   if (_iqScoreController.text.isNotEmpty) ...[
                     const SizedBox(height: 16.0),
-                    _buildInputLabel(' IQ Score:'),
+                    _buildInputLabel(
+                        AppLocalizations.of(context)!.profileIQScore),
                     const SizedBox(height: 4.0),
                     GestureDetector(
                       onTap: _notEditableError,
                       child: NormalInputLockable(
-                        placeholderText: 'IQ Score',
+                        placeholderText: AppLocalizations.of(context)!
+                            .profileIQScorePlaceholder,
                         iconPath: 'assets/icons/score.svg',
                         normalController: _iqScoreController,
                         lockable: true,
@@ -311,7 +373,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                   const SizedBox(height: 28.0),
                   NormalButton(
-                    buttonText: 'Update',
+                    buttonText:
+                        AppLocalizations.of(context)!.profileUpdateButtonText,
                     isLoading: ProfileScreen.isUpdating,
                     onPressed: _update,
                     height: 54.0,
@@ -334,7 +397,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           children: [
             const SizedBox(height: 8.0),
-            _buildInputLabel('Select Language:'),
+            _buildInputLabel(
+                AppLocalizations.of(context)!.profileSelectLanguage),
             const SizedBox(height: 4.0),
             _buildLanguageDropdown(ProfileScreen.selectedLanguage),
           ],
@@ -367,7 +431,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onChanged: (String? newValue) {
               _switchLanguage(newValue);
             },
-            items: <String>['English', 'Sinhala', 'Tamil']
+            items: <String>['English', 'සිංහල', 'தமிழ்']
                 .map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,

@@ -4,7 +4,9 @@ import 'package:calcpal/models/diagnosis_result.dart';
 import 'package:calcpal/models/flask_diagnosis_result.dart';
 import 'package:calcpal/models/verbal_question.dart';
 import 'package:calcpal/services/common_service.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
 
@@ -18,7 +20,7 @@ class VerbalService {
 
   // FETCH A QUESTION BASED ON NUMBER AND LANGUAGE
   Future<VerbalQuestion?> fetchQuestion(
-      int questionNumber, String language) async {
+      int questionNumber, String language, BuildContext context) async {
     final url = Uri.parse(
         '$_baseUrl/verbal/question/$questionNumber?language=$language');
 
@@ -29,23 +31,22 @@ class VerbalService {
         final data = jsonDecode(response.body);
         return VerbalQuestion.fromJson(data);
       } else {
-        _commonService.handleHttpResponse(response, null, {
-          404:
-              'No questions found on the server for the provided question number.'
-        });
+        _commonService.handleHttpResponse(response, context, null,
+            {404: AppLocalizations.of(context)!.verbalServiceNoQuestionError});
         return null;
       }
     } on http.ClientException {
-      _commonService.handleNetworkError();
+      _commonService.handleNetworkError(context);
       return null;
     } catch (e) {
-      _commonService.handleException(e);
+      _commonService.handleException(e, context);
       return null;
     }
   }
 
   // SUBMIT A DIAGNOSIS RESULT TO THE SERVER
-  Future<bool> addDiagnosisResult(DiagnosisResult result) async {
+  Future<bool> addDiagnosisResult(
+      DiagnosisResult result, BuildContext context) async {
     final url = Uri.parse('$_baseUrl/verbal/diagnosis/');
 
     try {
@@ -65,16 +66,17 @@ class VerbalService {
         return false;
       }
     } on http.ClientException {
-      _commonService.handleNetworkError();
+      _commonService.handleNetworkError(context);
       return false;
     } catch (e) {
-      _commonService.handleException(e);
+      _commonService.handleException(e, context);
       return false;
     }
   }
 
   // FETCH A DIAGNOSIS RESULT FROM THE SERVER
-  Future<FlaskDiagnosisResult?> getDiagnosisResult(Diagnosis diagnosis) async {
+  Future<FlaskDiagnosisResult?> getDiagnosisResult(
+      Diagnosis diagnosis, BuildContext context) async {
     final url = Uri.parse('$_modelBaseUrl/verbal');
 
     try {
@@ -98,9 +100,9 @@ class VerbalService {
         developer.log(result.error!);
       }
     } on http.ClientException {
-      _commonService.handleNetworkError();
+      _commonService.handleNetworkError(context);
     } catch (e) {
-      _commonService.handleException(e);
+      _commonService.handleException(e, context);
     }
 
     return null;

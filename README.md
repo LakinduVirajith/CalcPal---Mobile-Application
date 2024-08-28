@@ -52,3 +52,8 @@ flutter build apk --build-name=1.0.0 --build-number=1 --split-per-abi
 ```
   - **Purpose:** Builds a release APK for your Flutter app targeting Android, splitting the APK by CPU architecture (ABI).
   - **Explanation:** Prepares your app for deployment by optimizing APK size and performance across different Android device architectures (`armeabi-v7a`, `arm64-v8a`, `x86`, `x86_64`).
+```
+flutter gen-l10n
+```
+  - **Purpose:** Generates localization files based on ARB files located in the `lib/l10n` directory.
+  - **Explanation:** Updates the localization files to include translations for different languages defined in the ARB files. This command is essential for integrating multi-language support into your Flutter app.

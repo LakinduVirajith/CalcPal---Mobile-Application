@@ -1,6 +1,7 @@
 import 'package:calcpal/constants/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DiagnoseResultScreen extends StatefulWidget {
   const DiagnoseResultScreen({super.key});
@@ -152,7 +153,7 @@ class _DiagnoseResultScreenState extends State<DiagnoseResultScreen> {
                               ),
                             ),
                             child: Text(
-                              'Elapsed Time: ${elapsedTime}s',
+                              '${AppLocalizations.of(context)!.diagnoseResultElapsedTime}: ${elapsedTime}s',
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                 color: Color.fromRGBO(40, 40, 40, 1),
@@ -174,7 +175,7 @@ class _DiagnoseResultScreenState extends State<DiagnoseResultScreen> {
                               ),
                             ),
                             child: Text(
-                              'Total Score: $totalScore/5',
+                              '${AppLocalizations.of(context)!.diagnoseResultTotalScore}: $totalScore/5',
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                 color: Color.fromRGBO(40, 40, 40, 1),
@@ -208,10 +209,10 @@ class _DiagnoseResultScreenState extends State<DiagnoseResultScreen> {
                         ),
                       ),
                     ),
-                    child: const Text(
-                      'Let\'s Go',
+                    child: Text(
+                      AppLocalizations.of(context)!.diagnoseResultButton,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 24,
                         fontFamily: 'Roboto',

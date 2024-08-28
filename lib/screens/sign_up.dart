@@ -5,6 +5,7 @@ import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/widgets/signup_area.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -51,17 +52,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
           email.isEmpty ||
           birthday.isEmpty ||
           password.isEmpty) {
-        _toastService.errorToast("Please fill in all fields.");
+        _toastService
+            .errorToast(AppLocalizations.of(context)!.signupMessagesFillAll);
       } else {
         // CALL THE SIGN-UP SERVICE
         final status = await _userService.signUp(
-          SignUp(
-            name: username,
-            email: email,
-            birthday: birthday,
-            password: password,
-          ),
-        );
+            SignUp(
+              name: username,
+              email: email,
+              birthday: birthday,
+              password: password,
+            ),
+            context);
 
         if (status) {
           Navigator.of(context).pushNamedAndRemoveUntil(

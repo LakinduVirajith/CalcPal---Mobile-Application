@@ -31,6 +31,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,14 +43,56 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  // METHOD TO SET THE LOCALE FROM OUTSIDE THE WIDGET
+  static void setLocale(BuildContext context, Locale newLocale) {
+    _MyAppState? state = context.findAncestorStateOfType<_MyAppState>();
+    state?.setLocale(newLocale);
+  }
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  // INITIAL LOCALE SET TO 'en' BY DEFAULT
+  Locale _locale = const Locale('en');
+
+  @override
+  void initState() {
+    super.initState();
+    // LOAD LOCALE FROM SHARED PREFERENCES
+    _loadLocale();
+  }
+
+  // METHOD TO LOAD THE LOCALE FROM SHARED PREFERENCES
+  Future<void> _loadLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final languageCode = prefs.getString('language_code') ?? 'en';
+    setState(() {
+      // UPDATE THE LOCALE BASED ON THE STORED LANGUAGE CODE
+      _locale = Locale(languageCode);
+    });
+  }
+
+  // METHOD TO SET THE LOCALE
+  void setLocale(Locale newLocale) {
+    setState(() {
+      // UPDATE THE LOCALE AND REFRESH THE UI
+      _locale = newLocale;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return ToastificationWrapper(
       child: MaterialApp(
         title: 'CalcPal Application',
+        locale: _locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: colorTheme,
         home: const ValidationScreen(),
         routes: {
@@ -135,9 +178,8 @@ class _ValidationScreenState extends State<ValidationScreen> {
     final String? refreshToken = prefs.getString('refresh_token');
     if (refreshToken != null && !JwtDecoder.isExpired(refreshToken)) {
       // ATTEMPT TO REFRESH THE ACCESS TOKEN USING THE REFRESH TOKEN
-      final AuthResponse? newToken = await _userService.generateNewToken(
-        refreshToken,
-      );
+      final AuthResponse? newToken =
+          await _userService.generateNewToken(refreshToken, context);
       if (newToken != null) {
         // NEW ACCESS TOKEN OBTAINED, SAVE IT AND NAVIGATE TO THE MAIN DASHBOARD
         await prefs.setString('access_token', newToken.accessToken);

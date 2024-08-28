@@ -4,6 +4,7 @@ import 'package:calcpal/widgets/normal_button.dart';
 import 'package:calcpal/widgets/password_input.dart';
 import 'package:calcpal/widgets/normal_input.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SignUpArea extends StatelessWidget {
   const SignUpArea({
@@ -39,9 +40,9 @@ class SignUpArea extends StatelessWidget {
         children: [
           Container(
             alignment: Alignment.centerLeft,
-            child: const Text(
-              'Sign Up',
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context)!.signupTitle,
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
               ),
@@ -49,19 +50,22 @@ class SignUpArea extends StatelessWidget {
           ),
           const SizedBox(height: 36),
           NormalInput(
-            placeholderText: 'Name',
+            placeholderText:
+                AppLocalizations.of(context)!.signupNamePlaceholder,
             iconPath: 'assets/icons/user.svg',
             normalController: userNameController,
           ), // USER NAME INPUT
           const SizedBox(height: 20),
           NormalInput(
-            placeholderText: 'Email',
+            placeholderText:
+                AppLocalizations.of(context)!.signupEmailPlaceholder,
             iconPath: 'assets/icons/email.svg',
             normalController: emailController,
           ), // EMAIL INPUT
           const SizedBox(height: 20),
           DateInput(
-            placeholderText: 'Birthday',
+            placeholderText:
+                AppLocalizations.of(context)!.signupBirthdayPlaceholder,
             iconPath: 'assets/icons/cake.svg',
             dateController: birthDayController,
           ), // BIRTHDAY INPUT
@@ -70,7 +74,7 @@ class SignUpArea extends StatelessWidget {
               passwordController: passwordController), // PASSWORD INPUT
           const SizedBox(height: 20),
           NormalButton(
-            buttonText: 'Sign Up',
+            buttonText: AppLocalizations.of(context)!.signupButton,
             isLoading: isLoading,
             onPressed: onPressed,
           ), // SIGNUP BUTTON
@@ -80,9 +84,9 @@ class SignUpArea extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'Already have an account? ',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)!.signupAlreadyHaveAccount,
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -93,7 +97,7 @@ class SignUpArea extends StatelessWidget {
                     Navigator.of(context).pushNamed(loginRoute);
                   },
                   child: Text(
-                    'Login',
+                    AppLocalizations.of(context)!.signupLogin,
                     style: TextStyle(
                       color: Theme.of(context).primaryColor,
                       fontSize: 13,

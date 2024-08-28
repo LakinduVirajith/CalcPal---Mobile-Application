@@ -7,6 +7,7 @@ import 'package:calcpal/widgets/otp_box.dart';
 import 'package:calcpal/widgets/password_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -105,10 +106,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
       final String userEmail = _userEmailController.text;
       if (userEmail.isEmpty) {
-        _toastService.errorToast("Please provide your email address");
+        _toastService.errorToast(AppLocalizations.of(context)!
+            .forgotPasswordMessagesSendInstructionsError1);
       } else {
         // CALL THE USER SERVICE TO SEND THE OTP
-        final status = await _userService.sendOTP(userEmail);
+        final status = await _userService.sendOTP(userEmail, context);
         if (status) {
           setState(() => ForgotPasswordScreen.isOTPSent = true);
           // START THE ANIMATION
@@ -116,7 +118,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         }
       }
     } catch (e) {
-      _toastService.errorToast("An error occurred while sending OTP");
+      _toastService.errorToast(AppLocalizations.of(context)!
+          .forgotPasswordMessagesSendInstructionsError2);
     } finally {
       setState(() => ForgotPasswordScreen.isSendingOTP = false);
     }
@@ -133,14 +136,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       final String otp4 = _inputOTP4Controller.text;
       final String userEmail = _userEmailController.text;
       if (otp1.isEmpty || otp2.isEmpty || otp3.isEmpty || otp4.isEmpty) {
-        _toastService.errorToast("Please fill in all OTP fields");
+        _toastService.errorToast(AppLocalizations.of(context)!
+            .forgotPasswordMessagesValidateOTPError1);
       } else {
         final combinedOtp = otp1 + otp2 + otp3 + otp4;
         // CALL THE USER SERVICE TO VALIDATE THE OTP
-        final status = await _userService.validatOTP(
-          userEmail,
-          combinedOtp,
-        );
+        final status =
+            await _userService.validatOTP(userEmail, combinedOtp, context);
         if (status) {
           setState(() => ForgotPasswordScreen.isOTPValidated = true);
           // START THE ANIMATION
@@ -148,7 +150,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         }
       }
     } catch (e) {
-      _toastService.errorToast("An error occurred while verifying OTP");
+      _toastService.errorToast(AppLocalizations.of(context)!
+          .forgotPasswordMessagesValidateOTPError2);
     } finally {
       setState(() => ForgotPasswordScreen.isValidatingOTP = false);
     }
@@ -162,13 +165,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       final String userEmail = _userEmailController.text;
       final String password = _passwordController.text;
       if (userEmail.isEmpty || password.isEmpty) {
-        _toastService.errorToast("Don't forget to provide your new password");
+        _toastService.errorToast(AppLocalizations.of(context)!
+            .forgotPasswordMessagesResetPasswordError1);
       } else {
         // CALL THE USER SERVICE TO RESET THE PASSWORD
-        final status = await _userService.resetPassword(
-          userEmail,
-          password,
-        );
+        final status =
+            await _userService.resetPassword(userEmail, password, context);
         if (status) {
           setState(() => ForgotPasswordScreen.isOTPValidated = true);
           // NAVIGATE TO THE LOGIN ROUTE AND REMOVE ALL PREVIOUS ROUTES
@@ -179,8 +181,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         }
       }
     } catch (e) {
-      _toastService
-          .errorToast("An error occurred while resetting the password");
+      _toastService.errorToast(AppLocalizations.of(context)!
+          .forgotPasswordMessagesResetPasswordError2);
     } finally {
       setState(() => ForgotPasswordScreen.isResetting = false);
     }
@@ -204,9 +206,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Back',
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context)!.forgotPasswordBackButton,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 16.0,
           ),
@@ -228,24 +230,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
               ),
               child: Column(
                 children: [
-                  const Align(
+                  Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Forgot Password',
-                      style: TextStyle(
+                      AppLocalizations.of(context)!
+                          .forgotPasswordForgotPasswordButton,
+                      style: const TextStyle(
                         fontSize: 24.0,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                   const SizedBox(height: 12.0),
-                  const Text(
-                    'Enter the email associated with your account and we\'ll send an email with instructions to rest your password.',
-                  ),
+                  Text(AppLocalizations.of(context)!
+                      .forgotPasswordInstructionText),
                   const SizedBox(height: 12.0),
                   // EMAIL INPUT FIELD
                   NormalInputLockable(
-                    placeholderText: 'Email Address',
+                    placeholderText: AppLocalizations.of(context)!
+                        .forgotPasswordEmailAddress,
                     iconPath: 'assets/icons/email.svg',
                     normalController: _userEmailController,
                     lockable: ForgotPasswordScreen.isOTPSent,
@@ -254,8 +257,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                   // SEND INSTRUCTIONS BUTTON
                   NormalButton(
                     buttonText: !ForgotPasswordScreen.isOTPSent
-                        ? 'Send Instructions'
-                        : 'Resend Instructions',
+                        ? AppLocalizations.of(context)!
+                            .forgotPasswordSendInstructionButton
+                        : AppLocalizations.of(context)!
+                            .forgotPasswordResendInstructionsButton,
                     isLoading: ForgotPasswordScreen.isSendingOTP,
                     onPressed: _sendInstructions,
                   ),
@@ -300,7 +305,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                             const SizedBox(height: 18.0),
                             // VERIFY OTP BUTTON
                             NormalButton(
-                              buttonText: 'Validate OTP',
+                              buttonText: AppLocalizations.of(context)!
+                                  .forgotPasswordValidateOTPButton,
                               isLoading: ForgotPasswordScreen.isValidatingOTP,
                               onPressed: _validateOTP,
                             ),
@@ -316,19 +322,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                         opacity: _opacityAnimation,
                         child: Column(
                           children: [
-                            const Align(
+                            Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                'Create new password',
-                                style: TextStyle(
+                                AppLocalizations.of(context)!
+                                    .forgotPasswordCreatePasswordButton,
+                                style: const TextStyle(
                                   fontSize: 24.0,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                             const SizedBox(height: 12.0),
-                            const Text(
-                              'Your new password must be different from previous used passwords.',
+                            Text(
+                              AppLocalizations.of(context)!
+                                  .forgotPasswordPasswordText,
                             ),
                             const SizedBox(height: 12.0),
                             // PASSWORD INPUT FIELD
@@ -338,7 +346,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                             const SizedBox(height: 18.0),
                             // RESET PASSWORD BUTTON
                             NormalButton(
-                              buttonText: 'Reset Password',
+                              buttonText: AppLocalizations.of(context)!
+                                  .forgotPasswordResetPasswordButton,
                               isLoading: ForgotPasswordScreen.isResetting,
                               onPressed: _resetPassword,
                             ),

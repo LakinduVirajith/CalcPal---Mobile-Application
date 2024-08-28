@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DiagnoseReportScreen extends StatefulWidget {
   const DiagnoseReportScreen({super.key});
@@ -50,7 +51,8 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
 
   void _showErrorAndPop() {
     // SHOW ERROR MESSAGE AND POP THE CURRENT ROUTE
-    _toastService.errorToast('An unexpected error occurred. Please try again.');
+    _toastService.errorToast(
+        AppLocalizations.of(context)!.diagnoseReportMessagesUnexpected);
     Navigator.of(context).pop();
     _resultFuture = Future.value();
   }
@@ -96,7 +98,7 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
       final accessToken = prefs.getString('access_token');
 
       if (accessToken != null) {
-        User? user = await _userService.getUser(accessToken);
+        User? user = await _userService.getUser(accessToken, context);
         if (user != null && user.disorderTypes != null) {
           // SET FLAGS BASED ON DISORDER TYPES
           isDiagnoseType1 =
@@ -111,7 +113,7 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
     } catch (e) {
       // SHOW ERROR MESSAGE ON EXCEPTION
       _toastService.errorToast(
-        'An unexpected error occurred. Please try again.',
+        AppLocalizations.of(context)!.diagnoseReportMessagesUnexpected,
       );
     }
   }
@@ -221,7 +223,7 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
                                 ),
                               ),
                               child: Text(
-                                '$diagnoseType1: ${isDiagnoseType1 ? 'Risk' : 'Safe'}',
+                                '$diagnoseType1: ${isDiagnoseType1 ? AppLocalizations.of(context)!.diagnoseReportRisk : AppLocalizations.of(context)!.diagnoseReportSafe}',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: isDiagnoseType1
@@ -245,7 +247,7 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
                                 ),
                               ),
                               child: Text(
-                                '$diagnoseType2: ${isDiagnoseType2 ? 'Risk' : 'Safe'}',
+                                '$diagnoseType2: ${isDiagnoseType2 ? AppLocalizations.of(context)!.diagnoseReportRisk : AppLocalizations.of(context)!.diagnoseReportSafe}',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: isDiagnoseType2
@@ -278,8 +280,10 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
                                 ),
                                 child: Text(
                                   (isDiagnoseType1 || isDiagnoseType2)
-                                      ? 'Activities'
-                                      : 'Main Dashboard',
+                                      ? AppLocalizations.of(context)!
+                                          .diagnoseReportActivityButton
+                                      : AppLocalizations.of(context)!
+                                          .diagnoseReportMainDashboardButton,
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
                                     color: Colors.white,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PasswordInput extends StatefulWidget {
   const PasswordInput({
@@ -33,10 +34,10 @@ class _PasswordInputState extends State<PasswordInput> {
             child: TextField(
               controller: widget._passwordController,
               obscureText: _obscureText,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 border: InputBorder.none,
-                hintText: 'Password',
-                hintStyle: TextStyle(
+                hintText: AppLocalizations.of(context)!.loginPassword,
+                hintStyle: const TextStyle(
                   color: Colors.black87,
                   fontSize: 14,
                   fontWeight: FontWeight.w700,

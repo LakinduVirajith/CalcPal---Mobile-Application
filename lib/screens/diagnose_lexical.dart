@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/enums/disorder_types.dart';
 import 'package:calcpal/models/diagnosis.dart';
@@ -17,6 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'dart:developer' as developer;
 
 class DiagnoseLexicalScreen extends StatefulWidget {
@@ -68,12 +68,20 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
     super.dispose();
   }
 
+  // FUNCTION TO SET THE SELECTED LANGUAGE BASED ON THE STORED LANGUAGE CODE
+  Future<void> _setupLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final languageCode = prefs.getString('language_code') ?? 'en-US';
+    DiagnoseLexicalScreen.selectedLanguage =
+        CommonService.getLanguageForAPI(languageCode);
+  }
+
   // FUNCTION TO LOAD THE QUESTION
   Future<void> _loadQuestion() async {
     try {
+      await _setupLanguage();
       final question = await _questionService.fetchQuestion(
-        DiagnoseLexicalScreen.currentQuestionNumber,
-      );
+          DiagnoseLexicalScreen.currentQuestionNumber, context);
 
       if (question != null) {
         setState(() {
@@ -119,7 +127,8 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
     bool isPermissionGranted =
         await _speechService.checkAndRequestMicrophonePermission();
     if (!isPermissionGranted) {
-      _toastService.errorToast('To proceed, please allow microphone access.');
+      _toastService.errorToast(
+          AppLocalizations.of(context)!.diagnoseLexicalMessagesToProceedError);
       return;
     }
 
@@ -130,7 +139,8 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
     bool isInitialized = await _speechService.initializeSpeechToText(
       onError: (error) {
         setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
-        _toastService.infoToast("No speech detected. Let's try that again!");
+        _toastService.infoToast(
+            AppLocalizations.of(context)!.diagnoseLexicalMessagesNoSpeechError);
         developer.log('Error: $error');
       },
       onStatus: (status) => developer.log('Status: $status'),
@@ -157,8 +167,8 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
 
               // HANDLE RESPONSE BASED ON ATTEMPT
               if (_voiceAttempt == 1 && !isCorrectAnswer) {
-                _toastService.errorToast(
-                    "That didn't seem right. Please try saying it again.");
+                _toastService.errorToast(AppLocalizations.of(context)!
+                    .diagnoseLexicalMessagesDidntRightError);
                 _voiceAttempt = 2;
                 await _captureVoice(); // RETRY ON FAILURE
               } else {
@@ -178,8 +188,8 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
             setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
           });
     } else {
-      _toastService.errorToast(
-          'Failed to initialize the voice recognition service. Please try again.');
+      _toastService.errorToast(AppLocalizations.of(context)!
+          .diagnoseLexicalMessagesFailedToInitializeError);
       setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
     }
   }
@@ -204,17 +214,18 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
 
     // CHECK IF ACCESS TOKEN IS AVAILABLE
     if (accessToken == null) {
-      _handleErrorAndRedirect('Access token not available. Please log in.');
+      _handleErrorAndRedirect(AppLocalizations.of(context)!
+          .diagnoseLexicalMessagesAccessTokenError);
       return;
     }
 
     // FETCH USER INFO
-    User? user = await _userService.getUser(accessToken);
+    User? user = await _userService.getUser(accessToken, context);
 
     // CHECK IF USER AND IQ SCORE ARE AVAILABLE
     if (user == null || user.iqScore == null) {
       _handleErrorAndRedirect(
-          'User information or IQ score not available. Please log in.');
+          AppLocalizations.of(context)!.diagnoseLexicalMessagesIQScoreError);
       return;
     }
 
@@ -225,53 +236,49 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
 
     // PREPARE DIAGNOSIS DATA AND FETCH DIAGNOSIS RESULT FROM THE SERVICE
     FlaskDiagnosisResult? diagnosis = await _questionService.getDiagnosisResult(
-      Diagnosis(
-        age: user.age,
-        iq: user.iqScore!,
-        q1: DiagnoseLexicalScreen.userResponses[0] ? 1 : 0,
-        q2: DiagnoseLexicalScreen.userResponses[1] ? 1 : 0,
-        q3: DiagnoseLexicalScreen.userResponses[2] ? 1 : 0,
-        q4: DiagnoseLexicalScreen.userResponses[3] ? 1 : 0,
-        q5: DiagnoseLexicalScreen.userResponses[4] ? 1 : 0,
-        seconds: roundedElapsedTimeInSeconds,
-      ),
-    );
+        Diagnosis(
+          age: user.age,
+          iq: user.iqScore!,
+          q1: DiagnoseLexicalScreen.userResponses[0] ? 1 : 0,
+          q2: DiagnoseLexicalScreen.userResponses[1] ? 1 : 0,
+          q3: DiagnoseLexicalScreen.userResponses[2] ? 1 : 0,
+          q4: DiagnoseLexicalScreen.userResponses[3] ? 1 : 0,
+          q5: DiagnoseLexicalScreen.userResponses[4] ? 1 : 0,
+          seconds: roundedElapsedTimeInSeconds,
+        ),
+        context);
 
     // CHECK IF DIAGNOSIS RESULT IS VALID AND GET DIAGNOSE STATUS
     if (diagnosis != null && diagnosis.prediction != null) {
       diagnoseStatus = diagnosis.prediction!;
     } else {
       _handleErrorAndRedirect(
-          'Unable to fetch diagnosis results. Please log in to your account.');
+          AppLocalizations.of(context)!.diagnoseLexicalMessagesDiagnosisError);
       return;
     }
 
     // UPDATE USER DISORDER STATUS IN THE DATABASE
     status = await _questionService.addDiagnosisResult(
-      DiagnosisResult(
-        userEmail: user.email,
-        timeSeconds: roundedElapsedTimeInSeconds,
-        q1: DiagnoseLexicalScreen.userResponses[0],
-        q2: DiagnoseLexicalScreen.userResponses[1],
-        q3: DiagnoseLexicalScreen.userResponses[2],
-        q4: DiagnoseLexicalScreen.userResponses[3],
-        q5: DiagnoseLexicalScreen.userResponses[4],
-        totalScore: totalScore.toString(),
-        label: diagnoseStatus,
-      ),
-    );
+        DiagnosisResult(
+          userEmail: user.email,
+          timeSeconds: roundedElapsedTimeInSeconds,
+          q1: DiagnoseLexicalScreen.userResponses[0],
+          q2: DiagnoseLexicalScreen.userResponses[1],
+          q3: DiagnoseLexicalScreen.userResponses[2],
+          q4: DiagnoseLexicalScreen.userResponses[3],
+          q5: DiagnoseLexicalScreen.userResponses[4],
+          totalScore: totalScore.toString(),
+          label: diagnoseStatus,
+        ),
+        context);
 
     // UPDATE USER DISORDER TYPE IN THE SERVICE
     if (diagnoseStatus) {
       updateStatus = await _userService.updateDisorderType(
-        DisorderTypes.lexical,
-        accessToken,
-      );
+          DisorderTypes.lexical, accessToken, context);
     } else {
       updateStatus = await _userService.updateDisorderType(
-        DisorderTypes.noLexical,
-        accessToken,
-      );
+          DisorderTypes.noLexical, accessToken, context);
     }
 
     // NAVIGATE BASED ON THE STATUS OF UPDATES
@@ -286,8 +293,8 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
         },
       );
     } else {
-      _handleErrorAndRedirect(
-          'Something went wrong. Please log in to your account.');
+      _handleErrorAndRedirect(AppLocalizations.of(context)!
+          .diagnoseLexicalMessagesSomethingWrongError);
     }
   }
 
@@ -368,18 +375,8 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
                                 ? // DISPLAY ERROR IF LOADING FAILED
                                 Center(
                                     child: Text(
-                                      DiagnoseLexicalScreen.selectedLanguage ==
-                                              'English'
-                                          ? 'Failed to load question. Please try again.'
-                                          : DiagnoseLexicalScreen
-                                                      .selectedLanguage ==
-                                                  'Sinhala'
-                                              ? 'ප්‍රශ්නය පූරණය කිරීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.'
-                                              : DiagnoseLexicalScreen
-                                                          .selectedLanguage ==
-                                                      'Tamil'
-                                                  ? 'கேள்வியை ஏற்ற முடியவில்லை. மீண்டும் முயற்சிக்கவும்.'
-                                                  : 'Listen and answer the question',
+                                      AppLocalizations.of(context)!
+                                          .diagnoseLexicalMessagesFailedToLoad,
                                       style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 18,
@@ -395,19 +392,8 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
                                             MainAxisAlignment.start,
                                         children: [
                                           Text(
-                                            DiagnoseLexicalScreen
-                                                        .selectedLanguage ==
-                                                    'English'
-                                                ? 'Read the number out loud.'
-                                                : DiagnoseLexicalScreen
-                                                            .selectedLanguage ==
-                                                        'Sinhala'
-                                                    ? 'අංකය ශබ්ද නඟා කියවන්න.'
-                                                    : DiagnoseLexicalScreen
-                                                                .selectedLanguage ==
-                                                            'Tamil'
-                                                        ? 'எண்ணை சத்தமாகப் படியுங்கள்.'
-                                                        : 'Read the number out loud',
+                                            AppLocalizations.of(context)!
+                                                .diagnoseLexicalMessagesReadTheNumber,
                                             style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 24,
