@@ -64,6 +64,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
   @override
   void dispose() {
     DiagnoseLexicalScreen.currentQuestionNumber = 1;
+    DiagnoseLexicalScreen.userResponses = [];
     _stopwatch.reset();
     super.dispose();
   }
@@ -72,8 +73,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
   Future<void> _setupLanguage() async {
     final prefs = await SharedPreferences.getInstance();
     final languageCode = prefs.getString('language_code') ?? 'en-US';
-    DiagnoseLexicalScreen.selectedLanguage =
-        CommonService.getLanguageForAPI(languageCode);
+    DiagnoseLexicalScreen.selectedLanguage = languageCode;
   }
 
   // FUNCTION TO LOAD THE QUESTION

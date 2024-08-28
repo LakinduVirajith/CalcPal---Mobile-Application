@@ -31,7 +31,7 @@ class DiagnoseVerbalScreen extends StatefulWidget {
 
   static List<bool> userResponses = [];
   static int currentQuestionNumber = 1;
-  static String selectedLanguage = 'English';
+  static String selectedLanguageCode = 'en-US';
 
   static bool isAudioPlaying = false;
   static bool isDataLoading = false;
@@ -69,6 +69,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
   @override
   void dispose() {
     DiagnoseVerbalScreen.currentQuestionNumber = 1;
+    DiagnoseVerbalScreen.userResponses = [];
     _stopwatch.reset();
     super.dispose();
   }
@@ -77,8 +78,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
   Future<void> _setupLanguage() async {
     final prefs = await SharedPreferences.getInstance();
     final languageCode = prefs.getString('language_code') ?? 'en-US';
-    DiagnoseVerbalScreen.selectedLanguage =
-        CommonService.getLanguageForAPI(languageCode);
+    DiagnoseVerbalScreen.selectedLanguageCode = languageCode;
   }
 
   // FUNCTION TO LOAD AND PLAY QUESTION
@@ -92,7 +92,8 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
 
       final question = await _questionService.fetchQuestion(
           DiagnoseVerbalScreen.currentQuestionNumber,
-          DiagnoseVerbalScreen.selectedLanguage,
+          CommonService.getLanguageForAPI(
+              DiagnoseVerbalScreen.selectedLanguageCode),
           context);
 
       if (question != null) {
@@ -103,7 +104,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
           DiagnoseVerbalScreen.correctAnswer = question.correctAnswer;
         });
         // DECODE BASE64 ENCODED QUESTION
-        if (DiagnoseVerbalScreen.selectedLanguage != 'English') {
+        if (DiagnoseVerbalScreen.selectedLanguageCode != 'en') {
           _decodeQuestion(DiagnoseVerbalScreen.question);
         }
 
@@ -112,8 +113,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
             await _textToSpeechService.synthesizeSpeech(
           DiagnoseVerbalScreen.question,
           CommonService.getLanguageCode(
-            DiagnoseVerbalScreen.selectedLanguage,
-          ),
+              DiagnoseVerbalScreen.selectedLanguageCode),
         );
 
         await _toggleAudioPlayback();
@@ -375,9 +375,13 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                                       Text(
                                         AppLocalizations.of(context)!
                                             .diagnoseVerbalMessagesListenAndAnswer,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: 20,
+                                            fontSize: DiagnoseVerbalScreen
+                                                        .selectedLanguageCode ==
+                                                    'ta'
+                                                ? 16
+                                                : 20,
                                             fontFamily: 'Roboto',
                                             fontWeight: FontWeight.w400),
                                       ),
