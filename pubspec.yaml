@@ -35,6 +35,7 @@ dependencies:
   flutter_launcher_icons: "^0.13.1"
   fluttertoast: ^8.2.5
   http: ^1.2.1
+  font_awesome_flutter: ^10.1.0
 
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -77,6 +78,7 @@ flutter:
     - assets/images/diagnose_background_v1.png
     - assets/images/diagnose_op_background.png
     - assets/images/diagnose_id_background.png
+    - assets/images/operational_level1.png
     - assets/images/q1_img.png
 
     - assets/icons/user.svg
