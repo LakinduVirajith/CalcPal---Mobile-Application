@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:calcpal/enums/disorder_types.dart';
 import 'package:calcpal/models/auth_response.dart';
 import 'package:calcpal/models/sign_up.dart';
+import 'package:calcpal/models/update_user.dart';
 import 'package:calcpal/models/user.dart';
 import 'package:calcpal/services/common_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -309,5 +310,38 @@ class UserService {
       _commonService.handleException(e);
     }
     return null;
+  }
+
+  // UPDATE THE USER DETAILS
+  Future<bool> updateUser(String accessToken, UpdateUser updateUser) async {
+    final url = Uri.parse('$_baseUrl/user/update');
+
+    try {
+      final body = jsonEncode(updateUser.toJson());
+
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: body,
+      );
+
+      // HANDLE HTTP RESPONSE
+      _commonService.handleHttpResponse(
+          response, 'Your details have been updated successfully.', {
+        404: 'User account not found. Please make sure you are logged in.',
+      });
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      }
+    } on http.ClientException {
+      _commonService.handleNetworkError();
+    } catch (e) {
+      _commonService.handleException(e);
+    }
+    return false;
   }
 }

@@ -2,7 +2,7 @@ class User {
   final String name;
   final String email;
   final int age;
-  final String birthDay;
+  final String birthday;
   final List<String>? disorderTypes;
   final int? iqScore;
 
@@ -12,7 +12,7 @@ class User {
     required this.name,
     required this.email,
     required this.age,
-    required this.birthDay,
+    required this.birthday,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -24,7 +24,7 @@ class User {
       name: json['name'],
       email: json['email'],
       age: json['age'],
-      birthDay: json['birthDay'],
+      birthday: json['birthday'],
     );
   }
 }
