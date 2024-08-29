@@ -162,147 +162,156 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
       DeviceOrientation.landscapeRight,
     ]);
 
-    return Scaffold(
-      body: SafeArea(
-        left: false,
-        right: false,
-        child: FutureBuilder(
-          future: _resultFuture,
-          builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              // DISPLAY A LOADING INDICATOR WHILE THE FUTURE IS BEGIG PROCESSED
-              return Stack(
-                children: [
-                  Container(
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(
-                            'assets/images/diagnose_report_background.png'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  const Center(
-                    child: SpinKitCubeGrid(
-                      color: Colors.white,
-                      size: 80.0,
-                    ),
-                  ),
-                ],
-              );
-            } else {
-              // ONCE THE FUTURE IS COMPLETED, DISPLAY THE ACTUAL CONTENT
-              return LayoutBuilder(
-                builder: (context, constraints) {
-                  return Stack(
-                    children: [
-                      // SET BACKGROUND IMAGE
-                      Container(
-                        decoration: const BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage(
-                                'assets/images/diagnose_report_background.png'),
-                            fit: BoxFit.cover,
-                          ),
+    return PopScope(
+      canPop: false, // CANPOP IS SET TO FALSE TO PREVENT POPPING THE ROUTE
+      // CALLBACK WHEN BACK BUTTON IS PRESSED
+      onPopInvoked: (didPop) {
+        if (didPop) return; // PREVENT DEFAULT BACK NAVIGATION
+        Navigator.of(context).pushNamed(mainDashboardRoute);
+      },
+      child: Scaffold(
+        body: SafeArea(
+          left: false,
+          right: false,
+          child: FutureBuilder(
+            future: _resultFuture,
+            builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                // DISPLAY A LOADING INDICATOR WHILE THE FUTURE IS BEGIG PROCESSED
+                return Stack(
+                  children: [
+                    Container(
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage(
+                              'assets/images/diagnose_report_background.png'),
+                          fit: BoxFit.cover,
                         ),
                       ),
-                      Positioned(
-                        top: constraints.maxHeight * 0.12,
-                        right: constraints.maxWidth * 0.07,
-                        bottom: constraints.maxHeight * 0.12,
-                        child: Column(
-                          children: [
-                            // DISPLAY DIAGNOSE TYPE 1 STATUS
-                            Container(
-                              width: 240,
-                              padding: const EdgeInsets.all(12.0),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(12.0),
-                                ),
-                              ),
-                              child: Text(
-                                '$diagnoseType1: ${isDiagnoseType1 ? AppLocalizations.of(context)!.diagnoseReportRisk : AppLocalizations.of(context)!.diagnoseReportSafe}',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: isDiagnoseType1
-                                      ? const Color.fromRGBO(219, 37, 37, 1)
-                                      : const Color.fromRGBO(40, 40, 40, 1),
-                                  fontSize: 24,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                    ),
+                    const Center(
+                      child: SpinKitCubeGrid(
+                        color: Colors.white,
+                        size: 80.0,
+                      ),
+                    ),
+                  ],
+                );
+              } else {
+                // ONCE THE FUTURE IS COMPLETED, DISPLAY THE ACTUAL CONTENT
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Stack(
+                      children: [
+                        // SET BACKGROUND IMAGE
+                        Container(
+                          decoration: const BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage(
+                                  'assets/images/diagnose_report_background.png'),
+                              fit: BoxFit.cover,
                             ),
-                            const SizedBox(height: 24.0),
-                            // DISPLAY DIAGNOSE TYPE 2 STATUS
-                            Container(
-                              width: 240,
-                              padding: const EdgeInsets.all(12.0),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(12.0),
-                                ),
-                              ),
-                              child: Text(
-                                '$diagnoseType2: ${isDiagnoseType2 ? AppLocalizations.of(context)!.diagnoseReportRisk : AppLocalizations.of(context)!.diagnoseReportSafe}',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: isDiagnoseType2
-                                      ? const Color.fromRGBO(219, 37, 37, 1)
-                                      : const Color.fromRGBO(40, 40, 40, 1),
-                                  fontSize: 24,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            const Spacer(),
-                            // BUTTON AT THE BOTTOM
-                            SizedBox(
-                              width: 240,
-                              child: ElevatedButton(
-                                onPressed: _handleButtonPress,
-                                style: ButtonStyle(
-                                  backgroundColor: WidgetStateProperty.all(
-                                    const Color.fromRGBO(40, 40, 40, 1),
-                                  ),
-                                  padding: WidgetStateProperty.all(
-                                    const EdgeInsets.all(18.0),
-                                  ),
-                                  shape: WidgetStateProperty.all(
-                                    RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12.0),
-                                    ),
+                          ),
+                        ),
+                        Positioned(
+                          top: constraints.maxHeight * 0.12,
+                          right: constraints.maxWidth * 0.07,
+                          bottom: constraints.maxHeight * 0.12,
+                          child: Column(
+                            children: [
+                              // DISPLAY DIAGNOSE TYPE 1 STATUS
+                              Container(
+                                width: 240,
+                                padding: const EdgeInsets.all(12.0),
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(12.0),
                                   ),
                                 ),
                                 child: Text(
-                                  (isDiagnoseType1 || isDiagnoseType2)
-                                      ? AppLocalizations.of(context)!
-                                          .diagnoseReportActivityButton
-                                      : AppLocalizations.of(context)!
-                                          .diagnoseReportMainDashboardButton,
+                                  '$diagnoseType1: ${isDiagnoseType1 ? AppLocalizations.of(context)!.diagnoseReportRisk : AppLocalizations.of(context)!.diagnoseReportSafe}',
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style: TextStyle(
+                                    color: isDiagnoseType1
+                                        ? const Color.fromRGBO(219, 37, 37, 1)
+                                        : const Color.fromRGBO(40, 40, 40, 1),
                                     fontSize: 24,
                                     fontFamily: 'Roboto',
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 24.0),
+                              // DISPLAY DIAGNOSE TYPE 2 STATUS
+                              Container(
+                                width: 240,
+                                padding: const EdgeInsets.all(12.0),
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(12.0),
+                                  ),
+                                ),
+                                child: Text(
+                                  '$diagnoseType2: ${isDiagnoseType2 ? AppLocalizations.of(context)!.diagnoseReportRisk : AppLocalizations.of(context)!.diagnoseReportSafe}',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: isDiagnoseType2
+                                        ? const Color.fromRGBO(219, 37, 37, 1)
+                                        : const Color.fromRGBO(40, 40, 40, 1),
+                                    fontSize: 24,
+                                    fontFamily: 'Roboto',
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const Spacer(),
+                              // BUTTON AT THE BOTTOM
+                              SizedBox(
+                                width: 240,
+                                child: ElevatedButton(
+                                  onPressed: _handleButtonPress,
+                                  style: ButtonStyle(
+                                    backgroundColor: WidgetStateProperty.all(
+                                      const Color.fromRGBO(40, 40, 40, 1),
+                                    ),
+                                    padding: WidgetStateProperty.all(
+                                      const EdgeInsets.all(18.0),
+                                    ),
+                                    shape: WidgetStateProperty.all(
+                                      RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
+                                      ),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    (isDiagnoseType1 || isDiagnoseType2)
+                                        ? AppLocalizations.of(context)!
+                                            .diagnoseReportActivityButton
+                                        : AppLocalizations.of(context)!
+                                            .diagnoseReportMainDashboardButton,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  );
-                },
-              );
-            }
-          },
+                      ],
+                    );
+                  },
+                );
+              }
+            },
+          ),
         ),
       ),
     );

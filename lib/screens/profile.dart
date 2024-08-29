@@ -48,6 +48,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    // FORCE PORTRAIT ORIENTATION
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        systemNavigationBarColor: Colors.black,
+      ),
+    );
+
     _initialDetails = _loadDetails();
   }
 
@@ -183,21 +197,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // FORCE PORTRAIT ORIENTATION
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-
-    // SET CUSTOM STATUS BAR COLOR
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.black,
-        systemNavigationBarColor: Colors.black,
-      ),
-    );
-
-    // MAIN SCAFFOLD WIDGET
     return Scaffold(
       appBar: _buildAppBar(),
       body: SafeArea(
@@ -435,13 +434,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 .map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
-                child: Text(value, style: const TextStyle(color: Colors.black)),
+                child: Row(
+                  children: [
+                    // DISPLAY FLAG ICON NEXT TO LANGUAGE NAME
+                    Image.asset(
+                      _getFlagIcon(value),
+                      width: 24,
+                      height: 24,
+                      fit: BoxFit.cover,
+                    ),
+                    const SizedBox(width: 8.0),
+                    Text(value, style: const TextStyle(color: Colors.black)),
+                  ],
+                ),
               );
             }).toList(),
           ),
         );
       },
     );
+  }
+
+  // FUNCTION TO RETURN FLAG ICON PATH BASED ON LANGUAGE
+  String _getFlagIcon(String language) {
+    switch (language) {
+      case 'English':
+        return 'assets/icons/united-states.png'; // PATH TO USA FLAG ICON
+      case 'සිංහල':
+        return 'assets/icons/sri-lanka.png'; // PATH TO SRI LANKA FLAG ICON
+      case 'தமிழ்':
+        return 'assets/icons/india.png'; // PATH TO INDIA FLAG ICON
+      default:
+        return 'assets/icon/united-states.png'; // DEFAULT FLAG ICON PATH
+    }
   }
 
   // METHOD TO BUILD INPUT LABELS

@@ -72,7 +72,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
   // FUNCTION TO SET THE SELECTED LANGUAGE BASED ON THE STORED LANGUAGE CODE
   Future<void> _setupLanguage() async {
     final prefs = await SharedPreferences.getInstance();
-    final languageCode = prefs.getString('language_code') ?? 'en-US';
+    final languageCode = prefs.getString('language_code') ?? 'en';
     DiagnoseLexicalScreen.selectedLanguage = languageCode;
   }
 
@@ -172,7 +172,9 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
                 _voiceAttempt = 2;
                 await _captureVoice(); // RETRY ON FAILURE
               } else {
-                DiagnoseLexicalScreen.userResponses.add(isCorrectAnswer);
+                DiagnoseLexicalScreen.userResponses.insert(
+                    DiagnoseLexicalScreen.currentQuestionNumber - 1,
+                    isCorrectAnswer);
 
                 // CHECK IF THERE ARE MORE QUESTIONS LEFT
                 if (DiagnoseLexicalScreen.currentQuestionNumber < 5) {
@@ -326,147 +328,156 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
       ),
     );
 
-    return Scaffold(
-      body: SafeArea(
-        right: false,
-        left: false,
-        child: FutureBuilder(
-          future: _questionFuture,
-          builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                return Stack(
-                  children: [
-                    // SET BACKGROUND IMAGE
-                    Container(
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage(
-                              'assets/images/diagnose_background_v2.png'),
-                          fit: BoxFit.cover,
+    return PopScope(
+      canPop: false, // CANPOP IS SET TO FALSE TO PREVENT POPPING THE ROUTE
+      // CALLBACK WHEN BACK BUTTON IS PRESSED
+      onPopInvoked: (didPop) {
+        if (didPop) return; // PREVENT DEFAULT BACK NAVIGATION
+        Navigator.of(context).pushNamed(mainDashboardRoute);
+      },
+      child: Scaffold(
+        body: SafeArea(
+          right: false,
+          left: false,
+          child: FutureBuilder(
+            future: _questionFuture,
+            builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  return Stack(
+                    children: [
+                      // SET BACKGROUND IMAGE
+                      Container(
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage(
+                                'assets/images/diagnose_background_v2.png'),
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      top: constraints.maxHeight * 0.1,
-                      right: constraints.maxWidth * 0.25,
-                      left: constraints.maxWidth * 0.25,
-                      bottom: constraints.maxHeight * 0.1,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 24.0,
-                          horizontal: 36.0,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color.fromRGBO(96, 96, 96, 1),
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: (snapshot.connectionState ==
-                                ConnectionState.waiting)
-                            ? // SHOW LOADER WHILE WAITING FOR THE QUESTION TO LOAD
-                            const Center(
-                                child: SpinKitCubeGrid(
-                                  color: Colors.white,
-                                  size: 80.0,
-                                ),
-                              )
-                            : (snapshot.hasError ||
-                                    DiagnoseLexicalScreen.isErrorOccurred)
-                                ? // DISPLAY ERROR IF LOADING FAILED
-                                Center(
-                                    child: Text(
-                                      AppLocalizations.of(context)!
-                                          .diagnoseLexicalMessagesFailedToLoad,
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontFamily: 'Roboto',
-                                          fontWeight: FontWeight.w400),
-                                    ),
-                                  )
-                                // DISPLAY QUESTION INSTRUCTIONS
-                                : Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            AppLocalizations.of(context)!
-                                                .diagnoseLexicalMessagesReadTheNumber,
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 24,
-                                                fontFamily: 'Roboto',
-                                                fontWeight: FontWeight.w400),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 24.0),
-                                      // QUESTION NUMBER
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          AnswerBox(
-                                            width: 160.0,
-                                            height: 160.0,
-                                            value:
-                                                DiagnoseLexicalScreen.question,
-                                            size: 64.0,
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                      Positioned(
+                        top: constraints.maxHeight * 0.1,
+                        right: constraints.maxWidth * 0.25,
+                        left: constraints.maxWidth * 0.25,
+                        bottom: constraints.maxHeight * 0.1,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 24.0,
+                            horizontal: 36.0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color.fromRGBO(96, 96, 96, 1),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: (snapshot.connectionState ==
+                                  ConnectionState.waiting)
+                              ? // SHOW LOADER WHILE WAITING FOR THE QUESTION TO LOAD
+                              const Center(
+                                  child: SpinKitCubeGrid(
+                                    color: Colors.white,
+                                    size: 80.0,
                                   ),
-                      ),
-                    ),
-                    Positioned(
-                      top: constraints.maxHeight * 0.7,
-                      right: constraints.maxWidth * 0.25,
-                      left: constraints.maxWidth * 0.6,
-                      bottom: constraints.maxHeight * 0.15,
-                      child: (snapshot.hasError ||
-                              DiagnoseLexicalScreen.isErrorOccurred)
-                          ? Container()
-                          : AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 300),
-                              child: GestureDetector(
-                                key: ValueKey<bool>(
-                                  DiagnoseLexicalScreen.isMicrophoneOn,
-                                ),
-                                onTap: _captureVoice,
-                                child: Opacity(
-                                  opacity: 0.65,
-                                  child: Container(
-                                    height: 60,
-                                    width: 60,
-                                    decoration: BoxDecoration(
-                                      color:
-                                          DiagnoseLexicalScreen.isMicrophoneOn
-                                              ? Colors.black
-                                              : Colors.white,
-                                      shape: BoxShape.circle,
+                                )
+                              : (snapshot.hasError ||
+                                      DiagnoseLexicalScreen.isErrorOccurred)
+                                  ? // DISPLAY ERROR IF LOADING FAILED
+                                  Center(
+                                      child: Text(
+                                        AppLocalizations.of(context)!
+                                            .diagnoseLexicalMessagesFailedToLoad,
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontFamily: 'Roboto',
+                                            fontWeight: FontWeight.w400),
+                                      ),
+                                    )
+                                  // DISPLAY QUESTION INSTRUCTIONS
+                                  : Column(
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              AppLocalizations.of(context)!
+                                                  .diagnoseLexicalMessagesReadTheNumber,
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 24,
+                                                  fontFamily: 'Roboto',
+                                                  fontWeight: FontWeight.w400),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 24.0),
+                                        // QUESTION NUMBER
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            AnswerBox(
+                                              width: 160.0,
+                                              height: 160.0,
+                                              value: DiagnoseLexicalScreen
+                                                  .question,
+                                              size: 64.0,
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
-                                    child: DiagnoseLexicalScreen.isMicrophoneOn
-                                        ? Image.asset(
-                                            'assets/icons/sound-wave.gif',
-                                            fit: BoxFit.contain,
-                                          )
-                                        : SvgPicture.asset(
-                                            'assets/icons/microphone.svg',
-                                            semanticsLabel: 'microphone icon',
-                                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: constraints.maxHeight * 0.7,
+                        right: constraints.maxWidth * 0.25,
+                        left: constraints.maxWidth * 0.6,
+                        bottom: constraints.maxHeight * 0.15,
+                        child: (snapshot.hasError ||
+                                DiagnoseLexicalScreen.isErrorOccurred)
+                            ? Container()
+                            : AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                child: GestureDetector(
+                                  key: ValueKey<bool>(
+                                    DiagnoseLexicalScreen.isMicrophoneOn,
+                                  ),
+                                  onTap: _captureVoice,
+                                  child: Opacity(
+                                    opacity: 0.65,
+                                    child: Container(
+                                      height: 60,
+                                      width: 60,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            DiagnoseLexicalScreen.isMicrophoneOn
+                                                ? Colors.black
+                                                : Colors.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: DiagnoseLexicalScreen
+                                              .isMicrophoneOn
+                                          ? Image.asset(
+                                              'assets/icons/sound-wave.gif',
+                                              fit: BoxFit.contain,
+                                            )
+                                          : SvgPicture.asset(
+                                              'assets/icons/microphone.svg',
+                                              semanticsLabel: 'microphone icon',
+                                            ),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );

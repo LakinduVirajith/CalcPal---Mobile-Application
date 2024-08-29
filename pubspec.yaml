@@ -156,6 +156,9 @@ flutter:
     - assets/icons/well-done.png
     - assets/icons/score.svg
     - assets/icons/age.svg
+    - assets/icons/sri-lanka.png
+    - assets/icons/india.png
+    - assets/icons/united-states.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
