@@ -29,12 +29,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final ToastService _toastService = ToastService();
 
   @override
+  void initState() {
+    super.initState();
+
+    // FORCE PORTRAIT ORIENTATION
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
+  }
+
+  @override
   void dispose() {
     // DISPOSE CONTROLLERS TO FREE UP RESOURCES
     _usernameController.dispose();
     _emailController.dispose();
     _birthdayController.dispose();
     _passwordController.dispose();
+
     super.dispose();
   }
 
@@ -66,10 +88,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             context);
 
         if (status) {
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            loginRoute,
-            (route) => false,
-          );
+          Navigator.of(context).pushNamed(loginRoute);
         }
       }
     } catch (e) {
@@ -81,22 +100,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // FORCE PORTRAIT ORIENTATION
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-
-    // SET CUSTOM STATUS BAR COLOR
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarIconBrightness: Brightness.light,
-      ),
-    );
-
     return Scaffold(
       body: SafeArea(
         top: false,

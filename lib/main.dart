@@ -1,5 +1,7 @@
 import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/models/auth_response.dart';
+import 'package:calcpal/models/user.dart';
+import 'package:calcpal/screens/activity_dashboard.dart';
 import 'package:calcpal/screens/activity_graphical.dart';
 import 'package:calcpal/screens/activity_ideognostic.dart';
 import 'package:calcpal/screens/activity_lexical.dart';
@@ -116,6 +118,7 @@ class _MyAppState extends State<MyApp> {
               const DiagnoseVisualSpatialScreen(),
           diagnoseResultRoute: (context) => const DiagnoseResultScreen(),
           diagnoseReportRoute: (context) => const DiagnoseReportScreen(),
+          activityDashboardRoute: (context) => const ActivityDashboardScreen(),
           activityVerbalRoute: (context) => const ActivityVerbalScreen(),
           activityLexicalRoute: (context) => const ActivityLexicalScreen(),
           activityOperationalRoute: (context) =>
@@ -170,7 +173,12 @@ class _ValidationScreenState extends State<ValidationScreen> {
     // CHECK IF THE USER HAS A VALID ACCESS TOKEN
     final String? accessToken = prefs.getString('access_token');
     if (accessToken != null && !JwtDecoder.isExpired(accessToken)) {
-      Navigator.of(context).pushNamed(mainDashboardRoute);
+      User? user = await _userService.getUser(accessToken, context);
+      if (user!.disorderTypes!.isNotEmpty) {
+        Navigator.of(context).pushNamed(activityDashboardRoute);
+      } else {
+        Navigator.of(context).pushNamed(mainDashboardRoute);
+      }
       return;
     }
 

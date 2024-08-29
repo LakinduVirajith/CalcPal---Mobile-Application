@@ -31,7 +31,7 @@ class DiagnoseVerbalScreen extends StatefulWidget {
 
   static List<bool> userResponses = [];
   static int currentQuestionNumber = 1;
-  static String selectedLanguage = 'English';
+  static String selectedLanguageCode = 'en-US';
 
   static bool isAudioPlaying = false;
   static bool isDataLoading = false;
@@ -69,6 +69,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
   @override
   void dispose() {
     DiagnoseVerbalScreen.currentQuestionNumber = 1;
+    DiagnoseVerbalScreen.userResponses = [];
     _stopwatch.reset();
     super.dispose();
   }
@@ -76,9 +77,8 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
   // FUNCTION TO SET THE SELECTED LANGUAGE BASED ON THE STORED LANGUAGE CODE
   Future<void> _setupLanguage() async {
     final prefs = await SharedPreferences.getInstance();
-    final languageCode = prefs.getString('language_code') ?? 'en-US';
-    DiagnoseVerbalScreen.selectedLanguage =
-        CommonService.getLanguageForAPI(languageCode);
+    final languageCode = prefs.getString('language_code') ?? 'en';
+    DiagnoseVerbalScreen.selectedLanguageCode = languageCode;
   }
 
   // FUNCTION TO LOAD AND PLAY QUESTION
@@ -92,7 +92,8 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
 
       final question = await _questionService.fetchQuestion(
           DiagnoseVerbalScreen.currentQuestionNumber,
-          DiagnoseVerbalScreen.selectedLanguage,
+          CommonService.getLanguageForAPI(
+              DiagnoseVerbalScreen.selectedLanguageCode),
           context);
 
       if (question != null) {
@@ -103,7 +104,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
           DiagnoseVerbalScreen.correctAnswer = question.correctAnswer;
         });
         // DECODE BASE64 ENCODED QUESTION
-        if (DiagnoseVerbalScreen.selectedLanguage != 'English') {
+        if (DiagnoseVerbalScreen.selectedLanguageCode != 'en') {
           _decodeQuestion(DiagnoseVerbalScreen.question);
         }
 
@@ -112,8 +113,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
             await _textToSpeechService.synthesizeSpeech(
           DiagnoseVerbalScreen.question,
           CommonService.getLanguageCode(
-            DiagnoseVerbalScreen.selectedLanguage,
-          ),
+              DiagnoseVerbalScreen.selectedLanguageCode),
         );
 
         await _toggleAudioPlayback();
@@ -170,9 +170,11 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
   Future<void> _handleAnswer(String userAnswer) async {
     // CHECK IF THE USER'S ANSWER IS CORRECT
     if (userAnswer == DiagnoseVerbalScreen.correctAnswer) {
-      DiagnoseVerbalScreen.userResponses.add(true);
+      DiagnoseVerbalScreen.userResponses
+          .insert(DiagnoseVerbalScreen.currentQuestionNumber - 1, true);
     } else {
-      DiagnoseVerbalScreen.userResponses.add(false);
+      DiagnoseVerbalScreen.userResponses
+          .insert(DiagnoseVerbalScreen.currentQuestionNumber - 1, false);
     }
 
     // CHECK IF THERE ARE MORE QUESTIONS LEFT
@@ -310,145 +312,160 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
       ),
     );
 
-    return Scaffold(
-      body: SafeArea(
-        right: false,
-        left: false,
-        child: FutureBuilder(
-          future: _questionFuture,
-          builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                return Stack(
-                  children: [
-                    // SET BACKGROUND IMAGE
-                    Container(
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage(
-                              'assets/images/diagnose_background_v1.png'),
-                          fit: BoxFit.cover,
+    return PopScope(
+      canPop: false, // CANPOP IS SET TO FALSE TO PREVENT POPPING THE ROUTE
+      // CALLBACK WHEN BACK BUTTON IS PRESSED
+      onPopInvoked: (didPop) {
+        if (didPop) return; // PREVENT DEFAULT BACK NAVIGATION
+        Navigator.of(context).pushNamed(mainDashboardRoute);
+      },
+      child: Scaffold(
+        body: SafeArea(
+          right: false,
+          left: false,
+          child: FutureBuilder(
+            future: _questionFuture,
+            builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  return Stack(
+                    children: [
+                      // SET BACKGROUND IMAGE
+                      Container(
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage(
+                                'assets/images/diagnose_background_v1.png'),
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      top: constraints.maxHeight * 0.1,
-                      right: constraints.maxWidth * 0.25,
-                      left: constraints.maxWidth * 0.25,
-                      bottom: constraints.maxHeight * 0.1,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 24.0,
-                          horizontal: 36.0,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color.fromRGBO(96, 96, 96, 1),
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: (snapshot.connectionState ==
-                                    ConnectionState.waiting ||
-                                DiagnoseVerbalScreen.isDataLoading)
-                            ? // SHOW LOADER WHILE WAITING FOR THE QUESTION TO LOAD
-                            const Center(
-                                child: SpinKitCubeGrid(
-                                  color: Colors.white,
-                                  size: 80.0,
-                                ),
-                              )
-                            : (snapshot.hasError ||
-                                    DiagnoseVerbalScreen.isErrorOccurred)
-                                ? // DISPLAY ERROR IF LOADING FAILED
-                                Center(
-                                    child: Text(
-                                      AppLocalizations.of(context)!
-                                          .diagnoseVerbalMessagesLoadQuestion,
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 20,
-                                          fontFamily: 'Roboto',
-                                          fontWeight: FontWeight.w400),
-                                    ),
-                                  )
-                                // DISPLAY QUESTION INSTRUCTIONS
-                                : Column(
-                                    children: [
-                                      Text(
+                      Positioned(
+                        top: constraints.maxHeight * 0.1,
+                        right: constraints.maxWidth * 0.25,
+                        left: constraints.maxWidth * 0.25,
+                        bottom: constraints.maxHeight * 0.1,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 24.0,
+                            horizontal: 36.0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color.fromRGBO(96, 96, 96, 1),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: (snapshot.connectionState ==
+                                      ConnectionState.waiting ||
+                                  DiagnoseVerbalScreen.isDataLoading)
+                              ? // SHOW LOADER WHILE WAITING FOR THE QUESTION TO LOAD
+                              const Center(
+                                  child: SpinKitCubeGrid(
+                                    color: Colors.white,
+                                    size: 80.0,
+                                  ),
+                                )
+                              : (snapshot.hasError ||
+                                      DiagnoseVerbalScreen.isErrorOccurred)
+                                  ? // DISPLAY ERROR IF LOADING FAILED
+                                  Center(
+                                      child: Text(
                                         AppLocalizations.of(context)!
-                                            .diagnoseVerbalMessagesListenAndAnswer,
+                                            .diagnoseVerbalMessagesLoadQuestion,
                                         style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 20,
                                             fontFamily: 'Roboto',
                                             fontWeight: FontWeight.w400),
                                       ),
-                                      const SizedBox(height: 24.0),
-                                      // PLAY AUDIO BUTTON
-                                      AnimatedSwitcher(
-                                        duration:
-                                            const Duration(milliseconds: 300),
-                                        child: GestureDetector(
-                                          key: ValueKey<bool>(
-                                            DiagnoseVerbalScreen.isAudioPlaying,
-                                          ),
-                                          onTap: _toggleAudioPlayback,
-                                          child: Opacity(
-                                            opacity: 0.65,
-                                            child: Container(
-                                              height: 70,
-                                              width: 125,
-                                              decoration: const BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius: BorderRadius.all(
-                                                  Radius.circular(18.0),
+                                    )
+                                  // DISPLAY QUESTION INSTRUCTIONS
+                                  : Column(
+                                      children: [
+                                        Text(
+                                          AppLocalizations.of(context)!
+                                              .diagnoseVerbalMessagesListenAndAnswer,
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: DiagnoseVerbalScreen
+                                                          .selectedLanguageCode ==
+                                                      'ta'
+                                                  ? 16
+                                                  : 20,
+                                              fontFamily: 'Roboto',
+                                              fontWeight: FontWeight.w400),
+                                        ),
+                                        const SizedBox(height: 24.0),
+                                        // PLAY AUDIO BUTTON
+                                        AnimatedSwitcher(
+                                          duration:
+                                              const Duration(milliseconds: 300),
+                                          child: GestureDetector(
+                                            key: ValueKey<bool>(
+                                              DiagnoseVerbalScreen
+                                                  .isAudioPlaying,
+                                            ),
+                                            onTap: _toggleAudioPlayback,
+                                            child: Opacity(
+                                              opacity: 0.65,
+                                              child: Container(
+                                                height: 70,
+                                                width: 125,
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                    Radius.circular(18.0),
+                                                  ),
                                                 ),
-                                              ),
-                                              child: SvgPicture.asset(
-                                                DiagnoseVerbalScreen
-                                                        .isAudioPlaying
-                                                    ? 'assets/icons/pause-button.svg'
-                                                    : 'assets/icons/play-button.svg',
-                                                semanticsLabel: 'Play Icon',
+                                                child: SvgPicture.asset(
+                                                  DiagnoseVerbalScreen
+                                                          .isAudioPlaying
+                                                      ? 'assets/icons/pause-button.svg'
+                                                      : 'assets/icons/play-button.svg',
+                                                  semanticsLabel: 'Play Icon',
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 48.0),
-                                      // ANSWER OPTIONS
-                                      AnimatedSwitcher(
-                                        duration:
-                                            const Duration(milliseconds: 300),
-                                        child: Row(
-                                          key: ValueKey<int>(
-                                            DiagnoseVerbalScreen
-                                                .currentQuestionNumber,
+                                        const SizedBox(height: 48.0),
+                                        // ANSWER OPTIONS
+                                        AnimatedSwitcher(
+                                          duration:
+                                              const Duration(milliseconds: 300),
+                                          child: Row(
+                                            key: ValueKey<int>(
+                                              DiagnoseVerbalScreen
+                                                  .currentQuestionNumber,
+                                            ),
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: DiagnoseVerbalScreen
+                                                .answers
+                                                .map((answer) {
+                                              return GestureDetector(
+                                                onTap: () =>
+                                                    _handleAnswer(answer),
+                                                child: AnswerBox(
+                                                  width: 60.0,
+                                                  height: 60,
+                                                  value: answer,
+                                                  size: 24.0,
+                                                ),
+                                              );
+                                            }).toList(),
                                           ),
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceAround,
-                                          children: DiagnoseVerbalScreen.answers
-                                              .map((answer) {
-                                            return GestureDetector(
-                                              onTap: () =>
-                                                  _handleAnswer(answer),
-                                              child: AnswerBox(
-                                                width: 60.0,
-                                                height: 60,
-                                                value: answer,
-                                                size: 24.0,
-                                              ),
-                                            );
-                                          }).toList(),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
+                        ),
                       ),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
+                    ],
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );

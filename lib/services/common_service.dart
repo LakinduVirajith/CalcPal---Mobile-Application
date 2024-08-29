@@ -10,11 +10,11 @@ class CommonService {
   // RETURNS THE LANGUAGE CODE FOR THE GIVEN LANGUAGE NAME.
   static String getLanguageCode(String language) {
     switch (language) {
-      case 'English':
+      case 'en':
         return 'en-US';
-      case 'සිංහල':
+      case 'si':
         return 'si-LK';
-      case 'தமிழ்':
+      case 'ta':
         return 'ta-IN';
       default:
         return 'en-US';
@@ -24,7 +24,7 @@ class CommonService {
   // METHOD TO GET LANGUAGE FROM CODE TO API
   static String getLanguageForAPI(String language) {
     switch (language) {
-      case 'en-US':
+      case 'en':
         return 'English';
       case 'si':
         return 'Sinhala';
@@ -38,7 +38,7 @@ class CommonService {
   // METHOD TO GET LANGUAGE FROM CODE
   static String getLanguageFromCode(String code) {
     switch (code) {
-      case 'en-US':
+      case 'en':
         return 'English';
       case 'si':
         return 'සිංහල';

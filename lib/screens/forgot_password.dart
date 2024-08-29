@@ -174,10 +174,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         if (status) {
           setState(() => ForgotPasswordScreen.isOTPValidated = true);
           // NAVIGATE TO THE LOGIN ROUTE AND REMOVE ALL PREVIOUS ROUTES
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            loginRoute,
-            (route) => false,
-          );
+          Navigator.of(context).pushNamed(loginRoute);
         }
       }
     } catch (e) {

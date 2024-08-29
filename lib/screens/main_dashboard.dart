@@ -16,6 +16,24 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
   // INITIALIZING THE USER SERVICE
   final UserService _userService = UserService();
 
+  @override
+  void initState() {
+    super.initState();
+    // FORCE LANDSCAPE ORIENTATION
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        systemNavigationBarColor: Colors.black,
+      ),
+    );
+  }
+
   Future<void> _logout() async {
     // SHOW A CONFIRMATION DIALOG TO THE USER
     final bool? confirmLogout = await showDialog<bool>(
@@ -66,20 +84,6 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // FORCE LANDSCAPE ORIENTATION
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-
-    // SET CUSTOM STATUS BAR COLOR
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.black,
-        systemNavigationBarColor: Colors.black,
-      ),
-    );
-
     return Scaffold(
       body: SafeArea(
         right: false,
