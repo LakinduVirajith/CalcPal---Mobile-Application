@@ -1,36 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:calcpal/screens/multiplication_level1.dart';
 
-class SubtractionLevel1Screen extends StatefulWidget {
-  final String title;
+class MultiplicationLevel1Screen extends StatefulWidget {
   final int number1;
   final int number2;
+  final String title;
   final IconData icon;
-  final bool isActivity4;
 
-  const SubtractionLevel1Screen({
+  const MultiplicationLevel1Screen({
     super.key,
-    required this.title,
     required this.number1,
     required this.number2,
+    required this.title,
     required this.icon,
-    this.isActivity4 = false,
   });
 
   @override
-  _SubtractionLevel1ScreenState createState() =>
-      _SubtractionLevel1ScreenState();
+  _MultiplicationLevel1ScreenState createState() =>
+      _MultiplicationLevel1ScreenState();
 }
 
-class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
+class _MultiplicationLevel1ScreenState
+    extends State<MultiplicationLevel1Screen> {
   late int correctAnswer;
+  late Color iconColor;
 
   @override
   void initState() {
     super.initState();
-    correctAnswer = widget.number1 - widget.number2;
+    correctAnswer = widget.number1 * widget.number2;
+
+    // Set the icon color based on the title
+    if (widget.title.contains('Activity 5')) {
+      iconColor = Colors.blue;
+    } else if (widget.title.contains('Activity 6')) {
+      iconColor = Colors.orange;
+    } else {
+      iconColor = Colors.green;
+    }
   }
 
   void showFeedback(bool isCorrect) {
@@ -62,6 +70,20 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
     );
   }
 
+  void navigateToNextActivity() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MultiplicationLevel1Screen(
+          number1: 4, // Set appropriate number1 for Activity 6
+          number2: 3, // Set appropriate number2 for Activity 6
+          title: 'Activity 6 - Let\'s Multiply', // Set the new title
+          icon: FontAwesomeIcons.book, // Set the appropriate icon
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // FORCE LANDSCAPE ORIENTATION
@@ -75,9 +97,9 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
         children: [
           // Background Image
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/subtraction_level1.png'),
+                image: AssetImage('assets/images/multiplication_level1.png'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -106,19 +128,16 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // First Number and Icons
-                    buildNumberBox(widget.number1, false, showNumber: true),
+                    buildNumberBox(widget.number1),
                     const SizedBox(width: 20),
-                    // Subtraction Sign
-                    const Text(
-                      '-',
-                      style: TextStyle(
+                    // Multiplication Sign and Second Number
+                    Text(
+                      'x ${widget.number2}',
+                      style: const TextStyle(
                         fontSize: 48,
                         color: Colors.black,
                       ),
                     ),
-                    const SizedBox(width: 20),
-                    // Second Number and Icons
-                    buildNumberBox(widget.number2, false, showNumber: true),
                   ],
                 ),
                 const SizedBox(height: 30),
@@ -128,8 +147,8 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
                   style: TextStyle(fontSize: 48, color: Colors.black),
                 ),
                 const SizedBox(height: 20),
-                // Visualization of the Answer (With Crossed-Out Icons)
-                buildNumberBox(widget.number1, true, showNumber: false),
+                // Answer Visualization (Separated by a Border)
+                buildAnswerBox(widget.number1, widget.number2),
                 const SizedBox(height: 30),
                 // Answer Selection Text
                 const Text(
@@ -141,11 +160,11 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    buildAnswerButton(correctAnswer - 1),
+                    buildAnswerButton(correctAnswer - widget.number2),
                     const SizedBox(width: 10),
                     buildAnswerButton(correctAnswer),
                     const SizedBox(width: 10),
-                    buildAnswerButton(correctAnswer + 1),
+                    buildAnswerButton(correctAnswer + widget.number2),
                   ],
                 ),
               ],
@@ -161,36 +180,8 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
               ),
-              onPressed: () {
-                if (widget.isActivity4) {
-                  // Navigate to MultiplicationScreen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MultiplicationLevel1Screen(
-                        number1: 3,
-                        number2: 2,
-                        title: "Activity 5 - Let's Multiply",
-                        icon: FontAwesomeIcons.book,
-                      ), // Navigate to your Multiplication screen here
-                    ),
-                  );
-                } else {
-                  // Navigate to Activity 4
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SubtractionLevel1Screen(
-                        title: "Activity 4 - Let's Subtract",
-                        number1: 16,
-                        number2: 6,
-                        icon: FontAwesomeIcons.mugHot,
-                        isActivity4: true, // Set flag to true for Activity 4
-                      ),
-                    ),
-                  );
-                }
-              },
+              onPressed:
+                  navigateToNextActivity, // Navigate to the next activity
               child: const Text(
                 'Next',
                 style: TextStyle(
@@ -205,9 +196,8 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
     );
   }
 
-  // Helper function to build number box with icons and optional number
-  Widget buildNumberBox(int number, bool crossedOut,
-      {required bool showNumber}) {
+  // Helper function to build number box with icons
+  Widget buildNumberBox(int number) {
     return Column(
       children: [
         Container(
@@ -216,44 +206,59 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
             color: Colors.grey.shade300,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Column(
-            children: [
-              // Icons with Crossed-Out Option
-              Wrap(
-                children: List.generate(number, (index) {
-                  bool shouldCrossOut =
-                      crossedOut && index >= (widget.number1 - widget.number2);
-                  return Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Icon(
-                        widget.icon,
-                        size: 48,
-                        color: shouldCrossOut
-                            ? Colors.red.withOpacity(0.5)
-                            : Colors.green,
-                      ),
-                      if (shouldCrossOut)
-                        const Icon(
-                          Icons.close,
-                          color: Colors.red,
-                          size: 54,
-                        ),
-                    ],
-                  );
-                }),
-              ),
-            ],
+          child: Wrap(
+            children: List.generate(number, (index) {
+              return Icon(
+                widget.icon, // Use the icon from the widget
+                size: 48,
+                color: iconColor, // Use the color set in initState
+              );
+            }),
           ),
         ),
-        // Conditionally Display Number
-        if (showNumber) const SizedBox(height: 10),
-        if (showNumber)
-          Text(
-            '$number',
-            style: const TextStyle(fontSize: 32, color: Colors.black),
-          ),
+        const SizedBox(height: 10),
+        Text(
+          '$number',
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
       ],
+    );
+  }
+
+  // Helper function to build answer visualization box
+  Widget buildAnswerBox(int number1, int number2) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade300,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300, width: 2),
+      ),
+      child: Wrap(
+        spacing: 10.0, // Add spacing between the segments
+        children: List.generate(number2, (index) {
+          return Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Colors.black,
+                width: 2,
+              ), // Border around each part
+            ),
+            child: Wrap(
+              children: List.generate(number1, (index) {
+                return Icon(
+                  widget.icon, // Use the icon from the widget
+                  size: 48,
+                  color: iconColor, // Use the color set in initState
+                );
+              }),
+            ),
+          );
+        }),
+      ),
     );
   }
 

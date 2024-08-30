@@ -14,8 +14,14 @@ class OperationalLevel1Screen extends StatefulWidget {
 class _OperationalLevel1ScreenState extends State<OperationalLevel1Screen> {
   int number1 = 2;
   int number2 = 3;
-  int correctAnswer = 5;
+  int correctAnswer = 0;
   bool isActivity1 = true;
+
+  @override
+  void initState() {
+    super.initState();
+    correctAnswer = number1 + number2;
+  }
 
   void showFeedback(bool isCorrect) {
     showDialog(
@@ -52,7 +58,7 @@ class _OperationalLevel1ScreenState extends State<OperationalLevel1Screen> {
         // Move to Activity 2
         number1 = 6;
         number2 = 10;
-        correctAnswer = 16;
+        correctAnswer = number1 + number2;
         isActivity1 = false;
       } else {
         Navigator.push(
@@ -63,9 +69,7 @@ class _OperationalLevel1ScreenState extends State<OperationalLevel1Screen> {
                   "Activity 3 - Let's Subtract", // Set the title for Activity 4
               number1: 5, // Set the first number for subtraction
               number2: 3, // Set the second number for subtraction
-              correctAnswer: 10, // Set the correct answer
-              icon: FontAwesomeIcons
-                  .leaf, // Set the icon to a balloon (or other icon)
+              icon: FontAwesomeIcons.leaf,
             ),
           ),
         );

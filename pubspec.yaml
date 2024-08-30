@@ -80,6 +80,7 @@ flutter:
     - assets/images/diagnose_id_background.png
     - assets/images/operational_level1.png
     - assets/images/subtraction_level1.png
+    - assets/images/multiplication_level1.png
     - assets/images/q1_img.png
 
     - assets/icons/user.svg
