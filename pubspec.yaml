@@ -60,6 +60,9 @@ dependencies:
   # CUSTOMIZABLE LOADING INDICATORS
   flutter_spinkit: ^5.2.1
 
+  # WIDGET FOR FLIPPING CARDS IN QUIZZES OR INTERACTIVE UI
+  flip_card: ^0.7.0
+
   # TOAST NOTIFICATIONS FOR USER FEEDBACK
   toastification: ^2.1.0
 
@@ -141,6 +144,9 @@ flutter:
     - assets/images/diagnose_background_v2.png
     - assets/images/diagnose_result_background.png
     - assets/images/diagnose_report_background.png
+    - assets/images/activity_background_v1.jpg
+    - assets/images/flip_card_front_background.jpg
+    - assets/images/flip_card_back_background.jpg
 
     - assets/icons/user.svg
     - assets/icons/email.svg
@@ -159,6 +165,11 @@ flutter:
     - assets/icons/sri-lanka.png
     - assets/icons/india.png
     - assets/icons/united-states.png
+    - assets/icons/apple.png
+    - assets/icons/balloon.png
+    - assets/icons/cat.png
+    - assets/icons/cupcake.png
+    - assets/icons/star.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
