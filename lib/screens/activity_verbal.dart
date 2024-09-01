@@ -41,7 +41,7 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
   bool isErrorOccurred = false;
 
   // FUTURE FOR QUESTION LOADING STATE
-  late Future<void> _questionFuture;
+  late Future<void> _activityFuture;
 
   // INITIALIZING SERVICEs
   final TextToSpeechService _textToSpeechService = TextToSpeechService();
@@ -67,7 +67,7 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
     );
 
     // LOADING ACTIVITY DATA
-    _questionFuture = _loadActivity();
+    _activityFuture = _loadActivity();
   }
 
   @override
@@ -83,7 +83,7 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
     selectedLanguageCode = languageCode;
   }
 
-  // FUNCTION TO LOAD THE QUESTION
+  // FUNCTION TO LOAD THE ACTIVITY
   Future<void> _loadActivity() async {
     try {
       await _setupLanguage();
@@ -187,7 +187,7 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
         _cardKey.currentState?.toggleCard();
         isCorrect = false;
         await _validateQuestion();
-        _questionFuture = _loadActivity();
+        _activityFuture = _loadActivity();
       }
     });
   }
@@ -207,7 +207,7 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
           right: false,
           left: false,
           child: FutureBuilder(
-            future: _questionFuture,
+            future: _activityFuture,
             builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
               return LayoutBuilder(builder: (context, constraints) {
                 return Stack(
@@ -257,7 +257,7 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
     else if (snapshot.hasError || isErrorOccurred) {
       return const Center(
         child: Text(
-          "Failed to load question. Please try again.",
+          "Failed to load activity. Please try again.",
           style: TextStyle(
             color: Colors.black,
             fontSize: 20,
