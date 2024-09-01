@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/services/common_service.dart';
 import 'package:calcpal/services/text_to_speech_service.dart';
+import 'package:calcpal/services/verbal_service.dart';
 import 'package:calcpal/widgets/answer_box.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flutter/material.dart';
@@ -27,8 +28,8 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
   late String correctAnswerAudioText;
   late String wrongAnswerAudioText;
 
-  int questionNumber = 1;
-  int attempt = 0;
+  int currentQuestionNumber = 1;
+  int attempt = 1;
 
   // VARIABLES FOR AUDIO AND LANGUAGE SETTINGS
   late BytesSource correctAnswerVoice;
@@ -44,6 +45,7 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
 
   // INITIALIZING SERVICEs
   final TextToSpeechService _textToSpeechService = TextToSpeechService();
+  final VerbalService _verbalService = VerbalService();
   final AudioPlayer _audioPlayer = AudioPlayer();
   final GlobalKey<FlipCardState> _cardKey = GlobalKey<FlipCardState>();
 
@@ -64,8 +66,14 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
       ),
     );
 
-    // LOADING QUESTION DATA
-    _questionFuture = _loadQuestion();
+    // LOADING ACTIVITY DATA
+    _questionFuture = _loadActivity();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _audioPlayer.dispose();
   }
 
   // SET SELECTED LANGUAGE BASED ON STORED LANGUAGE CODE
@@ -76,61 +84,67 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
   }
 
   // FUNCTION TO LOAD THE QUESTION
-  Future<void> _loadQuestion() async {
+  Future<void> _loadActivity() async {
     try {
       await _setupLanguage();
-      isErrorOccurred = false;
-      isDataLoading = true;
+      setState(() {
+        isErrorOccurred = false;
+        isDataLoading = true;
+      });
 
-      // TODO: NEED TO LOAD QUESTIONS
-      // SAMPLE QUESTION DATA
-      question = "8 + 5";
-      answer = "13";
-      answers = ["13", "12", "14", "15"];
-      correctAnswerAudioText =
-          "Great job! Eight plus five equals thirteen. Well done!";
-      wrongAnswerAudioText =
-          "Not quite. Try again! Remember, eight plus five is a bit more than ten.";
-
-      // question = "stars";
-      // answer = "8";
-      // answers = ["8", "5", "6", "7"];
-      // correctAnswerAudioText =
-      //     "Yes! That's right, there are 8 stars! Well done!";
-      // wrongAnswerAudioText =
-      //     "Not quite. Try again! Count the stars carefully, there are 8 of them.";
-
-      // VALIDATE QUESTION AND UPDATE STATE
-      await _validateQuestion();
-
-      // SYNTHESIZE SPEECH FOR THE QUESTION AND STORE THE AUDIO DATA
-      correctAnswerVoice = await _textToSpeechService.synthesizeSpeech(
-        correctAnswerAudioText,
-        CommonService.getLanguageCode(selectedLanguageCode),
+      final activity = await _verbalService.fetchActivity(
+        currentQuestionNumber,
+        CommonService.getLanguageForAPI(selectedLanguageCode),
+        context,
       );
 
-      wrongAnswerVoice = await _textToSpeechService.synthesizeSpeech(
-        wrongAnswerAudioText,
-        CommonService.getLanguageCode(selectedLanguageCode),
-      );
+      if (activity != null) {
+        setState(() {
+          question = activity.question;
+          answer = activity.answer;
+          answers = activity.answers;
+          answers.shuffle();
+          correctAnswerAudioText = activity.correctAnswerAudioText;
+          wrongAnswerAudioText = activity.wrongAnswerAudioText;
+        });
+
+        // SYNTHESIZE SPEECH FOR THE QUESTION AND STORE THE AUDIO DATA
+        correctAnswerVoice = await _textToSpeechService.synthesizeSpeech(
+          correctAnswerAudioText,
+          CommonService.getLanguageCode(selectedLanguageCode),
+        );
+
+        wrongAnswerVoice = await _textToSpeechService.synthesizeSpeech(
+          wrongAnswerAudioText,
+          CommonService.getLanguageCode(selectedLanguageCode),
+        );
+      } else {
+        setState(() {
+          isErrorOccurred = true;
+          isDataLoading = false;
+        });
+      }
     } catch (e) {
       developer.log(e.toString());
-      isErrorOccurred = true;
+      setState(() => isErrorOccurred = true);
     } finally {
-      isDataLoading = false;
+      setState(() => isDataLoading = false);
     }
   }
 
   // VALIDATE QUESTION AND UPDATE STATE
   Future<void> _validateQuestion() async {
     if (attempt >= 10) {
-      if (questionNumber == 2) {
+      if (currentQuestionNumber == 2) {
         Navigator.of(context).pushNamed(activityDashboardRoute);
       } else {
-        questionNumber++;
+        setState(() {
+          currentQuestionNumber++;
+          attempt = 1;
+        });
       }
     } else {
-      attempt++;
+      setState(() => attempt++);
     }
 
     // DECODE BASE64 ENCODED QUESTION IF LANGUAGE IS NOT ENGLISH
@@ -172,7 +186,8 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
       if (isCorrect) {
         _cardKey.currentState?.toggleCard();
         isCorrect = false;
-        await _loadQuestion();
+        await _validateQuestion();
+        _questionFuture = _loadActivity();
       }
     });
   }
@@ -233,7 +248,11 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
     // SHOW LOADING SPINNER IF DATA IS LOADING
     if (snapshot.connectionState == ConnectionState.waiting || isDataLoading) {
       return const Center(
-          child: SpinKitCubeGrid(color: Colors.black, size: 80.0));
+        child: SpinKitCubeGrid(
+          color: Color.fromRGBO(40, 40, 40, 1),
+          size: 60.0,
+        ),
+      );
     } // SHOW ERROR MESSAGE IF AN ERROR OCCURRED
     else if (snapshot.hasError || isErrorOccurred) {
       return const Center(
@@ -250,7 +269,7 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
     } // SHOW QUESTION BASED ON QUESTION NUMBER
     else {
       // IF QUESTION NUMBER IS 1, SHOW THE COUNTING QUESTION WIDGET
-      if (questionNumber == 1) {
+      if (currentQuestionNumber == 1) {
         // CALL METHOD TO GET RANDOM POSITIONS FOR IMAGES
         int count = int.parse(answer);
         List<Positioned> objects =
@@ -263,7 +282,7 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
               "How many $question can you count?",
               style: const TextStyle(
                 color: Colors.black,
-                fontSize: 18.0,
+                fontSize: 14.0,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -310,7 +329,7 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
               "Tap an answer to see if you got it right!",
               style: TextStyle(
                 color: Colors.black,
-                fontSize: 18.0,
+                fontSize: 14.0,
                 fontWeight: FontWeight.w600,
               ),
             ),

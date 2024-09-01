@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:calcpal/models/diagnosis.dart';
 import 'package:calcpal/models/diagnosis_result.dart';
 import 'package:calcpal/models/flask_diagnosis_result.dart';
+import 'package:calcpal/models/verbal_activity.dart';
 import 'package:calcpal/models/verbal_question.dart';
 import 'package:calcpal/services/common_service.dart';
 import 'package:flutter/material.dart';
@@ -106,5 +107,34 @@ class VerbalService {
     }
 
     return null;
+  }
+
+  // FETCH A ACTIVITY BASED ON NUMBER AND LANGUAGE
+  Future<VerbalActivity?> fetchActivity(
+      int questionNumber, String language, BuildContext context) async {
+    final url = Uri.parse(
+        '$_baseUrl/verbal/activity/$questionNumber?language=$language');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return VerbalActivity.fromJson(data);
+      } else {
+        _commonService.handleHttpResponse(response, context, null, {
+          400: 'The language provided is not valid.',
+          404:
+              'No activities found on the server for the provided question number.'
+        });
+        return null;
+      }
+    } on http.ClientException {
+      _commonService.handleNetworkError(context);
+      return null;
+    } catch (e) {
+      _commonService.handleException(e, context);
+      return null;
+    }
   }
 }
