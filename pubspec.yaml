@@ -63,6 +63,9 @@ dependencies:
   # WIDGET FOR FLIPPING CARDS IN QUIZZES OR INTERACTIVE UI
   flip_card: ^0.7.0
 
+  # A PACKAGE TO CREATE DOTTED BORDERS AROUND WIDGETS
+  dotted_border: ^2.1.0
+
   # TOAST NOTIFICATIONS FOR USER FEEDBACK
   toastification: ^2.1.0
 
@@ -145,6 +148,7 @@ flutter:
     - assets/images/diagnose_result_background.png
     - assets/images/diagnose_report_background.png
     - assets/images/activity_background_v1.jpg
+    - assets/images/activity_background_v2.jpg
     - assets/images/flip_card_front_background.jpg
     - assets/images/flip_card_back_background.jpg
 
