@@ -85,37 +85,49 @@ class _ActivityDashboardScreenState extends State<ActivityDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        right: false,
-        left: false,
-        child: FutureBuilder(
-          future: _dashboardFuture,
-          builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else {
-              return ListView.builder(
-                itemCount: types.length,
-                itemBuilder: (context, index) {
-                  final type = types[index];
-                  final routeName = _routeNames[type] ?? mainDashboardRoute;
+    return PopScope(
+      // PREVENT ROUTE FROM POPPING
+      canPop: false,
+      // HANDLING BACK BUTTON PRESS
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          mainDashboardRoute,
+          (route) => false,
+        );
+      },
+      child: Scaffold(
+        body: SafeArea(
+          right: false,
+          left: false,
+          child: FutureBuilder(
+            future: _dashboardFuture,
+            builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else {
+                return ListView.builder(
+                  itemCount: types.length,
+                  itemBuilder: (context, index) {
+                    final type = types[index];
+                    final routeName = _routeNames[type] ?? mainDashboardRoute;
 
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pushNamed(routeName);
-                      },
-                      child: Text(type),
-                    ),
-                  );
-                },
-              );
-            }
-          },
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed(routeName);
+                        },
+                        child: Text(type),
+                      ),
+                    );
+                  },
+                );
+              }
+            },
+          ),
         ),
       ),
     );

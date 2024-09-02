@@ -1,5 +1,6 @@
 import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/services/common_service.dart';
+import 'package:calcpal/services/lexical_service.dart';
 import 'package:calcpal/services/speech_to_text_service.dart';
 import 'package:calcpal/services/toast_service.dart';
 import 'package:dotted_border/dotted_border.dart';
@@ -24,7 +25,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
   late String correctAnswer;
 
   int currentActivityNumber = 1;
-  int attempt = 1;
+  int attempt = 0;
   String selectedLanguageCode = 'en-US';
 
   bool isMicrophoneOn = false;
@@ -36,6 +37,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
 
   // INITIALIZING SERVICEs
   final ToastService _toastService = ToastService();
+  final LexicalService _lexicalService = LexicalService();
   final SpeechToTextService _speechService = SpeechToTextService();
 
   @override
@@ -81,51 +83,31 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
         isDataLoading = true;
       });
 
-      //SAMPLE DATA
-      await Future.delayed(const Duration(milliseconds: 2500));
-      if (currentActivityNumber == 1) {
-        if (attempt == 1) {
-          question = '54';
-          answers = [
-            'Fifty three',
-            'Fifty four',
-            'Fifty five',
-            'Fifty six',
-          ];
-          answers.shuffle();
-          correctAnswer = 'Fifty four';
-        } else if (attempt == 2) {
-          question = '35';
-          answers = [
-            'තිස් තුන',
-            'තිස් හතර',
-            'තිස් පහ',
-            'තිස් හය',
-          ];
-          answers.shuffle();
-          correctAnswer = 'තිස් පහ';
-        } else if (attempt == 3) {
-          question = '88';
-          answers = [
-            'எண்பத்தி ஆறு',
-            'எண்பத்தி ஏழு',
-            'எண்பத்தி எட்டு',
-            'எண்பத்தி ஒன்பது',
-          ];
-          answers.shuffle();
-          correctAnswer = 'எண்பத்தி எட்டு';
-        }
-      } else if (currentActivityNumber == 2) {
-        if (attempt == 1) {
-          question = '54';
-          correctAnswer = 'Fifty four';
-        } else if (attempt == 2) {
-          question = '35';
-          correctAnswer = 'තිස් පහ';
-        } else if (attempt == 3) {
-          question = '88';
-          correctAnswer = 'எண்பத்தி எட்டு';
-        }
+      developer.log('API CURRENT NUMBER: ${currentActivityNumber.toString()}');
+      // FETCHING THE ACTIVITY FROM THE SERVICE
+      final activity = await _lexicalService.fetchActivity(
+        currentActivityNumber,
+        CommonService.getLanguageForAPI(selectedLanguageCode),
+        context,
+      );
+
+      if (activity != null) {
+        setState(() {
+          question = activity.question;
+          if (activity.answers != null && activity.answers!.isNotEmpty) {
+            answers = activity.answers!;
+            answers.shuffle();
+          }
+          correctAnswer = activity.correctAnswer;
+        });
+
+        // VALIDATING THE QUESTION DATA
+        await _validateQuestion();
+      } else {
+        setState(() {
+          isErrorOccurred = true;
+          isDataLoading = false;
+        });
       }
     } catch (e) {
       developer.log(e.toString());
@@ -137,7 +119,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
 
   // FUNTION VALIDATE QUESTION AND UPDATE STATE
   Future<void> _validateQuestion() async {
-    if (attempt >= 10) {
+    if (attempt == 10) {
       setState(() {
         currentActivityNumber++;
         attempt = 1;
@@ -145,12 +127,22 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
     } else {
       setState(() => attempt++);
     }
+
+    developer.log('currentActivityNumber: ${currentActivityNumber.toString()}');
+    developer.log('attempt: ${attempt.toString()}');
+
+    // DECODE BASE64 ENCODED QUESTION IF LANGUAGE IS NOT ENGLISH
+    if (selectedLanguageCode != 'en') {
+      if (currentActivityNumber == 1) {
+        answers = CommonService.decodeList(answers);
+      }
+      correctAnswer = CommonService.decodeString(correctAnswer);
+    }
   }
 
   // FUNTION TO CHECK USER DROP ANSWER
   Future<void> _checkAnswer(String answer) async {
     if (answer == correctAnswer) {
-      await _validateQuestion();
       await _loadActivity();
     } else {
       _toastService.infoToast(
@@ -198,7 +190,6 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
                   recognizedWords == correctAnswer;
 
               if (isCorrectAnswer) {
-                await _validateQuestion();
                 await _loadActivity();
               } else {
                 // CHECK IF THERE ARE MORE QUESTIONS LEFT
@@ -275,7 +266,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
     if (snapshot.connectionState == ConnectionState.waiting || isDataLoading) {
       return const Center(
         child: SpinKitCubeGrid(
-          color: Color.fromRGBO(40, 40, 40, 1),
+          color: Color.fromARGB(255, 80, 80, 80),
           size: 60.0,
         ),
       );
@@ -391,7 +382,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 48.0),
+            const SizedBox(height: 32.0),
             // MICROPHONE
             GestureDetector(
               key: ValueKey<bool>(
@@ -399,7 +390,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
               ),
               onTap: _captureVoice,
               child: Opacity(
-                opacity: 0.65,
+                opacity: 0.6,
                 child: Container(
                   height: 60,
                   width: 60,
@@ -439,24 +430,18 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
                 textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(height: 8.0),
-            SizedBox(
-              height: 1.0,
-              child: Container(
-                color: Colors.black,
-              ),
-            ),
             const SizedBox(height: 16.0),
+
             // DASHBOARD BUTTON
             ElevatedButton(
               onPressed: () =>
                   Navigator.of(context).pushNamed(activityDashboardRoute),
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(
-                  const Color.fromRGBO(40, 40, 40, 1),
+                  const Color.fromARGB(255, 80, 80, 80),
                 ),
                 padding: WidgetStateProperty.all(
-                  const EdgeInsets.all(18.0),
+                  const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
                 ),
                 shape: WidgetStateProperty.all(
                   RoundedRectangleBorder(
@@ -471,7 +456,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
                   color: Colors.white,
                   fontSize: 18,
                   fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ),
@@ -490,7 +475,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
       width: constraints.maxWidth * 0.08,
       height: constraints.maxWidth * 0.08,
       decoration: BoxDecoration(
-        color: const Color.fromRGBO(40, 40, 40, 1),
+        color: const Color.fromARGB(255, 80, 80, 80),
         borderRadius: BorderRadius.circular(8.0),
         boxShadow: isDragging
             ? []
@@ -508,8 +493,8 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
         answer,
         style: TextStyle(
           color: Colors.white,
-          fontSize: (selectedLanguageCode == 'ta') ? 10.0 : 14.0,
-          fontWeight: FontWeight.w600,
+          fontSize: (selectedLanguageCode == 'ta') ? 10.0 : 12.0,
+          fontWeight: FontWeight.w500,
           decoration: TextDecoration.none,
         ),
         textAlign: TextAlign.center,

@@ -189,10 +189,16 @@ class _ValidationScreenState extends State<ValidationScreen> {
       final AuthResponse? newToken =
           await _userService.generateNewToken(refreshToken, context);
       if (newToken != null) {
-        // NEW ACCESS TOKEN OBTAINED, SAVE IT AND NAVIGATE TO THE MAIN DASHBOARD
+        // NEW ACCESS TOKEN OBTAINED, SAVE IT AND NAVIGATE TO THE DASHBOARD
         await prefs.setString('access_token', newToken.accessToken);
         await prefs.setString('refresh_token', newToken.refreshToken);
-        Navigator.of(context).pushNamed(mainDashboardRoute);
+
+        User? user = await _userService.getUser(newToken.accessToken, context);
+        if (user!.disorderTypes!.isNotEmpty) {
+          Navigator.of(context).pushNamed(activityDashboardRoute);
+        } else {
+          Navigator.of(context).pushNamed(mainDashboardRoute);
+        }
         return;
       }
     }

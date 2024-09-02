@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:calcpal/services/toast_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
 
 class CommonService {
   // TOAST SERVICE TO SHOW MESSAGES
@@ -49,6 +52,26 @@ class CommonService {
     }
   }
 
+  // FUNCTION TO DECODE A SINGLE BASE64 ENCODED STRING
+  static String decodeString(String encodeValue) {
+    try {
+      return utf8.decode(base64Decode(encodeValue));
+    } catch (e) {
+      developer.log('Error decoding answers: ${e.toString()}');
+      return '';
+    }
+  }
+
+  // FUNCTION TO DECODE A LIST OF BASE64 ENCODED STRINGS
+  static List<String> decodeList(List<String> encodedList) {
+    try {
+      return encodedList.map((encoded) => decodeString(encoded)).toList();
+    } catch (e) {
+      developer.log('Error decoding list of strings: ${e.toString()}');
+      return [];
+    }
+  }
+
   // HANDLE HTTP RESPONSE
   void handleHttpResponse(http.Response response, BuildContext context,
       [String? successMessage, Map<int, String>? errorMessages]) {
@@ -72,8 +95,9 @@ class CommonService {
 
   // HANDLE OTHER EXCEPTIONS
   void handleException(dynamic e, BuildContext context) {
+    developer.log('An unexpected error occurred: ${e.toString()}');
     _toastService.errorToast(
-      '${AppLocalizations.of(context)!.commonServiceOtherError}: ${e.toString()}',
+      '400: ${AppLocalizations.of(context)!.commonServiceOtherError}',
     );
   }
 }
