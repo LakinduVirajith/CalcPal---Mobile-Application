@@ -98,6 +98,10 @@
 
   "lexicalServiceNoQuestionError": "No questions found on the server for the provided question number.",
 
+  "sequentialServiceNoQuestionError": "No questions found on the server for the provided question number.",
+
+  "visualServiceNoQuestionError": "No questions found on the server for the provided question number.",
+
   "userServiceSignup200": "Sign-up successful! Please check your email to verify your account before logging in.",
   "userServiceSignup403": "Invalid email address. Please provide a valid email to proceed.",
   "userServiceSignup409": "Email already in use. Please log in or use a different email.",
