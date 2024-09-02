@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
 
-class AdditionLevel2 extends StatefulWidget {
+class SubtractionLevel2 extends StatefulWidget {
   final int exerciseNumber;
   final int number1;
   final int number2;
   final String backgroundImage;
 
-  AdditionLevel2({
+  SubtractionLevel2({
     required this.exerciseNumber,
     required this.number1,
     required this.number2,
@@ -16,10 +16,10 @@ class AdditionLevel2 extends StatefulWidget {
   });
 
   @override
-  _AdditionLevel2State createState() => _AdditionLevel2State();
+  _SubtractionLevel2State createState() => _SubtractionLevel2State();
 }
 
-class _AdditionLevel2State extends State<AdditionLevel2> {
+class _SubtractionLevel2State extends State<SubtractionLevel2> {
   bool layoutCompleted = false;
   final TextEditingController answerController = TextEditingController();
   int retryCount = 0;
@@ -72,7 +72,7 @@ class _AdditionLevel2State extends State<AdditionLevel2> {
                                     fontSize: 24, fontWeight: FontWeight.bold),
                               ),
                               Text(
-                                '${widget.number1} + ${widget.number2}',
+                                '${widget.number1} - ${widget.number2}',
                                 style: TextStyle(
                                     fontSize: 24, fontWeight: FontWeight.bold),
                               ),
@@ -85,7 +85,7 @@ class _AdditionLevel2State extends State<AdditionLevel2> {
                               Flexible(
                                   child:
                                       PlaceValueTable(number: widget.number1)),
-                              Text('+', style: TextStyle(fontSize: 40)),
+                              Text('-', style: TextStyle(fontSize: 40)),
                               Flexible(
                                   child:
                                       PlaceValueTable(number: widget.number2)),
@@ -114,7 +114,7 @@ class _AdditionLevel2State extends State<AdditionLevel2> {
                             onPressed: layoutCompleted
                                 ? () {
                                     int correctAnswer =
-                                        widget.number1 + widget.number2;
+                                        widget.number1 - widget.number2;
                                     int userAnswer =
                                         int.tryParse(answerController.text) ??
                                             0;
@@ -239,32 +239,32 @@ class _AdditionLevel2State extends State<AdditionLevel2> {
   Widget getNextExerciseScreen(int currentExerciseNumber) {
     switch (currentExerciseNumber) {
       case 1:
-        return AdditionLevel2(
+        return SubtractionLevel2(
           exerciseNumber: 2,
-          number1: Random().nextInt(11) + 10,
-          number2: Random().nextInt(11) + 10,
-          backgroundImage: 'assets/images/addition_level2_2.png',
+          number1: Random().nextInt(11) + 20, // number1 between 20 and 30
+          number2: Random().nextInt(6) + 10, // number2 between 10 and 15
+          backgroundImage: 'assets/images/subtraction_level2_2.png',
         );
       case 2:
-        return AdditionLevel2(
+        return SubtractionLevel2(
           exerciseNumber: 3,
-          number1: Random().nextInt(11) + 20,
-          number2: Random().nextInt(11) + 20,
-          backgroundImage: 'assets/images/addition_level2_3.png',
+          number1: Random().nextInt(21) + 30, // number1 between 30 and 50
+          number2: Random().nextInt(6) + 5, // number2 between 5 and 10
+          backgroundImage: 'assets/images/subtraction_level2_3.png',
         );
       case 3:
-        return AdditionLevel2(
+        return SubtractionLevel2(
           exerciseNumber: 4,
-          number1: 100,
-          number2: Random().nextInt(41) + 10,
-          backgroundImage: 'assets/images/addition_level2_4.png',
+          number1: 999,
+          number2: (Random().nextInt(9) + 1) * 10, // number2 any multiple of 10
+          backgroundImage: 'assets/images/subtraction_level2_4.png',
         );
       default:
-        return AdditionLevel2(
+        return SubtractionLevel2(
           exerciseNumber: 1,
-          number1: Random().nextInt(11) + 10,
-          number2: Random().nextInt(5) + 1,
-          backgroundImage: 'assets/images/addition_level2_1.png',
+          number1: Random().nextInt(6) + 15, // number1 between 15 and 20
+          number2: Random().nextInt(5) + 1, // number2 between 1 and 5
+          backgroundImage: 'assets/images/subtraction_level2_1.png',
         );
     }
   }
@@ -357,7 +357,7 @@ class PlaceValueTable extends StatelessWidget {
       runSpacing: 8.0,
       children: List.generate(
         count,
-        (index) => Icon(Icons.star, size: 50, color: Colors.black),
+        (index) => Icon(Icons.flag, size: 50, color: Colors.black),
       ),
     );
   }
