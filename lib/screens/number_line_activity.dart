@@ -157,10 +157,10 @@ class _NumberLineActivityState extends State<NumberLineActivity> {
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.black),
                       borderRadius: BorderRadius.circular(10),
-                      color: Colors.grey.withOpacity(1),
+                      color: Colors.grey.withOpacity(0.9),
                     ),
-                    height: MediaQuery.of(context).size.height *
-                        0.3, // Set height to 30% of the screen
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    height: MediaQuery.of(context).size.height * 0.3,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
