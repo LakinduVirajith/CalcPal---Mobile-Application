@@ -82,11 +82,22 @@ flutter:
     - assets/images/subtraction_level1.png
     - assets/images/multiplication_level1.png
     - assets/images/division_level1.png
-    - assets/images/operational_level2_1.png
-    - assets/images/operational_level2_2.png
-    - assets/images/operational_level2_3.png
-    - assets/images/operational_level2_4.png
-    - assets/images/operational_level2_5.png
+    - assets/images/addition_level2_1.png
+    - assets/images/addition_level2_2.png
+    - assets/images/addition_level2_3.png
+    - assets/images/addition_level2_4.png
+    - assets/images/subtraction_level2_1.png
+    - assets/images/subtraction_level2_2.png
+    - assets/images/subtraction_level2_3.png
+    - assets/images/subtraction_level2_4.png
+    - assets/images/multiplication_level2_1.png
+    - assets/images/multiplication_level2_2.png
+    - assets/images/multiplication_level2_3.png
+    - assets/images/multiplication_level2_4.png
+    - assets/images/division_level2_1.png
+    - assets/images/division_level2_2.png
+    - assets/images/division_level2_3.png
+    - assets/images/division_level2_4.png
     - assets/images/q1_img.png
 
     - assets/icons/user.svg
