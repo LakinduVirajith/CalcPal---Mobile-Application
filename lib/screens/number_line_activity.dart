@@ -89,15 +89,7 @@ class _NumberLineActivityState extends State<NumberLineActivity> {
         title: const Text('Not Quite Right'),
         content: retryCount < 2
             ? const Text('Let\'s try again!')
-            : Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Here are the correct answers:'),
-                  ...missingNumbers.map((number) => Text(
-                        'Number $number: ${numberPositions[number] ?? "Not placed"}',
-                      )),
-                ],
-              ),
+            : const Text("Not quite right, Let's try the next excercise"),
         actions: [
           TextButton(
             onPressed: () {
