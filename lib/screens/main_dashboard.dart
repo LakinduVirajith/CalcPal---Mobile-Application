@@ -4,6 +4,7 @@ import 'package:calcpal/screens/diagnose_graphical.dart';
 import 'package:calcpal/screens/diagnose_visual_spatial.dart';
 import 'package:calcpal/screens/login.dart';
 import 'package:calcpal/screens/profile.dart';
+import 'package:calcpal/screens/activities_graphical.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -169,6 +170,27 @@ class MainDashboardScreen extends StatelessWidget {
                             MaterialPageRoute(
                               builder: (context) =>
                                   const DiagnoseVisualSpatialScreen(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: constraints.maxWidth * 0.24,
+                          height: constraints.maxWidth * 0.24,
+                          decoration: const BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage(
+                                  'assets/images/diagnose_quiz_4.png'),
+                            ),
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const ActivitiesGraphicalScreen(),
                             ),
                           );
                         },

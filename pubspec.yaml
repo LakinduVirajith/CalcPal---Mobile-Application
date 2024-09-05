@@ -79,6 +79,24 @@ flutter:
     - assets/images/diagnose_quiz_4.png
     - assets/images/diagnose_background_v1.png
     - assets/images/diagnose_background_v2.png
+    - assets/images/addition_symbol.jpg
+    - assets/images/graphical.jpg
+    - assets/images/division.png
+    - assets/images/multi.png
+    - assets/images/subs.png
+    - assets/images/add.png
+    - assets/images/back.png
+    - assets/images/equa.jpg
+    - assets/images/equal.jpg
+    - assets/images/plus.jpg
+    - assets/images/devide.jpg
+    - assets/images/mul.jpg
+    - assets/images/subs.jpg
+    - assets/images/back4.png
+    - assets/images/back1.png
+    - assets/images/backBtn.png
+
+
 
     - assets/icons/user.svg
     - assets/icons/email.svg
