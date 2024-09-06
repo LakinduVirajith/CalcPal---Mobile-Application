@@ -1,26 +1,31 @@
-import 'package:calcpal/screens/forgot_password.dart';
-import 'package:calcpal/screens/sign_up.dart';
+import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/widgets/normal_button.dart';
 import 'package:calcpal/widgets/normal_input.dart';
 import 'package:calcpal/widgets/password_input.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginArea extends StatelessWidget {
   const LoginArea({
     Key? key,
     required this.userNameController,
     required this.passwordController,
+    required this.isLoading,
     required this.onPressed,
   }) : super(key: key);
 
   final TextEditingController userNameController;
   final TextEditingController passwordController;
+  final bool isLoading;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 48),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 48.0,
+        vertical: 32.0,
+      ),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -33,17 +38,17 @@ class LoginArea extends StatelessWidget {
         children: [
           Container(
             alignment: Alignment.centerLeft,
-            child: const Text(
-              'Welcome Back!',
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context)!.loginTitle,
+              style: const TextStyle(
                 fontSize: 24,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
           const SizedBox(height: 36),
           NormalInput(
-            placeholderText: 'User Name',
+            placeholderText: AppLocalizations.of(context)!.loginUserName,
             iconPath: 'assets/icons/email.svg',
             normalController: userNameController,
           ), // USERNAME INPUT
@@ -56,25 +61,27 @@ class LoginArea extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: GestureDetector(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const ForgotPasswordScreen()),
+                Navigator.of(context).pushNamed(
+                  forgotPasswordRoute,
+                  arguments: {
+                    'email': userNameController.text,
+                  },
                 );
               },
               child: Text(
-                'Forgot Password',
+                AppLocalizations.of(context)!.loginForgotPassword,
                 style: TextStyle(
                   color: Theme.of(context).primaryColor,
                   fontSize: 13,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
           ),
           const SizedBox(height: 20),
           NormalButton(
-            buttonText: 'Login',
+            buttonText: AppLocalizations.of(context)!.loginButton,
+            isLoading: isLoading,
             onPressed: onPressed,
           ), // LOGIN BUTTON
           const SizedBox(height: 20),
@@ -83,27 +90,23 @@ class LoginArea extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'Don’t have an account? ',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 13,
-                  ),
+                Text(
+                  AppLocalizations.of(context)!.loginDontHaveAccount,
+                  style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700),
                 ),
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const SignUpScreen()),
-                    );
+                    Navigator.of(context).pushNamed(signUpRoute);
                   },
                   child: Text(
-                    'Sign Up',
+                    AppLocalizations.of(context)!.loginSignup,
                     style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontSize: 13,
-                    ),
+                        color: Theme.of(context).primaryColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700),
                   ),
                 ),
               ],

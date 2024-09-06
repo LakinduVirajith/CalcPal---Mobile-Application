@@ -12,6 +12,10 @@ class DiagnoseVisualSpatialScreen extends StatelessWidget {
       DeviceOrientation.landscapeRight,
     ]);
 
-    return const Placeholder();
+    return Scaffold(
+      body: SafeArea(
+        child: Container(),
+      ),
+    );
   }
 }
