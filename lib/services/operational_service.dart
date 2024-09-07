@@ -1,6 +1,6 @@
 import 'dart:convert';
+import 'package:calcpal/models/diagnosis_result_op.dart';
 import 'package:flutter/material.dart';
-import 'package:calcpal/models/diagnosis_result.dart';
 import 'package:calcpal/models/diagnosis.dart';
 import 'package:calcpal/models/flask_diagnosis_result.dart';
 import 'package:calcpal/models/operational_question.dart';
@@ -45,7 +45,7 @@ class OperationalService {
   }
 
   // Submit a diagnosis result
-  Future<bool> addDiagnosisResult(DiagnosisResult result) async {
+  Future<bool> addDiagnosisResult(DiagnosisResultOp result) async {
     final url = Uri.parse('$_baseUrl/operational/diagnosis/');
 
     try {
@@ -62,6 +62,7 @@ class OperationalService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
+        print(response.statusCode);
         return false;
       }
     } on http.ClientException {
@@ -77,7 +78,7 @@ class OperationalService {
   // Fetch a diagnosis result
   Future<FlaskDiagnosisResult?> getDiagnosisResult(
       Diagnosis diagnosis, BuildContext context) async {
-    final url = Uri.parse('$_modelBaseUrl/Operational');
+    final url = Uri.parse('$_modelBaseUrl/operational');
 
     try {
       final body = jsonEncode(diagnosis.toJson());

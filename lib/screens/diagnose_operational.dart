@@ -1,3 +1,4 @@
+import 'package:calcpal/models/diagnosis_result_op.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +10,7 @@ import '../models/user.dart';
 import '../services/operational_service.dart';
 import '../services/user_service.dart';
 import '../enums/disorder_types.dart';
+import '../constants/routes.dart';
 
 class DiagnoseOperationalScreen extends StatefulWidget {
   const DiagnoseOperationalScreen({super.key});
@@ -133,17 +135,16 @@ class _DiagnoseOperationalScreenState extends State<DiagnoseOperationalScreen> {
     }
 
     // Update user disorder status in the database
-    status = await _questionService.addDiagnosisResult(DiagnosisResult(
-      userEmail: user.email,
-      timeSeconds: roundedElapsedTimeInSeconds,
-      q1: _answersCorrect[0],
-      q2: _answersCorrect[1],
-      q3: _answersCorrect[2],
-      q4: _answersCorrect[3],
-      q5: _answersCorrect[4],
-      totalScore: totalScore.toString(),
-      label: diagnoseStatus,
-    ));
+    status = await _questionService.addDiagnosisResult(DiagnosisResultOp(
+        userEmail: user.email,
+        quizTimeTaken: roundedElapsedTimeInSeconds,
+        q1: _answersCorrect[0],
+        q2: _answersCorrect[1],
+        q3: _answersCorrect[2],
+        q4: _answersCorrect[3],
+        q5: _answersCorrect[4],
+        score: totalScore.toString(),
+        diagnosis: diagnoseStatus));
 
     // Update user disorder type in the service
     if (diagnoseStatus) {
@@ -153,11 +154,13 @@ class _DiagnoseOperationalScreenState extends State<DiagnoseOperationalScreen> {
       updateStatus = await _userService.updateDisorderType(
           DisorderTypes.noOperational, accessToken, context);
     }
+    print(status);
+    print(updateStatus);
 
     // Navigate based on the status of updates
     if (status && updateStatus) {
       Navigator.of(context).pushNamedAndRemoveUntil(
-        '/diagnoseResult', // Change this to your actual route
+        diagnoseResultRoute, // Change this to your actual route
         (route) => false,
         arguments: {
           'diagnoseType': 'operational',
