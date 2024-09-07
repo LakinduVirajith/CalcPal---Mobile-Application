@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/operational_question.dart';
+import '../models/diagnosis_result.dart';
+import '../models/diagnosis.dart';
+import '../models/flask_diagnosis_result.dart';
+import '../models/user.dart';
 import '../services/operational_service.dart';
+import '../services/user_service.dart';
+import '../enums/disorder_types.dart';
 
 class DiagnoseOperationalScreen extends StatefulWidget {
   const DiagnoseOperationalScreen({super.key});
@@ -12,12 +19,15 @@ class DiagnoseOperationalScreen extends StatefulWidget {
 }
 
 class _DiagnoseOperationalScreenState extends State<DiagnoseOperationalScreen> {
-  OperationalQuestion? _questionData; // Changed this to OperationalQuestion?
+  OperationalQuestion? _questionData;
   int _currentQuestionNumber = 1;
   bool _isAnswerSubmitted = false;
-  List<bool> _answersCorrect = [];
+  final List<bool> _answersCorrect = [];
   int _totalScore = 0;
   late Stopwatch _stopwatch;
+
+  final UserService _userService = UserService();
+  final OperationalService _questionService = OperationalService();
 
   @override
   void initState() {
@@ -63,12 +73,110 @@ class _DiagnoseOperationalScreenState extends State<DiagnoseOperationalScreen> {
           });
         });
       } else {
-        _stopwatch.stop();
-        // Store or process the total score and time taken here
-        print('Total Score: $_totalScore');
-        print('Time Taken: ${_stopwatch.elapsed.inSeconds} seconds');
+        // Call the method to submit results to the ML model
+        _submitResultsToMLModel();
       }
     });
+  }
+
+  Future<void> _submitResultsToMLModel() async {
+    // Stop timer and record the time
+    _stopwatch.stop();
+    final elapsedTimeInSeconds = _stopwatch.elapsedMilliseconds / 1000;
+    final roundedElapsedTimeInSeconds = elapsedTimeInSeconds.round();
+
+    // Calculate total score
+    final totalScore = _totalScore;
+
+    // Get shared preference
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
+
+    if (accessToken == null) {
+      _handleErrorAndRedirect('Access token error. Please log in again.');
+      return;
+    }
+
+    // Fetch user
+    User? user = await _userService.getUser(accessToken, context);
+
+    if (user == null || user.iqScore == null) {
+      _handleErrorAndRedirect('Error fetching user IQ score.');
+      return;
+    }
+
+    // Variables to store diagnosis and status
+    late bool diagnoseStatus;
+    late bool status;
+    late bool updateStatus;
+
+    // Prepare diagnosis data and fetch diagnosis result from the service
+    FlaskDiagnosisResult? diagnosis = await _questionService.getDiagnosisResult(
+        Diagnosis(
+          age: user.age,
+          iq: user.iqScore!,
+          q1: _answersCorrect[0] ? 1 : 0,
+          q2: _answersCorrect[1] ? 1 : 0,
+          q3: _answersCorrect[2] ? 1 : 0,
+          q4: _answersCorrect[3] ? 1 : 0,
+          q5: _answersCorrect[4] ? 1 : 0,
+          seconds: roundedElapsedTimeInSeconds,
+        ),
+        context);
+
+    // Check if diagnosis result is valid and get diagnose status
+    if (diagnosis != null && diagnosis.prediction != null) {
+      diagnoseStatus = diagnosis.prediction!;
+    } else {
+      _handleErrorAndRedirect('Error fetching diagnosis result.');
+      return;
+    }
+
+    // Update user disorder status in the database
+    status = await _questionService.addDiagnosisResult(DiagnosisResult(
+      userEmail: user.email,
+      timeSeconds: roundedElapsedTimeInSeconds,
+      q1: _answersCorrect[0],
+      q2: _answersCorrect[1],
+      q3: _answersCorrect[2],
+      q4: _answersCorrect[3],
+      q5: _answersCorrect[4],
+      totalScore: totalScore.toString(),
+      label: diagnoseStatus,
+    ));
+
+    // Update user disorder type in the service
+    if (diagnoseStatus) {
+      updateStatus = await _userService.updateDisorderType(
+          DisorderTypes.operational, accessToken, context);
+    } else {
+      updateStatus = await _userService.updateDisorderType(
+          DisorderTypes.noOperational, accessToken, context);
+    }
+
+    // Navigate based on the status of updates
+    if (status && updateStatus) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        '/diagnoseResult', // Change this to your actual route
+        (route) => false,
+        arguments: {
+          'diagnoseType': 'operational',
+          'totalScore': totalScore,
+          'elapsedTime': roundedElapsedTimeInSeconds,
+        },
+      );
+    } else {
+      _handleErrorAndRedirect('Error updating diagnosis result.');
+    }
+  }
+
+  void _handleErrorAndRedirect(String message) {
+    // Handle errors and redirect as needed
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+    ));
+    // Redirect or other error handling
   }
 
   @override
@@ -81,7 +189,7 @@ class _DiagnoseOperationalScreenState extends State<DiagnoseOperationalScreen> {
 
     return Scaffold(
       body: _questionData == null
-          ? Center(
+          ? const Center(
               child:
                   CircularProgressIndicator()) // Show loading indicator while fetching
           : Stack(
@@ -100,7 +208,7 @@ class _DiagnoseOperationalScreenState extends State<DiagnoseOperationalScreen> {
                   alignment: Alignment.topLeft,
                   child: Container(
                     padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.blue,
                     ),
@@ -130,9 +238,9 @@ class _DiagnoseOperationalScreenState extends State<DiagnoseOperationalScreen> {
                       children: [
                         const SizedBox(height: 50),
                         // Question Text
-                        Text(
+                        const Text(
                           'Select the correct answer for -',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 24,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -209,9 +317,8 @@ class OptionButton extends StatelessWidget {
       child: Text(
         label,
         style: const TextStyle(
-          fontSize: 28,
+          fontSize: 18,
           color: Colors.white,
-          fontWeight: FontWeight.bold,
         ),
       ),
     );

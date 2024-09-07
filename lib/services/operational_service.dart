@@ -1,18 +1,29 @@
 import 'dart:convert';
-import 'package:calcpal/models/operational_diagnosis.dart';
+import 'package:flutter/material.dart';
+import 'package:calcpal/models/diagnosis_result.dart';
+import 'package:calcpal/models/diagnosis.dart';
+import 'package:calcpal/models/flask_diagnosis_result.dart';
 import 'package:calcpal/models/operational_question.dart';
 import 'package:calcpal/services/toast_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:calcpal/services/common_service.dart';
+import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 
 class OperationalService {
+  final String _baseUrl = dotenv.env['OPERATIONAL_BASE_URL'] ?? '';
+  final String _modelBaseUrl = dotenv.env['DIAGNOSIS_MODELS_BASE_URL'] ?? '';
+
+  // COMMON SERVICE HANDLE HTTP RESPONSE
+  final CommonService _commonService = CommonService();
+
   // TOAST SERVICE TO SHOW MESSAGES
   final ToastService _toastService = ToastService();
 
-  // FETCH A QUESTION BASED ON NUMBER
+  // Fetch a question
   Future<OperationalQuestion?> fetchOperationalQuestion(
       int questionNumber) async {
-    final url = Uri.parse(
-        'http://20.244.32.223:8084/api/v1/operational/questionbank/$questionNumber');
+    final url = Uri.parse('$_baseUrl/operational/questionbank/$questionNumber');
 
     try {
       final response = await http.get(url);
@@ -33,10 +44,9 @@ class OperationalService {
     }
   }
 
-  // SUBMIT A DIAGNOSIS RESULT TO THE SERVER
-  Future<bool> addDiagnosisResult(OperationalDiagnosis result) async {
-    final url =
-        Uri.parse('http://20.244.32.223:8084/api/v1/operational/diagnosis/');
+  // Submit a diagnosis result
+  Future<bool> addDiagnosisResult(DiagnosisResult result) async {
+    final url = Uri.parse('$_baseUrl/operational/diagnosis/');
 
     try {
       final body = jsonEncode(result.toJson());
@@ -62,5 +72,39 @@ class OperationalService {
       _toastService.errorToast('An unexpected error occurred.');
       return false;
     }
+  }
+
+  // Fetch a diagnosis result
+  Future<FlaskDiagnosisResult?> getDiagnosisResult(
+      Diagnosis diagnosis, BuildContext context) async {
+    final url = Uri.parse('$_modelBaseUrl/Operational');
+
+    try {
+      final body = jsonEncode(diagnosis.toJson());
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
+      );
+
+      // DECODE JSON RESPONSE
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      final result = FlaskDiagnosisResult.fromJson(jsonResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return result;
+      } else {
+        developer.log(result.error!);
+      }
+    } on http.ClientException {
+      _commonService.handleNetworkError(context);
+    } catch (e) {
+      _commonService.handleException(e, context);
+    }
+
+    return null;
   }
 }
