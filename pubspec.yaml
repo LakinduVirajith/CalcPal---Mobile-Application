@@ -112,7 +112,7 @@ flutter_launcher_icons:
 
   # SPECIFY THE ICON PATH FOR ANDROID
   android: "launcher_icon"
-  
+
   # ENABLE ICON GENERATION FOR IOS
   ios: true
 
@@ -124,11 +124,8 @@ flutter_launcher_icons:
 
 # The following section is specific to Flutter packages.
 flutter:
-<<<<<<< HEAD
-=======
   generate: true
 
->>>>>>> origin/development
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -157,7 +154,6 @@ flutter:
     - assets/images/activity_background_v2.jpg
     - assets/images/flip_card_front_background.jpg
     - assets/images/flip_card_back_background.jpg
-
 
     - assets/icons/user.svg
     - assets/icons/email.svg
