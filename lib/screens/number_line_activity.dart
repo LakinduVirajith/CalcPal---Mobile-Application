@@ -1,18 +1,121 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/scheduler.dart';
 
 class NumberLineActivity extends StatefulWidget {
-  final int exerciseNumber;
-  const NumberLineActivity({super.key, required this.exerciseNumber});
+  final int initialExerciseNumber = 1;
+  const NumberLineActivity({super.key});
 
   @override
   _NumberLineActivityState createState() => _NumberLineActivityState();
 }
 
 class _NumberLineActivityState extends State<NumberLineActivity> {
-  final Map<int, bool> isPlacedCorrectly = {};
-  final Map<int, int?> numberPositions = {};
+  late PageController _pageController;
+  int currentExerciseNumber = 0;
+
+  // Variables to track scores and retries
+  List<bool> exerciseResults = [false, false, false];
+  List<int> retries = [0, 0, 0];
+  int totalScore = 0;
+  Stopwatch stopwatch = Stopwatch();
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController =
+        PageController(initialPage: widget.initialExerciseNumber - 1);
+    currentExerciseNumber = widget.initialExerciseNumber;
+
+    // Start the stopwatch when the first exercise loads
+    stopwatch.start();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void updateScoreAndStopwatch(bool isCorrect, int exerciseIndex) {
+    setState(() {
+      exerciseResults[exerciseIndex] = isCorrect;
+      if (isCorrect) {
+        totalScore += 10; // Example score increment
+      }
+
+      // Stop the stopwatch if it's the last exercise
+      if (exerciseIndex == 2) {
+        stopwatch.stop();
+
+        print('Time taken: ${stopwatch.elapsed}');
+        print('Exercise Results: $exerciseResults');
+        print('Retries: $retries');
+        print('Total Score: $totalScore');
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // FORCE LANDSCAPE ORIENTATION
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Let's work with Number Lines"),
+      ),
+      body: PageView.builder(
+        controller: _pageController,
+        itemCount: 3, // Assuming you have 3 exercises
+        onPageChanged: (pageIndex) {
+          setState(() {
+            currentExerciseNumber = pageIndex + 1;
+          });
+        },
+        itemBuilder: (context, index) {
+          return NumberLineExercise(
+            exerciseNumber: index + 1,
+            pageController: _pageController, // Pass the page controller
+            updateScoreAndStopwatch: updateScoreAndStopwatch,
+            exerciseIndex: index,
+            retries: retries,
+          );
+        },
+      ),
+    );
+  }
+}
+
+class NumberLineExercise extends StatefulWidget {
+  final int exerciseNumber;
+  final PageController
+      pageController; // Accept the page controller as a parameter
+  final Function(bool, int)
+      updateScoreAndStopwatch; // Callback for updating score and stopping the stopwatch
+  final int exerciseIndex; // Index of the current exercise
+  final List<int> retries; // List to track retries for each exercise
+
+  const NumberLineExercise({
+    super.key,
+    required this.exerciseNumber,
+    required this.pageController,
+    required this.updateScoreAndStopwatch,
+    required this.exerciseIndex,
+    required this.retries,
+  });
+
+  @override
+  _NumberLineExerciseState createState() => _NumberLineExerciseState();
+}
+
+class _NumberLineExerciseState extends State<NumberLineExercise> {
+  Map<int, bool> isPlacedCorrectly = {};
+  Map<int, int?> numberPositions = {};
   late List<int> missingNumbers;
   late List<int> numberLine;
   int retryCount = 0; // Track retries
@@ -66,14 +169,15 @@ class _NumberLineActivityState extends State<NumberLineActivity> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NumberLineActivity(
-                    exerciseNumber: widget.exerciseNumber + 1,
-                  ),
-                ),
-              );
+              widget.updateScoreAndStopwatch(
+                  true, widget.exerciseIndex); // Update score and stopwatch
+
+              if (widget.exerciseNumber < 3) {
+                widget.pageController.nextPage(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              }
             },
             child: const Text('Next'),
           ),
@@ -89,7 +193,7 @@ class _NumberLineActivityState extends State<NumberLineActivity> {
         title: const Text('Not Quite Right'),
         content: retryCount < 2
             ? const Text('Let\'s try again!')
-            : const Text("Not quite right, Let's try the next excercise"),
+            : const Text("Not quite right, Let's try the next exercise"),
         actions: [
           TextButton(
             onPressed: () {
@@ -97,16 +201,16 @@ class _NumberLineActivityState extends State<NumberLineActivity> {
               if (retryCount < 2) {
                 setState(() {
                   retryCount++;
-                  setupExercise(); // Reset the exercise
+                  widget.retries[widget.exerciseIndex] =
+                      retryCount; // Update retries
+                  resetState(); // Reset the exercise state
                 });
               } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => NumberLineActivity(
-                      exerciseNumber: widget.exerciseNumber + 1,
-                    ),
-                  ),
+                widget.updateScoreAndStopwatch(false,
+                    widget.exerciseIndex); // Update stopwatch without score
+                widget.pageController.nextPage(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
                 );
               }
             },
@@ -117,186 +221,191 @@ class _NumberLineActivityState extends State<NumberLineActivity> {
     );
   }
 
+  void resetState() {
+    setState(() {
+      // Reset correctness and positions for retries
+      isPlacedCorrectly.clear();
+      numberPositions.clear();
+      setupExercise(); // Reinitialize the exercise with fresh state
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // FORCE LANDSCAPE ORIENTATION
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Let's work with Number Lines"),
-      ),
-      body: Stack(
-        children: [
-          // Background Image
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/operational_level1.png'),
-                fit: BoxFit.cover,
-              ),
+    return Stack(
+      children: [
+        // Background Image
+        Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage(
+                  'assets/images/numberline_${widget.exerciseNumber}.png'),
+              fit: BoxFit.cover,
             ),
           ),
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Exercise ${widget.exerciseNumber}: Label the Number Line',
-                  style: const TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.bold),
-                ),
+        ),
+        Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Exercise ${widget.exerciseNumber}: Label the Number Line',
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              Expanded(
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black),
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.grey.withOpacity(0.9),
-                    ),
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    height: MediaQuery.of(context).size.height * 0.3,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          height: 4,
-                          color: Colors.black,
-                          margin: const EdgeInsets.only(bottom: 10),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: numberLine
-                              .map((number) => Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16.0),
-                                    child: missingNumbers.contains(number)
-                                        ? DragTarget<int>(
-                                            builder: (context, candidateData,
-                                                rejectedData) {
-                                              return Container(
-                                                width: 60,
-                                                height: 60,
-                                                decoration: BoxDecoration(
-                                                  border: Border.all(
-                                                      color: Colors.blueAccent),
-                                                ),
-                                                child: Center(
-                                                  child: Text(
-                                                    numberPositions[number]
-                                                            ?.toString() ??
-                                                        '?',
-                                                    style: const TextStyle(
-                                                      fontSize: 32,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
+            ),
+            Expanded(
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black),
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey.withOpacity(0.9),
+                  ),
+                  width: MediaQuery.of(context).size.width * 0.9,
+                  height: MediaQuery.of(context).size.height * 0.3,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 4,
+                        color: Colors.black,
+                        margin: const EdgeInsets.only(bottom: 10),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: numberLine
+                            .map((number) => Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10.0),
+                                  child: missingNumbers.contains(number)
+                                      ? DragTarget<int>(
+                                          builder: (context, candidateData,
+                                              rejectedData) {
+                                            return Container(
+                                              width: 60,
+                                              height: 60,
+                                              decoration: BoxDecoration(
+                                                border: Border.all(
+                                                    color: Colors.black),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  numberPositions[number]
+                                                          ?.toString() ??
+                                                      '',
+                                                  style: const TextStyle(
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
-                                              );
-                                            },
-                                            onAccept: (data) {
-                                              setState(() {
-                                                if (data == number) {
-                                                  isPlacedCorrectly[number] =
-                                                      true;
-                                                }
-                                                numberPositions[number] = data;
-                                              });
-                                            },
-                                          )
-                                        : Text(
+                                              ),
+                                            );
+                                          },
+                                          onAccept: (receivedNumber) {
+                                            setState(() {
+                                              // Allow the number to be placed in the spot (correct or incorrect)
+                                              numberPositions[number] =
+                                                  receivedNumber;
+
+                                              // Only mark the spot as correct if the number is correct
+                                              if (receivedNumber == number) {
+                                                isPlacedCorrectly[number] =
+                                                    true;
+                                              } else {
+                                                isPlacedCorrectly[number] =
+                                                    false; // Ensure it's not marked correct
+                                              }
+                                            });
+                                          },
+                                        )
+                                      : Container(
+                                          width: 60,
+                                          height: 60,
+                                          child: Text(
                                             '$number',
                                             style: const TextStyle(
                                               fontSize: 32,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                  ))
-                              .toList(),
-                        ),
-                      ],
-                    ),
+                                        ),
+                                ))
+                            .toList(),
+                      ),
+                      Container(
+                        height: 4,
+                        color: Colors.black,
+                        margin: const EdgeInsets.only(top: 10),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              // Draggable Numbers
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: missingNumbers
-                    .map(
-                      (number) => Draggable<int>(
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: DragTarget<int>(
+                builder: (context, candidateData, rejectedData) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: missingNumbers.map((number) {
+                      return Draggable<int>(
                         data: number,
-                        feedback: Material(
-                          color: Colors.transparent,
-                          child: Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '$number',
-                                style: const TextStyle(
-                                  fontSize: 32,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                        feedback: Container(
+                          width: 60,
+                          height: 60,
+                          color: Colors.blueAccent,
+                          child: Center(
+                            child: Text(
+                              '$number',
+                              style: const TextStyle(
+                                  fontSize: 32, color: Colors.white),
                             ),
                           ),
                         ),
-                        childWhenDragging:
-                            const SizedBox(width: 60, height: 60),
-                        child: numberPositions[number] == null
-                            ? Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '$number',
-                                    style: const TextStyle(
-                                      fontSize: 32,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : const SizedBox(width: 60, height: 60),
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  bool allCorrect =
-                      isPlacedCorrectly.values.every((correct) => correct);
-                  if (allCorrect) {
-                    _showSuccessDialog();
-                  } else {
-                    _showFailureDialog();
-                  }
+                        childWhenDragging: Container(
+                          width: 60,
+                          height: 60,
+                          color: Colors.grey,
+                        ),
+                        child: Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.blueAccent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '$number',
+                              style: const TextStyle(
+                                  fontSize: 32, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  );
                 },
-                child: const Text('Next'),
               ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ],
-      ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (isPlacedCorrectly.values.every((correct) => correct)) {
+                  _showSuccessDialog();
+                } else {
+                  _showFailureDialog();
+                }
+              },
+              child: const Text('Check Answer'),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

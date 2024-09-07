@@ -99,6 +99,17 @@ flutter:
     - assets/images/division_level2_3.png
     - assets/images/division_level2_4.png
     - assets/images/q1_img.png
+    - assets/images/numberline_1.png
+    - assets/images/numberline_2.png
+    - assets/images/numberline_3.png
+    - assets/images/numbercre_1.png
+    - assets/images/numbercre_2.png
+    - assets/images/numbercre_3.png
+    - assets/images/numbercre_4.png
+    - assets/images/fractionact_1.png
+    - assets/images/fractionact_2.png
+    - assets/images/fractionact_3.png
+    - assets/images/fractionact_4.png
 
     - assets/icons/user.svg
     - assets/icons/email.svg

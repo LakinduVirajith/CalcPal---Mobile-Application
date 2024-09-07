@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:async'; // Import for Stopwatch
+import 'dart:math';
 
 class NumberCreationActivityScreen extends StatefulWidget {
   const NumberCreationActivityScreen({super.key});
@@ -12,6 +14,49 @@ class NumberCreationActivityScreen extends StatefulWidget {
 class _NumberCreationActivityScreenState
     extends State<NumberCreationActivityScreen> {
   final PageController _pageController = PageController();
+  final List<bool> _isCorrectAnswers = [];
+  final List<int> _retryCounts = [];
+  int _completedExercises = 0; // Track the number of completed exercises
+  Stopwatch _stopwatch = Stopwatch(); // Stopwatch to track time
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeResults();
+    _stopwatch.start(); // Start the stopwatch
+  }
+
+  void _initializeResults() {
+    _isCorrectAnswers.clear();
+    _retryCounts.clear();
+    for (int i = 0; i < 4; i++) {
+      _isCorrectAnswers.add(false);
+      _retryCounts.add(0);
+    }
+  }
+
+  void _updateResults(int index, bool isCorrect, int retryCount) {
+    setState(() {
+      _isCorrectAnswers[index] = isCorrect;
+      _retryCounts[index] = retryCount;
+      _completedExercises++;
+
+      // Check if all exercises are completed
+      if (_completedExercises == 4) {
+        _stopwatch.stop(); // Stop the stopwatch
+        _printResults();
+      }
+    });
+  }
+
+  void _printResults() {
+    print(
+        'Time taken: ${_stopwatch.elapsed.inSeconds} seconds'); // Print elapsed time
+    for (int i = 0; i < _isCorrectAnswers.length; i++) {
+      print(
+          'Exercise ${i + 1}: Correct - ${_isCorrectAnswers[i]}, Retries - ${_retryCounts[i]}');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +67,15 @@ class _NumberCreationActivityScreenState
     ]);
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Number Creation Activity'),
+      ),
       body: PageView(
         controller: _pageController,
         children: List.generate(4, (index) {
           final int exerciseNumber = index + 1;
           final String backgroundImagePath =
-              'assets/images/background_exercise$exerciseNumber.png';
+              'assets/images/numbercre_$exerciseNumber.png';
           return NumberCreationExerciseScreen(
             numberOfDigits: exerciseNumber == 1 || exerciseNumber == 2
                 ? 2
@@ -37,6 +85,9 @@ class _NumberCreationActivityScreenState
                 exerciseNumber != 2, // Logic to determine largest or smallest
             backgroundImagePath: backgroundImagePath,
             pageController: _pageController,
+            onExerciseCompleted: (bool isCorrect, int retryCount) {
+              _updateResults(index, isCorrect, retryCount);
+            },
           );
         }),
       ),
@@ -65,6 +116,7 @@ class NumberCreationExerciseScreen extends StatefulWidget {
   final bool isLargestNumber;
   final String backgroundImagePath;
   final PageController pageController;
+  final Function(bool isCorrect, int retryCount) onExerciseCompleted;
 
   const NumberCreationExerciseScreen({
     super.key,
@@ -73,6 +125,7 @@ class NumberCreationExerciseScreen extends StatefulWidget {
     required this.isLargestNumber,
     required this.backgroundImagePath,
     required this.pageController,
+    required this.onExerciseCompleted,
   });
 
   @override
@@ -84,17 +137,109 @@ class _NumberCreationExerciseScreenState
     extends State<NumberCreationExerciseScreen> {
   late List<int?> _answers;
   late List<int> _availableDigits;
+  late List<int> _correctAnswer;
+  int _retryCount = 0;
+  final Random _random = Random();
 
   @override
   void initState() {
     super.initState();
+    _initializeExercise();
+  }
+
+  void _initializeExercise() {
     _answers = List.filled(widget.numberOfDigits, null);
     _availableDigits = _generateAvailableDigits(widget.numberOfDigits);
-    _availableDigits.sort((a, b) => widget.isLargestNumber ? b - a : a - b);
+
+    // Sort _correctAnswer based on whether it's the largest or smallest number
+    _correctAnswer = _availableDigits.take(widget.numberOfDigits).toList()
+      ..sort((a, b) => widget.isLargestNumber ? b - a : a - b);
   }
 
   List<int> _generateAvailableDigits(int count) {
-    return List<int>.generate(count, (index) => (index + 1) % 10);
+    // Generate a list of random digits between 0 and 9
+    return List<int>.generate(count, (_) => _random.nextInt(10));
+  }
+
+  void _checkAnswer() {
+    if (_answers.every((element) => element != null) &&
+        _answers.join() == _correctAnswer.join()) {
+      widget.onExerciseCompleted(true, _retryCount);
+      _showSuccessDialog();
+    } else {
+      _retryCount++;
+      if (_retryCount < 3) {
+        _showRetryDialog();
+      } else {
+        widget.onExerciseCompleted(false, _retryCount);
+        _showCorrectAnswerDialog();
+      }
+    }
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Congratulations!'),
+        content: const Text('Correct! 🎉'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              widget.pageController.nextPage(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            },
+            child: const Text('Next'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRetryDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Not Quite Right'),
+        content: const Text('Let\'s try again!'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              setState(() {
+                _initializeExercise(); // Reset the screen
+              });
+            },
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCorrectAnswerDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Correct Answer'),
+        content: Text('The correct answer is ${_correctAnswer.join()}'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              widget.pageController.nextPage(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            },
+            child: const Text('Next'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -143,12 +288,7 @@ class _NumberCreationExerciseScreenState
                 ),
                 const SizedBox(height: 40),
                 ElevatedButton(
-                  onPressed: () {
-                    widget.pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  },
+                  onPressed: _checkAnswer,
                   child: const Text('Next'),
                 ),
               ],
@@ -164,72 +304,42 @@ class _NumberCreationExerciseScreenState
       data: digit,
       child: _buildDigitBox(digit),
       feedback: _buildDigitBox(digit, isDragging: true),
-      childWhenDragging: _buildDigitBox(digit, isDragging: true, opacity: 0.5),
+      childWhenDragging: _buildDigitBox(digit, opacity: 0.5),
     );
   }
 
   Widget _buildDragTarget(int index) {
     return DragTarget<int>(
-      onAccept: (receivedDigit) {
+      onAccept: (digit) {
         setState(() {
-          _answers[index] = receivedDigit;
-          _availableDigits.remove(receivedDigit);
+          _answers[index] = digit;
         });
       },
-      onWillAccept: (receivedDigit) {
-        return receivedDigit != _answers[index];
-      },
       builder: (context, candidateData, rejectedData) {
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 10),
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: Colors.blue,
-              width: 2,
-            ),
-          ),
-          child: Center(
-            child: Text(
-              _answers[index]?.toString() ?? '',
-              style: const TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
+        return _buildDigitBox(
+          _answers[index] ?? 0,
+          isEmpty: _answers[index] == null,
         );
       },
     );
   }
 
   Widget _buildDigitBox(int digit,
-      {bool isDragging = false, double opacity = 1}) {
-    return Opacity(
-      opacity: opacity,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 10),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isDragging ? Colors.grey : Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            if (!isDragging)
-              BoxShadow(
-                color: Colors.black26,
-                offset: const Offset(0, 4),
-                blurRadius: 4,
-              ),
-          ],
-        ),
+      {bool isDragging = false, double opacity = 1.0, bool isEmpty = false}) {
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        color: isEmpty ? Colors.grey : Colors.blue,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.black),
+      ),
+      child: Center(
         child: Text(
-          digit.toString(),
-          style: const TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
+          isEmpty ? '' : digit.toString(),
+          style: TextStyle(
+            fontSize: 24,
+            color: isEmpty ? Colors.black.withOpacity(0.5) : Colors.white,
           ),
         ),
       ),
