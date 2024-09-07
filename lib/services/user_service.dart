@@ -156,7 +156,7 @@ class UserService {
     return false;
   }
 
-// SENDS AN OTP TO THE PROVIDED EMAIL ADDRESS.
+  // SENDS AN OTP TO THE PROVIDED EMAIL ADDRESS.
   Future<bool> sendOTP(String email, BuildContext context) async {
     final url = Uri.parse('$_baseUrl/user/reset-password-otp?email=$email');
 
@@ -330,6 +330,35 @@ class UserService {
           AppLocalizations.of(context)!.userServiceUpdateUser200, {
         404: AppLocalizations.of(context)!.userServiceUpdateUser404,
       });
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      }
+    } on http.ClientException {
+      _commonService.handleNetworkError(context);
+    } catch (e) {
+      _commonService.handleException(e, context);
+    }
+    return false;
+  }
+
+  // UPDATES THE IQ SCORE FOR THE USER
+  Future<bool> updateIQScore(
+      int iqScore, String accessToken, BuildContext context) async {
+    final url = Uri.parse('$_baseUrl/user/update/iq?iqScore=$iqScore');
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      // HANDLE HTTP RESPONSE
+      _commonService.handleHttpResponse(response, context,
+          AppLocalizations.of(context)!.userServiceUpdateIQ200);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;

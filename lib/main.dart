@@ -21,6 +21,7 @@ import 'package:calcpal/screens/diagnose_sequential.dart';
 import 'package:calcpal/screens/diagnose_verbal.dart';
 import 'package:calcpal/screens/diagnose_visual_spatial.dart';
 import 'package:calcpal/screens/forgot_password.dart';
+import 'package:calcpal/screens/iq_test.dart';
 import 'package:calcpal/screens/login.dart';
 import 'package:calcpal/screens/main_dashboard.dart';
 import 'package:calcpal/screens/profile.dart';
@@ -103,6 +104,7 @@ class _MyAppState extends State<MyApp> {
           forgotPasswordRoute: (context) => const ForgotPasswordScreen(),
           profileRoute: (context) => const ProfileScreen(),
           mainDashboardRoute: (context) => const MainDashboardScreen(),
+          iqTestRoute: (context) => const IQTestScreen(),
           diagnoseVerbalRoute: (context) => const DiagnoseVerbalScreen(),
           diagnoseLexicalRoute: (context) => const DiagnoseLexicalScreen(),
           diagnoseOperationalRoute: (context) =>
@@ -174,8 +176,13 @@ class _ValidationScreenState extends State<ValidationScreen> {
     final String? accessToken = prefs.getString('access_token');
     if (accessToken != null && !JwtDecoder.isExpired(accessToken)) {
       User? user = await _userService.getUser(accessToken, context);
-      if (user!.disorderTypes!.isNotEmpty) {
+
+      if (user == null) {
+        Navigator.of(context).pushNamed(loginRoute);
+      } else if (user.disorderTypes!.isNotEmpty) {
         Navigator.of(context).pushNamed(activityDashboardRoute);
+      } else if (user.iqScore == null) {
+        Navigator.of(context).pushNamed(iqTestRoute);
       } else {
         Navigator.of(context).pushNamed(mainDashboardRoute);
       }

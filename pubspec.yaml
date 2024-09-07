@@ -139,6 +139,8 @@ flutter:
 
     - assets/images/login_background.png
     - assets/images/main_dashboard_background.png
+    - assets/images/activity_dashboard_background.png
+    - assets/images/iq_background.png
     - assets/images/diagnose_quiz_1.png
     - assets/images/diagnose_quiz_2.png
     - assets/images/diagnose_quiz_3.png
@@ -158,7 +160,12 @@ flutter:
     - assets/icons/closed-eye.svg
     - assets/icons/open-eye.svg
     - assets/icons/back.png
-    - assets/icons/profile.png
+    - assets/icons/activities-en.png
+    - assets/icons/activities-si.png
+    - assets/icons/activities-ta.png
+    - assets/icons/settings-en.png
+    - assets/icons/settings-si.png
+    - assets/icons/settings-ta.png
     - assets/icons/play-button.svg
     - assets/icons/pause-button.svg
     - assets/icons/microphone.svg
