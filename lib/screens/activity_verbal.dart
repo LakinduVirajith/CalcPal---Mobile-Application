@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:calcpal/constants/routes.dart';
@@ -11,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'dart:developer' as developer;
 
 class ActivityVerbalScreen extends StatefulWidget {
@@ -23,18 +23,19 @@ class ActivityVerbalScreen extends StatefulWidget {
 class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
   // VARIABLES TO HOLD QUESTION AND ANSWER DATA
   late String question;
+  late String questionByLan;
   late String answer;
   late List<String> answers;
   late String correctAnswerAudioText;
   late String wrongAnswerAudioText;
 
-  int currentQuestionNumber = 1;
-  int attempt = 1;
+  int currentActivityNumber = 1;
+  int attempt = 0;
 
   // VARIABLES FOR AUDIO AND LANGUAGE SETTINGS
   late BytesSource correctAnswerVoice;
   late BytesSource wrongAnswerVoice;
-  String selectedLanguageCode = 'en-US';
+  String selectedLanguageCode = 'en';
 
   bool isAudioPlaying = false;
   bool isDataLoading = false;
@@ -62,11 +63,14 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
         systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
       ),
     );
 
     // LOADING ACTIVITY DATA
+    _setupLanguage();
     _activityFuture = _loadActivity();
   }
 
@@ -92,8 +96,12 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
         isDataLoading = true;
       });
 
+      // VALIDATING THE QUESTION DATA
+      await _validateQuestion();
+      if (currentActivityNumber == 3) return;
+
       final activity = await _verbalService.fetchActivity(
-        currentQuestionNumber,
+        currentActivityNumber,
         CommonService.getLanguageForAPI(selectedLanguageCode),
         context,
       );
@@ -107,6 +115,15 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
           correctAnswerAudioText = activity.correctAnswerAudioText;
           wrongAnswerAudioText = activity.wrongAnswerAudioText;
         });
+        _changeQuestionByLan(question);
+
+        // DECODE BASE64 ENCODED QUESTION IF LANGUAGE IS NOT ENGLISH
+        if (selectedLanguageCode != 'en') {
+          correctAnswerAudioText =
+              CommonService.decodeString(correctAnswerAudioText);
+          wrongAnswerAudioText =
+              CommonService.decodeString(wrongAnswerAudioText);
+        }
 
         // SYNTHESIZE SPEECH FOR THE QUESTION AND STORE THE AUDIO DATA
         correctAnswerVoice = await _textToSpeechService.synthesizeSpeech(
@@ -132,37 +149,53 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
     }
   }
 
+  // FUNCTION TO CHANGE QUESTION TEXT BASED ON SELECTED LANGUAGE CODE
+  void _changeQuestionByLan(String question) {
+    Map<String, Map<String, String>> translations = {
+      'apples': {
+        'en': 'apples',
+        'si': 'ඇපල් ගෙඩි',
+        'ta': 'ஆப்பிள்கள்',
+      },
+      'balloons': {
+        'en': 'balloons',
+        'si': 'බැලූන්',
+        'ta': 'பலூன்கள்',
+      },
+      'cats': {
+        'en': 'cats',
+        'si': 'පූසන්',
+        'ta': 'பூனைகள்',
+      },
+      'cupcakes': {
+        'en': 'cupcakes',
+        'si': 'කප්කේක්',
+        'ta': 'கப்கேக்குகள்',
+      },
+      'stars': {
+        'en': 'stars',
+        'si': 'තරු',
+        'ta': 'நட்சத்திரங்கள்',
+      },
+    };
+
+    // DEFAULT TO ENGLISH IF QUESTION OR LANGUAGE CODE IS NOT FOUND
+    questionByLan = translations[question]?[selectedLanguageCode] ?? question;
+  }
+
   // VALIDATE QUESTION AND UPDATE STATE
   Future<void> _validateQuestion() async {
-    if (attempt >= 10) {
-      if (currentQuestionNumber == 2) {
-        Navigator.of(context).pushNamed(activityDashboardRoute);
-      } else {
-        setState(() {
-          currentQuestionNumber++;
-          attempt = 1;
-        });
-      }
+    if (attempt == 10) {
+      setState(() {
+        currentActivityNumber++;
+        attempt = 1;
+      });
     } else {
       setState(() => attempt++);
     }
 
-    // DECODE BASE64 ENCODED QUESTION IF LANGUAGE IS NOT ENGLISH
-    if (selectedLanguageCode != 'en') {
-      _decodeQuestion(correctAnswerAudioText);
-      _decodeQuestion(wrongAnswerAudioText);
-    }
-  }
-
-  // FUNCTION TO DECODE BASE64 ENCODED STRING
-  Future _decodeQuestion(String question) async {
-    try {
-      setState(() {
-        question = utf8.decode(base64Decode(question));
-      });
-    } catch (e) {
-      developer.log('Error decoding answers: ${e.toString()}');
-    }
+    developer.log('currentActivityNumber: ${currentActivityNumber.toString()}');
+    developer.log('attempt: ${attempt.toString()}');
   }
 
   // FUNCTION TO PLAY AUDIO BASED ON SELECTED ANSWER
@@ -172,6 +205,9 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
 
     // CHECK IF SELECTED ANSWER IS CORRECT
     bool isCorrect = selectedAnswer == answer;
+
+    // SET PLAYBACK SPEED
+    await _audioPlayer.setPlaybackRate(0.9);
 
     // PLAY APPROPRIATE AUDIO
     if (isCorrect) {
@@ -186,7 +222,6 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
       if (isCorrect) {
         _cardKey.currentState?.toggleCard();
         isCorrect = false;
-        await _validateQuestion();
         _activityFuture = _loadActivity();
       }
     });
@@ -214,10 +249,10 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
                   children: [
                     _buildBackgound(),
                     Positioned(
-                      top: constraints.maxHeight * 0.03,
-                      right: constraints.maxWidth * 0.55,
-                      left: constraints.maxWidth * 0.08,
-                      bottom: constraints.maxHeight * 0.29,
+                      top: constraints.maxHeight * 0.0,
+                      right: constraints.maxWidth * 0.50,
+                      left: constraints.maxWidth * 0.10,
+                      bottom: constraints.maxHeight * 0.24,
                       child: _buildContent(snapshot, constraints),
                     )
                   ],
@@ -255,21 +290,25 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
       );
     } // SHOW ERROR MESSAGE IF AN ERROR OCCURRED
     else if (snapshot.hasError || isErrorOccurred) {
-      return const Center(
-        child: Text(
-          "Failed to load activity. Please try again.",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontFamily: 'Roboto',
-            fontWeight: FontWeight.w400,
+      return Center(
+        child: Container(
+          padding: const EdgeInsets.all(4.0),
+          child: Text(
+            AppLocalizations.of(context)!.commonMessagesLoadActivity,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
           ),
         ),
       );
     } // SHOW QUESTION BASED ON QUESTION NUMBER
     else {
       // IF QUESTION NUMBER IS 1, SHOW THE COUNTING QUESTION WIDGET
-      if (currentQuestionNumber == 1) {
+      if (currentActivityNumber == 1) {
         // CALL METHOD TO GET RANDOM POSITIONS FOR IMAGES
         int count = int.parse(answer);
         List<Positioned> objects =
@@ -279,15 +318,16 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              "How many $question can you count?",
+              "${AppLocalizations.of(context)!.activityVerbalQuestion1Part1} $questionByLan ${AppLocalizations.of(context)!.activityVerbalQuestion1Part2}",
               style: const TextStyle(
                 color: Colors.black,
-                fontSize: 14.0,
+                fontSize: 16.0,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 8.0),
             SizedBox(
+              width: constraints.maxWidth * 0.38,
               height: 1.0,
               child: Container(
                 color: Colors.black,
@@ -321,26 +361,27 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
           ],
         );
       } // IF QUESTION NUMBER IS 2, SHOW THE FLIP CARD WIDGET
-      else {
+      else if (currentActivityNumber == 2) {
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              "Tap an answer to see if you got it right!",
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.activityVerbalQuestion2Text,
+              style: const TextStyle(
                 color: Colors.black,
-                fontSize: 14.0,
+                fontSize: 16.0,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 8.0),
             SizedBox(
+              width: constraints.maxWidth * 0.38,
               height: 1.0,
               child: Container(
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 12.0),
+            const SizedBox(height: 16.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -389,6 +430,57 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
                   ),
                 ),
               ],
+            ),
+          ],
+        );
+      } else {
+        // AFTER FINSH ALL ANSWER
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Text(
+                AppLocalizations.of(context)!
+                    .commonMessageMainDashboardNavigation,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 18.0,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 24.0),
+
+            // DASHBOARD BUTTON
+            ElevatedButton(
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(activityDashboardRoute),
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(
+                  const Color.fromARGB(255, 40, 40, 40),
+                ),
+                padding: WidgetStateProperty.all(
+                  const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+                ),
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                ),
+              ),
+              child: Text(
+                AppLocalizations.of(context)!.commonactivityDashboardButtonText,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
             ),
           ],
         );

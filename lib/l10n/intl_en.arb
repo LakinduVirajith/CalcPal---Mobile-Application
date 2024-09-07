@@ -1,6 +1,31 @@
 {
   "@@locale": "en",
-  "profileTitle": "Profile",
+  "baseScreens": "------------------------------------------------------------------------------------------------",
+
+
+  "commonMessagesUserInformationError": "User information not available. Please log in.",
+  "commonMessagesAccessTokenError": "Access token not available. Please log in.",
+  "commonMessagesIQScoreError": "User information or IQ score not available. Please log in.",
+  "commonMessagesResultError": "Unable to fetch diagnosis results. Please log in to your account.",
+  "commonMessagesSomethingWrongError": "Something went wrong. Please log in to your account.",
+  "commonMessagesLoadQuestion": "Failed to load question. Please try again.",
+  "commonMessagesLoadActivity": "Failed to load activity. Please try again.",
+  "commonMessageMainDashboardNavigation": "Well done! You've completed all the activities successfully today. See you tomorrow!",
+
+  "commonLexicalMessagesToProceedError": "To proceed, please allow microphone access.",
+  "commonLexicalMessagesNoSpeechError": "No speech detected. Let's try that again!",
+  "commonLexicalMessagesFailedToInitializeError": "Failed to initialize the voice recognition service. Please try again.",
+
+  "signupTitle": "Sign Up",
+  "signupNamePlaceholder": "Name",
+  "signupEmailPlaceholder": "Email",
+  "signupBirthdayPlaceholder": "Birthday",
+  "signupButton": "Sign Up",
+  "signupAlreadyHaveAccount": "Already have an account? ",
+  "signupLogin": "Login",
+  "signupMessagesFillAll": "Please fill in all fields.",
+
+  "profileTitle": "Settings",
   "profileToggleButton1": "General",
   "profileToggleButton2": "System",
   "profileUserName": " User Name:",
@@ -16,20 +41,17 @@
   "profileUpdateButtonText": "Update",
   "profileSelectLanguage": "Select Language:",
   "profileMessagesNotEditableError": "This field cannot be edited.",
-  "profileMessagesLoadDetailsError1": "User information not available. Please log in.",
-  "profileMessagesLoadDetailsError2": "Access token not available. Please log in.",
   "profileMessagesUpdateDetailsError1": "Please enter your username.",
   "profileMessagesUpdateDetailsError2": "Please select your birthday.",
-  "profileMessagesUpdateDetailsError3": "Access token not available. Please log in.",
 
-  "signupTitle": "Sign Up",
-  "signupNamePlaceholder": "Name",
-  "signupEmailPlaceholder": "Email",
-  "signupBirthdayPlaceholder": "Birthday",
-  "signupButton": "Sign Up",
-  "signupAlreadyHaveAccount": "Already have an account? ",
-  "signupLogin": "Login",
-  "signupMessagesFillAll": "Please fill in all fields.",
+  "mainDashboardConfirmLogout": "Confirm Logout",
+  "mainDashboardAreYouSure": "Are you sure you want to log out?",
+  "mainDashboardCancel": "Cancel",
+  "mainDashboardLogout": "Logout",
+
+  "activityDashboardActivityText": "Activities",
+
+  "iqTestMessagesIQError": "Unable to update IQ score. Please try again.",
 
   "loginTitle": "Welcome Back!",
   "loginUserName": "User Name",
@@ -39,11 +61,6 @@
   "loginDontHaveAccount": "Don't have an account? ",
   "loginSignup": "Sign Up",
   "loginMessagesFillAll": "Please fill in all fields.",
-
-  "mainDashboardConfirmLogout": "Confirm Logout",
-  "mainDashboardAreYouSure": "Are you sure you want to log out?",
-  "mainDashboardCancel": "Cancel",
-  "mainDashboardLogout": "Logout",
 
   "forgotPasswordBackButton": "Back",
   "forgotPasswordForgotPasswordButton": "Forgot Password",
@@ -62,22 +79,9 @@
   "forgotPasswordMessagesResetPasswordError1": "Don't forget to provide your new password",
   "forgotPasswordMessagesResetPasswordError2": "An error occurred while resetting the password",
 
-  "diagnoseVerbalMessagesAccessTokenError": "Access token not available. Please log in.",
-  "diagnoseVerbalMessagesIQScoreError": "User information or IQ score not available. Please log in.",
-  "diagnoseVerbalMessagesResultError": "Unable to fetch diagnosis results. Please log in to your account.",
-  "diagnoseVerbalMessagesSomethingError": "Something went wrong. Please log in to your account.",
-  "diagnoseVerbalMessagesLoadQuestion": "Failed to load question. Please try again.",
   "diagnoseVerbalMessagesListenAndAnswer": "Listen and answer the question",
 
-  "diagnoseLexicalMessagesToProceedError": "To proceed, please allow microphone access.",
-  "diagnoseLexicalMessagesNoSpeechError": "No speech detected. Let's try that again!",
   "diagnoseLexicalMessagesDidntRightError": "That didn't seem right. Please try saying it again.",
-  "diagnoseLexicalMessagesFailedToInitializeError": "Failed to initialize the voice recognition service. Please try again.",
-  "diagnoseLexicalMessagesAccessTokenError": "Access token not available. Please log in.",
-  "diagnoseLexicalMessagesIQScoreError": "User information or IQ score not available. Please log in.",
-  "diagnoseLexicalMessagesDiagnosisError": "Unable to fetch diagnosis results. Please log in to your account.",
-  "diagnoseLexicalMessagesSomethingWrongError": "Something went wrong. Please log in to your account.",
-  "diagnoseLexicalMessagesFailedToLoad": "Failed to load question. Please try again.",
   "diagnoseLexicalMessagesReadTheNumber": "Read the number out loud.",
 
   "diagnoseResultElapsedTime": "Elapsed Time",
@@ -90,13 +94,28 @@
   "diagnoseReportActivityButton": "Activities",
   "diagnoseReportMainDashboardButton": "Main Dashboard",
 
+
+  "activityScreens": "------------------------------------------------------------------------------------------------",
+
+
+  "commonactivityDashboardButtonText": "Navigate to Dashboard",
+
+  "activityVerbalQuestion1Part1": "How many",
+  "activityVerbalQuestion1Part2": "can you count?",
+  "activityVerbalQuestion2Text": "Tap an answer to see if you got it right!",
+
+  "activityLexicalMessageWrongAnswer": "Close! Let's try again and see if we can find the right answer!",
+  "activityLexicalQuestion1Text": "Drop your answer here!",
+  "activityLexicalQuestion2Text": "Read this number aloud",
+
+
+  "servicesLayer": "------------------------------------------------------------------------------------------------",
+
+
   "commonServiceResponseError": "An unexpected error occurred. Please try again later.",
   "commonServiceNetworkError": "Network error occurred. Please check your connection.",
   "commonServiceOtherError": "An unexpected error occurred",
-
-  "verbalServiceNoQuestionError": "No questions found on the server for the provided question number.",
-
-  "lexicalServiceNoQuestionError": "No questions found on the server for the provided question number.",
+  "commonMessageNoQuestionError": "No questions found on the server for the provided question number.",
 
   "userServiceSignup200": "Sign-up successful! Please check your email to verify your account before logging in.",
   "userServiceSignup403": "Invalid email address. Please provide a valid email to proceed.",
@@ -113,6 +132,7 @@
   "userServiceGenerateNewToken404": "User account not found. Please check your email or register a new account.",
   "userServiceLogout200": "You've been successfully logged out. See you next time!",
   "userServiceLogout400": "Invalid logout request",
+
   "userServiceSendOTP200": "A password reset email has been sent. Please check your inbox for further instructions.",
   "userServiceSendOTP404": "No account found with the provided email.",
   "userServiceSendOTP500": "An error occurred while sending the reset email. Please try again.",
@@ -123,5 +143,6 @@
   "userServiceResetPassword200": "Your password has been reset successfully.",
   "userServiceResetPassword404": "No account found with the provided email.",
   "userServiceUpdateUser200": "Your details have been updated successfully.",
-  "userServiceUpdateUser404": "User account not found. Please make sure you are logged in."
+  "userServiceUpdateUser404": "User account not found. Please make sure you are logged in.",
+  "userServiceUpdateIQ200": "Success! Your IQ score is now up to date."
 }
