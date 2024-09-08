@@ -122,10 +122,10 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
         User? user = await _userService.getUser(accessToken, context);
         if (user != null && user.disorderTypes != null) {
           // SET FLAGS BASED ON DISORDER TYPES
-          isDiagnoseType1 =
-              user.disorderTypes!.contains(type1.toString().split('.').last);
-          isDiagnoseType2 =
-              user.disorderTypes!.contains(type2.toString().split('.').last);
+          isDiagnoseType1 = user.disorderTypes!
+              .contains(type1.toString().toLowerCase().split('.').last);
+          isDiagnoseType2 = user.disorderTypes!
+              .contains(type2.toString().toLowerCase().split('.').last);
         } else {
           // HANDLE EMPTY DISORDER TYPES
           isDiagnoseType1 = isDiagnoseType2 = false;

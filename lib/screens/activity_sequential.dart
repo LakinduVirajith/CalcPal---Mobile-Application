@@ -243,7 +243,7 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
     // NAVIGATE BASED ON THE STATUS OF UPDATES
     if (status && updateStatus) {
       Navigator.of(context).pushNamedAndRemoveUntil(
-        diagnoseResultRoute,
+        activityVisualSpatialRoute,
         (route) => false,
         arguments: {
           'diagnoseType': 'visual',
