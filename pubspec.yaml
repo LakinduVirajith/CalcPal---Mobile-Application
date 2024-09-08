@@ -148,6 +148,16 @@ flutter:
     - assets/images/diagnose_background_v1.png
 
     - assets/images/diagnose_op_background.png
+    - assets/images/diagnose_id_background.png
+    - assets/images/ideognostic/ideo_q1_1.png
+    - assets/images/ideognostic/ideo_q1_2.png
+    - assets/images/ideognostic/ideo_q1_3.png
+    - assets/images/ideognostic/ideo_q1_4.png
+    - assets/images/ideognostic/ideo_q2_1.png
+    - assets/images/ideognostic/ideo_q2_2.png
+    - assets/images/ideognostic/ideo_q2_3.png
+    - assets/images/ideognostic/ideo_q2_4.png
+    - assets/images/ideognostic/ideo_q5.png
 
     - assets/images/diagnose_background_v2.png
     - assets/images/diagnose_result_background.png
