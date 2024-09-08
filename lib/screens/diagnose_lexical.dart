@@ -290,7 +290,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
             DisorderTypes.lexical, accessToken, context);
       } else {
         updateStatus = await _userService.updateDisorderType(
-            DisorderTypes.noLexical, accessToken, context);
+            DisorderTypes.nonLexical, accessToken, context);
       }
 
       // NAVIGATE BASED ON THE STATUS OF UPDATES
