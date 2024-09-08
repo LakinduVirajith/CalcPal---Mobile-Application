@@ -10,6 +10,7 @@ class DiagnoseVisualSpatialScreen extends StatelessWidget {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
+      // dafd
     ]);
 
     return Scaffold(
