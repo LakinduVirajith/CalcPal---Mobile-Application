@@ -16,6 +16,27 @@ class _DiagnoseResultScreenState extends State<DiagnoseResultScreen> {
   late int totalScore;
   late int elapsedTime;
 
+  @override
+  void initState() {
+    super.initState();
+
+    // FORCE LANDSCAPE ORIENTATION
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
+  }
+
   // METHOD TO HANDLE BUTTON PRESS ACTION
   Future<void> _handleButtonPress() async {
     switch (diagnoseType) {
@@ -97,12 +118,6 @@ class _DiagnoseResultScreenState extends State<DiagnoseResultScreen> {
     diagnoseType = arguments['diagnoseType'];
     totalScore = arguments['totalScore'];
     elapsedTime = arguments['elapsedTime'];
-
-    // FORCE LANDSCAPE ORIENTATION
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
 
     return PopScope(
       canPop: false, // CANPOP IS SET TO FALSE TO PREVENT POPPING THE ROUTE

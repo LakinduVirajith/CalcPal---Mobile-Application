@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'dart:developer' as developer;
 
 class ActivityLexicalScreen extends StatefulWidget {
@@ -26,7 +27,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
 
   int currentActivityNumber = 1;
   int attempt = 0;
-  String selectedLanguageCode = 'en-US';
+  String selectedLanguageCode = 'en';
 
   bool isMicrophoneOn = false;
   bool isDataLoading = false;
@@ -60,7 +61,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
     );
 
     // LOADING ACTIVITY DATA
-    _initiated();
+    _setupLanguage();
     _activityFuture = _loadActivity();
   }
 
@@ -71,10 +72,6 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
     selectedLanguageCode = languageCode;
   }
 
-  Future<void> _initiated() async {
-    await _setupLanguage();
-  }
-
   // FUNCTION TO LOAD THE ACTIVITY
   Future<void> _loadActivity() async {
     try {
@@ -83,7 +80,10 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
         isDataLoading = true;
       });
 
-      developer.log('API CURRENT NUMBER: ${currentActivityNumber.toString()}');
+      // VALIDATING THE QUESTION DATA
+      await _validateQuestion();
+      if (currentActivityNumber == 3) return;
+
       // FETCHING THE ACTIVITY FROM THE SERVICE
       final activity = await _lexicalService.fetchActivity(
         currentActivityNumber,
@@ -101,8 +101,13 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
           correctAnswer = activity.correctAnswer;
         });
 
-        // VALIDATING THE QUESTION DATA
-        await _validateQuestion();
+        // DECODE BASE64 ENCODED QUESTION IF LANGUAGE IS NOT ENGLISH
+        if (selectedLanguageCode != 'en') {
+          if (currentActivityNumber == 1) {
+            answers = CommonService.decodeList(answers);
+          }
+          correctAnswer = CommonService.decodeString(correctAnswer);
+        }
       } else {
         setState(() {
           isErrorOccurred = true;
@@ -119,7 +124,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
 
   // FUNTION VALIDATE QUESTION AND UPDATE STATE
   Future<void> _validateQuestion() async {
-    if (attempt == 10) {
+    if (attempt == 2) {
       setState(() {
         currentActivityNumber++;
         attempt = 1;
@@ -130,14 +135,6 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
 
     developer.log('currentActivityNumber: ${currentActivityNumber.toString()}');
     developer.log('attempt: ${attempt.toString()}');
-
-    // DECODE BASE64 ENCODED QUESTION IF LANGUAGE IS NOT ENGLISH
-    if (selectedLanguageCode != 'en') {
-      if (currentActivityNumber == 1) {
-        answers = CommonService.decodeList(answers);
-      }
-      correctAnswer = CommonService.decodeString(correctAnswer);
-    }
   }
 
   // FUNTION TO CHECK USER DROP ANSWER
@@ -146,7 +143,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
       await _loadActivity();
     } else {
       _toastService.infoToast(
-        'Close! Let\'s try again and see if we can find the right answer!',
+        AppLocalizations.of(context)!.activityLexicalMessageWrongAnswer,
       );
     }
   }
@@ -157,7 +154,8 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
     bool isPermissionGranted =
         await _speechService.checkAndRequestMicrophonePermission();
     if (!isPermissionGranted) {
-      _toastService.errorToast('To proceed, please allow microphone access.');
+      _toastService.errorToast(
+          AppLocalizations.of(context)!.commonLexicalMessagesToProceedError);
       return;
     }
 
@@ -168,7 +166,8 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
     bool isInitialized = await _speechService.initializeSpeechToText(
       onError: (error) {
         setState(() => isMicrophoneOn = false);
-        _toastService.infoToast('No speech detected. Let\'s try that again!');
+        _toastService.infoToast(
+            AppLocalizations.of(context)!.commonLexicalMessagesNoSpeechError);
         developer.log('Error: $error');
       },
       onStatus: (status) => developer.log('Status: $status'),
@@ -193,8 +192,8 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
                 await _loadActivity();
               } else {
                 // CHECK IF THERE ARE MORE QUESTIONS LEFT
-                _toastService.infoToast(
-                    'Close! Let\'s try again and see if we can find the right answer!');
+                _toastService.infoToast(AppLocalizations.of(context)!
+                    .activityLexicalMessageWrongAnswer);
                 await _captureVoice(); // RETRY ON FAILURE
               }
             }
@@ -203,8 +202,8 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
             setState(() => isMicrophoneOn = false);
           });
     } else {
-      _toastService.errorToast(
-          'Failed to initialize the voice recognition service. Please try again.');
+      _toastService.errorToast(AppLocalizations.of(context)!
+          .commonLexicalMessagesFailedToInitializeError);
       setState(() => isMicrophoneOn = false);
     }
   }
@@ -232,8 +231,8 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
                     _buildBackgound(),
                     Positioned(
                       top: constraints.maxHeight * 0.01,
-                      right: constraints.maxWidth * 0.54,
-                      left: constraints.maxWidth * 0.07,
+                      right: constraints.maxWidth * 0.52,
+                      left: constraints.maxWidth * 0.08,
                       bottom: constraints.maxHeight * 0.24,
                       child: _buildContent(snapshot, constraints),
                     )
@@ -266,7 +265,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
     if (snapshot.connectionState == ConnectionState.waiting || isDataLoading) {
       return const Center(
         child: SpinKitCubeGrid(
-          color: Color.fromARGB(255, 80, 80, 80),
+          color: Color.fromARGB(255, 40, 40, 40),
           size: 60.0,
         ),
       );
@@ -275,9 +274,9 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
       return Center(
         child: Container(
           padding: const EdgeInsets.all(4.0),
-          child: const Text(
-            "Failed to load activity. Please try again.",
-            style: TextStyle(
+          child: Text(
+            AppLocalizations.of(context)!.commonMessagesLoadActivity,
+            style: const TextStyle(
               color: Colors.black,
               fontSize: 20.0,
               fontFamily: 'Roboto',
@@ -305,7 +304,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(width: 36.0),
+                const SizedBox(width: 32.0),
                 DragTarget<String>(
                   builder: (context, candidateData, rejectedData) {
                     return DottedBorder(
@@ -316,9 +315,10 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
                         height: constraints.maxWidth * 0.12,
                         padding: const EdgeInsets.all(10.0),
                         alignment: Alignment.center,
-                        child: const Text(
-                          'Drop your answer here!',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context)!
+                              .activityLexicalQuestion1Text,
+                          style: const TextStyle(
                             color: Colors.black,
                             fontSize: 16.0,
                             fontWeight: FontWeight.w400,
@@ -336,7 +336,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
             SizedBox(
               height: constraints.maxWidth * 0.10,
               child: ListView.builder(
-                padding: EdgeInsets.zero,
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 scrollDirection: Axis.horizontal,
                 itemCount: answers.length,
                 itemBuilder: (context, index) {
@@ -358,9 +358,9 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Read this number aloud',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.activityLexicalQuestion2Text,
+              style: const TextStyle(
                 color: Colors.black,
                 fontSize: 18.0,
                 fontWeight: FontWeight.w400,
@@ -368,6 +368,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
             ),
             const SizedBox(height: 8.0),
             SizedBox(
+              width: constraints.maxWidth * 0.38,
               height: 1.0,
               child: Container(
                 color: Colors.black,
@@ -382,7 +383,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 32.0),
+            const SizedBox(height: 24.0),
             // MICROPHONE
             GestureDetector(
               key: ValueKey<bool>(
@@ -390,7 +391,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
               ),
               onTap: _captureVoice,
               child: Opacity(
-                opacity: 0.6,
+                opacity: 0.8,
                 child: Container(
                   height: 60,
                   width: 60,
@@ -418,10 +419,11 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(4.0),
-              child: const Text(
-                "Well done! You've completed all the activities successfully today",
-                style: TextStyle(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Text(
+                AppLocalizations.of(context)!
+                    .commonMessageMainDashboardNavigation,
+                style: const TextStyle(
                   color: Colors.black,
                   fontSize: 18.0,
                   fontFamily: 'Roboto',
@@ -430,7 +432,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
                 textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 24.0),
 
             // DASHBOARD BUTTON
             ElevatedButton(
@@ -438,7 +440,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
                   Navigator.of(context).pushNamed(activityDashboardRoute),
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(
-                  const Color.fromARGB(255, 80, 80, 80),
+                  const Color.fromARGB(255, 40, 40, 40),
                 ),
                 padding: WidgetStateProperty.all(
                   const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
@@ -449,10 +451,10 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
                   ),
                 ),
               ),
-              child: const Text(
-                'Navigate to Dashboard',
+              child: Text(
+                AppLocalizations.of(context)!.commonactivityDashboardButtonText,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontFamily: 'Roboto',
@@ -475,7 +477,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
       width: constraints.maxWidth * 0.08,
       height: constraints.maxWidth * 0.08,
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 80, 80, 80),
+        color: const Color.fromARGB(255, 40, 40, 40),
         borderRadius: BorderRadius.circular(8.0),
         boxShadow: isDragging
             ? []
