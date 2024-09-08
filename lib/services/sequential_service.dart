@@ -22,7 +22,8 @@ class SequentialService {
   // FETCH A QUESTION BASED ON NUMBER AND LANGUAGE
   Future<SequentialQuestion?> fetchQuestion(
       int questionNumber, String language, BuildContext context) async {
-    final url = Uri.parse('$_baseUrl/sequential/quection/$questionNumber');
+    final url = Uri.parse(
+        '$_baseUrl/sequential/quection/$questionNumber');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -30,7 +31,7 @@ class SequentialService {
         return SequentialQuestion.fromJson(data);
       } else {
         _commonService.handleHttpResponse(response, context, null,
-            {404: AppLocalizations.of(context)!.commonMessageNoQuestionError});
+            {404: AppLocalizations.of(context)!.sequentialServiceNoQuestionError});
         return null;
       }
     } on http.ClientException {
@@ -42,7 +43,30 @@ class SequentialService {
       return null;
     }
   }
-
+  // FETCH A QUESTION BASED ON NUMBER AND LANGUAGE
+  Future<SequentialQuestion?> fetchActivityQuestion(
+      int questionNumber, String language, BuildContext context) async {
+    final url = Uri.parse(
+        '$_baseUrl/sequential/quection/$questionNumber');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return SequentialQuestion.fromJson(data);
+      } else {
+        _commonService.handleHttpResponse(response, context, null,
+            {404: AppLocalizations.of(context)!.sequentialServiceNoQuestionError});
+        return null;
+      }
+    } on http.ClientException {
+      _commonService.handleNetworkError(context);
+      return null;
+    } catch (e) {
+      _commonService.handleException(e, context);
+      print(e);
+      return null;
+    }
+  }
   // SUBMIT A DIAGNOSIS RESULT TO THE SERVER
   Future<bool> addDiagnosisResult(
       DiagnosisResult result, BuildContext context) async {

@@ -3,7 +3,7 @@ import 'package:calcpal/models/diagnosis.dart';
 import 'package:calcpal/models/diagnosis_result.dart';
 import 'package:calcpal/models/flask_diagnosis_result.dart';
 import 'package:calcpal/models/verbal_activity.dart';
-import 'package:calcpal/models/verbal_question.dart';
+import 'package:calcpal/models/visual_activity.dart';
 import 'package:calcpal/services/common_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -20,20 +20,20 @@ class VisualService {
   final CommonService _commonService = CommonService();
 
   // FETCH A QUESTION BASED ON NUMBER AND LANGUAGE
-  Future<VerbalQuestion?> fetchQuestion(
+  Future<VisualQuestion?> fetchQuestion(
       int questionNumber, String language, BuildContext context) async {
     final url = Uri.parse(
-        '$_baseUrl/verbal/question/$questionNumber?language=$language');
+        '$_baseUrl/visual/question/$questionNumber?language=$language');
 
     try {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return VerbalQuestion.fromJson(data);
+        return VisualQuestion.fromJson(data);
       } else {
         _commonService.handleHttpResponse(response, context, null,
-            {404: AppLocalizations.of(context)!.commonMessageNoQuestionError});
+            {404: AppLocalizations.of(context)!.verbalServiceNoQuestionError});
         return null;
       }
     } on http.ClientException {
@@ -48,7 +48,7 @@ class VisualService {
   // SUBMIT A DIAGNOSIS RESULT TO THE SERVER
   Future<bool> addDiagnosisResult(
       DiagnosisResult result, BuildContext context) async {
-    final url = Uri.parse('$_baseUrl/verbal/diagnosis/');
+    final url = Uri.parse('$_baseUrl/visual/diagnosis/');
 
     try {
       final body = jsonEncode(result.toJson());
@@ -78,7 +78,7 @@ class VisualService {
   // FETCH A DIAGNOSIS RESULT FROM THE SERVER
   Future<FlaskDiagnosisResult?> getDiagnosisResult(
       Diagnosis diagnosis, BuildContext context) async {
-    final url = Uri.parse('$_modelBaseUrl/verbal');
+    final url = Uri.parse('$_modelBaseUrl/visual');
 
     try {
       final body = jsonEncode(diagnosis.toJson());
@@ -113,7 +113,7 @@ class VisualService {
   Future<VerbalActivity?> fetchActivity(
       int questionNumber, String language, BuildContext context) async {
     final url = Uri.parse(
-        '$_baseUrl/verbal/activity/$questionNumber?language=$language');
+        '$_baseUrl/visual/activity/$questionNumber?language=$language');
 
     try {
       final response = await http.get(url);
