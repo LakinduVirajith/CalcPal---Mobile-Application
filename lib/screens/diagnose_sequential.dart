@@ -230,10 +230,10 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
     // UPDATE USER DISORDER TYPE IN THE SERVICE
     if (diagnoseStatus) {
       updateStatus = await _userService.updateDisorderType(
-          DisorderTypes.verbal, accessToken, context);
+          DisorderTypes.sequential, accessToken, context);
     } else {
       updateStatus = await _userService.updateDisorderType(
-          DisorderTypes.noVerbal, accessToken, context);
+          DisorderTypes.nonSequential, accessToken, context);
     }
 
     // NAVIGATE BASED ON THE STATUS OF UPDATES
