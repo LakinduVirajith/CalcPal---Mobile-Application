@@ -146,7 +146,8 @@ flutter:
     - assets/images/diagnose_quiz_3.png
     - assets/images/diagnose_quiz_4.png
     - assets/images/diagnose_background_v1.png
-
+    - assets/images/diagnose_background_v3.png
+    - assets/images/diagnose_background_v4.png
     - assets/images/diagnose_op_background.png
     - assets/images/diagnose_id_background.png
     - assets/images/ideognostic/ideo_q1_1.png
@@ -164,8 +165,15 @@ flutter:
     - assets/images/diagnose_report_background.png
     - assets/images/activity_background_v1.jpg
     - assets/images/activity_background_v2.jpg
+    - assets/images/activity_background_v3.jpg
+    - assets/images/activity_background_v5.jpg
     - assets/images/flip_card_front_background.jpg
     - assets/images/flip_card_back_background.jpg
+    - assets/images/Circle.png
+    - assets/images/Triangle.png
+    - assets/images/7.png
+    - assets/images/Cylinder.png
+    - assets/images/Cube.png
 
     - assets/icons/user.svg
     - assets/icons/email.svg
