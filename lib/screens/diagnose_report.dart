@@ -144,13 +144,13 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
     // MAP OF DIAGNOSIS TYPES TO THEIR RESPECTIVE PAGES
     final Map<String, String> diagnosisRoutes = {
       'Verbal': activityVerbalRoute,
-      'Operational': activityLexicalRoute,
-      'Graphical': activityOperationalRoute,
-      'Visual Spatial': activityIdeognosticRoute,
-      'Lexical': activityGraphicalRoute,
-      'Ideognostic': activityPractognosticRoute,
-      'Practognostic': activitySequentialRoute,
-      'Sequential': activityVisualSpatialRoute,
+      'Lexical': activityLexicalRoute,
+      'Operational': activityOperationalRoute,
+      'Ideognostic': activityIdeognosticRoute,
+      'Graphical': activityGraphicalRoute,
+      'Practognostic': activityPractognosticRoute,
+      'Visual Spatial': activityVisualSpatialRoute,
+      'Sequential': activitySequentialRoute,
     };
 
     // CHECK IF ANY DIAGNOSIS TYPE IS PRESENT
