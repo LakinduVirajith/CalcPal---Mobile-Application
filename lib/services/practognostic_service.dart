@@ -32,7 +32,7 @@ class PractognosticService {
         return PractognosticQuestion.fromJson(data);
       } else {
         _commonService.handleHttpResponse(response, context, null,
-            {404: AppLocalizations.of(context)!.verbalServiceNoQuestionError});
+            {404: AppLocalizations.of(context)!.commonMessageNoQuestionError});
         return null;
       }
     } on http.ClientException {

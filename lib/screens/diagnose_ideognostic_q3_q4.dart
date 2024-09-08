@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:async';
+// import 'dart:async';
 import 'dart:math';
 
 import 'diagnose_ideognostic_last_ques.dart';
@@ -70,8 +70,9 @@ class _DiagnoseIdeognosticType2ScreenState
           // Content with Grey Box
           Center(
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 30),
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 30),
               width: MediaQuery.of(context).size.width * 0.7,
+              height: MediaQuery.of(context).size.height * 0.9,
               decoration: BoxDecoration(
                 color: Colors.grey.shade800.withOpacity(0.8),
                 borderRadius: BorderRadius.circular(15),
@@ -82,25 +83,25 @@ class _DiagnoseIdeognosticType2ScreenState
                   const Text(
                     'Use the 3 digits below and make the largest number possible',
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: 20,
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 28),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: _availableDigits
                         .map((digit) => _buildDraggableDigit(digit))
                         .toList(),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 28),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                         3, (index) => _buildDragTarget(index, _answers[index])),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 28),
                   ElevatedButton(
                     onPressed: () {
                       _stopwatch.stop();
@@ -169,8 +170,8 @@ class _DiagnoseIdeognosticType2ScreenState
       builder: (context, candidateData, rejectedData) {
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 10),
-          width: 100,
-          height: 100,
+          width: 80.0,
+          height: 80.0,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
@@ -199,15 +200,15 @@ class _DiagnoseIdeognosticType2ScreenState
       opacity: opacity,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 10),
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 12.0),
         decoration: BoxDecoration(
           color: isDragging ? Colors.grey : Colors.white,
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             if (!isDragging)
-              BoxShadow(
+              const BoxShadow(
                 color: Colors.black26,
-                offset: const Offset(0, 4),
+                offset: Offset(0, 4),
                 blurRadius: 4,
               ),
           ],
@@ -215,7 +216,7 @@ class _DiagnoseIdeognosticType2ScreenState
         child: Text(
           digit.toString(),
           style: const TextStyle(
-            fontSize: 30,
+            fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -303,25 +304,25 @@ class _FourthQuestionScreenState extends State<FourthQuestionScreen> {
                   const Text(
                     'Use these digits and make the largest number possible',
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: 20,
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 28),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: _availableDigits
                         .map((digit) => _buildDraggableDigit(digit))
                         .toList(),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 28),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                         4, (index) => _buildDragTarget(index, _answers[index])),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 28),
                   ElevatedButton(
                     onPressed: () {
                       _stopwatch.stop();
@@ -403,8 +404,8 @@ class _FourthQuestionScreenState extends State<FourthQuestionScreen> {
       builder: (context, candidateData, rejectedData) {
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 10),
-          width: 100,
-          height: 100,
+          width: 80,
+          height: 80,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
@@ -433,15 +434,15 @@ class _FourthQuestionScreenState extends State<FourthQuestionScreen> {
       opacity: opacity,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 10),
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 12.0),
         decoration: BoxDecoration(
           color: isDragging ? Colors.grey : Colors.white,
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             if (!isDragging)
-              BoxShadow(
+              const BoxShadow(
                 color: Colors.black26,
-                offset: const Offset(0, 4),
+                offset: Offset(0, 4),
                 blurRadius: 4,
               ),
           ],

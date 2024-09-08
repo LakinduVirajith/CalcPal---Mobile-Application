@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'package:calcpal/constants/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
@@ -8,7 +9,7 @@ class DiagnoseGraphicalScreen extends StatefulWidget {
   const DiagnoseGraphicalScreen({super.key});
 
   @override
-  _DiagnoseGraphicalScreenState createState() =>
+  State<DiagnoseGraphicalScreen> createState() =>
       _DiagnoseGraphicalScreenState();
 }
 
@@ -309,12 +310,8 @@ class GraphicalDiagnosisresult extends StatelessWidget {
                   const SizedBox(height: 50),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const DiagnosePractonosticScreen()),
-                      );
+                      Navigator.of(context)
+                          .pushNamed(diagnosePractognosticRoute);
                     },
                     child: const Text(
                       'Next',

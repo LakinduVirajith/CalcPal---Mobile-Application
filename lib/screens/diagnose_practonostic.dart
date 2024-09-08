@@ -46,6 +46,12 @@ class _DiagnosePractonosticScreenState
     _questionFuture = _loadQuestion();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    userResponses = [];
+  }
+
 // INITIALIZING THE USER SERVICE
   final UserService _userService = UserService();
   // TOAST SERVICE TO SHOW MESSAGES
@@ -104,6 +110,7 @@ class _DiagnosePractonosticScreenState
   }
 
   Future<void> _handleAnswer(String userAnswer) async {
+    developer.log("handle answer call");
     print(userAnswer);
     print(correctAnswer);
     // CHECK IF THE USER'S ANSWER IS CORRECT
@@ -140,7 +147,7 @@ class _DiagnosePractonosticScreenState
     // CHECK IF ACCESS TOKEN IS AVAILABLE
     if (accessToken == null) {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesAccessTokenError);
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
       return;
     }
 
@@ -150,7 +157,7 @@ class _DiagnosePractonosticScreenState
     // CHECK IF USER AND IQ SCORE ARE AVAILABLE
     if (user == null || user.iqScore == null) {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesIQScoreError);
+          AppLocalizations.of(context)!.commonMessagesIQScoreError);
       return;
     }
 
@@ -186,7 +193,7 @@ class _DiagnosePractonosticScreenState
       print(diagnoseStatus);
     } else {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesResultError);
+          AppLocalizations.of(context)!.commonMessagesResultError);
       return;
     }
 
@@ -228,7 +235,7 @@ class _DiagnosePractonosticScreenState
       );
     } else {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesSomethingError);
+          AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
     }
   }
 
@@ -297,7 +304,7 @@ class _DiagnosePractonosticScreenState
                                 Center(
                                     child: Text(
                                       AppLocalizations.of(context)!
-                                          .diagnoseLexicalMessagesFailedToLoad,
+                                          .commonMessagesLoadQuestion,
                                       style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 18,
@@ -345,13 +352,19 @@ class _DiagnosePractonosticScreenState
                                               children: [
                                                 if (currentQuestionNumber == 3)
                                                   Image.asset(
-                                                      'assets/images/practoq3.png'),
+                                                    'assets/images/practoq3.png',
+                                                    height: 150.0,
+                                                  ),
                                                 if (currentQuestionNumber == 4)
                                                   Image.asset(
-                                                      'assets/images/practoq4.png'),
+                                                    'assets/images/practoq4.png',
+                                                    height: 150.0,
+                                                  ),
                                                 if (currentQuestionNumber == 5)
                                                   Image.asset(
-                                                      'assets/images/practoq5.png'),
+                                                    'assets/images/practoq5.png',
+                                                    height: 150.0,
+                                                  ),
                                               ],
                                             ),
                                       const SizedBox(height: 38.0),

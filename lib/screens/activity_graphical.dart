@@ -8,7 +8,7 @@ class ActivityGraphicalScreen extends StatefulWidget {
   const ActivityGraphicalScreen({super.key});
 
   @override
-  _ActivityGraphicalScreenState createState() =>
+  State<ActivityGraphicalScreen> createState() =>
       _ActivityGraphicalScreenState();
 }
 
@@ -25,7 +25,6 @@ class _ActivityGraphicalScreenState extends State<ActivityGraphicalScreen> {
   Future<void> _handlePress() async {
     if (_currentQuestionIndex < _questions.length - 1) {
       await _captureScreenshot();
-      print("screenshot");
       setState(() {
         _currentQuestionIndex++;
       });
@@ -41,7 +40,6 @@ class _ActivityGraphicalScreenState extends State<ActivityGraphicalScreen> {
   }
 
   Future<void> _captureScreenshot() async {
-    print("new ");
     try {
       RenderRepaintBoundary boundary = _repaintBoundaryKey.currentContext!
           .findRenderObject() as RenderRepaintBoundary;

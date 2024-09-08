@@ -25,12 +25,12 @@ class _ActivityDashboardScreenState extends State<ActivityDashboardScreen> {
   final Map<String, String> _routeNames = {
     'Verbal': activityVerbalRoute,
     'Lexical': activityLexicalRoute,
-    'operational': activityOperationalRoute,
-    'ideognostic': activityIdeognosticRoute,
-    'graphical': activityGraphicalRoute,
-    'practognostic': activityPractognosticRoute,
-    'visualSpatial': activityVisualSpatialRoute,
-    'sequential': activitySequentialRoute,
+    'Operational': activityOperationalRoute,
+    'Ideognostic': activityIdeognosticRoute,
+    'Graphical': activityGraphicalRoute,
+    'Practognostic': activityPractognosticRoute,
+    'Visualspatial': activityVisualSpatialRoute,
+    'Sequential': activitySequentialRoute,
   };
   // FUTURE THAT HOLDS THE STATE OF THE DASHBOARD LOADING PROCESS
   late Future<void> _dashboardFuture;

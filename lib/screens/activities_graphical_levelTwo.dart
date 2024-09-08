@@ -8,11 +8,11 @@ class ActivitiesGraphicalScreenLevelTwo extends StatefulWidget {
   const ActivitiesGraphicalScreenLevelTwo({super.key});
 
   @override
-  _ActivitiesGraphicalScreenState createState() =>
-      _ActivitiesGraphicalScreenState();
+  State<ActivitiesGraphicalScreenLevelTwo> createState() =>
+      _ActivitiesGraphicalScreenLevelTwoState();
 }
 
-class _ActivitiesGraphicalScreenState
+class _ActivitiesGraphicalScreenLevelTwoState
     extends State<ActivitiesGraphicalScreenLevelTwo> {
   late Size _whiteboardSize;
   Offset _whiteboardOffset = Offset.zero;
