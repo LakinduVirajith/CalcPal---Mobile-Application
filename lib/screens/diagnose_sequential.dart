@@ -34,7 +34,8 @@ class DiagnoseSequentialScreen extends StatefulWidget {
   static bool isErrorOccurred = false;
 
   @override
-  State<DiagnoseSequentialScreen> createState() => _DiagnoseSequentialScreenState();
+  State<DiagnoseSequentialScreen> createState() =>
+      _DiagnoseSequentialScreenState();
 }
 
 class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
@@ -158,8 +159,9 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
     final roundedElapsedTimeInSeconds = elapsedTimeInSeconds.round();
 
     // CALCULATE THE TOTAL SCORE BASED ON TRUE RESPONSES
-    final int totalScore =
-        DiagnoseSequentialScreen.userResponses.where((response) => response).length;
+    final int totalScore = DiagnoseSequentialScreen.userResponses
+        .where((response) => response)
+        .length;
 
     // GET THE INSTANCE OF SHARED PREFERENCES
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -231,7 +233,7 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
           DisorderTypes.verbal, accessToken, context);
     } else {
       updateStatus = await _userService.updateDisorderType(
-          DisorderTypes.noVerbal, accessToken, context);
+          DisorderTypes.nonVerbal, accessToken, context);
     }
 
     // NAVIGATE BASED ON THE STATUS OF UPDATES

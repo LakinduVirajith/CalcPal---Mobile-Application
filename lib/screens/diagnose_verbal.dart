@@ -267,7 +267,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
           DisorderTypes.verbal, accessToken, context);
     } else {
       updateStatus = await _userService.updateDisorderType(
-          DisorderTypes.noVerbal, accessToken, context);
+          DisorderTypes.nonVerbal, accessToken, context);
     }
 
     // NAVIGATE BASED ON THE STATUS OF UPDATES

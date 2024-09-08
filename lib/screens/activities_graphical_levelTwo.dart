@@ -1,18 +1,19 @@
 import 'dart:ui' as ui;
+import 'package:calcpal/constants/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
-import 'package:calcpal/screens/activities_graphical_levelTwo.dart';
 
-class ActivityGraphicalScreen extends StatefulWidget {
-  const ActivityGraphicalScreen({super.key});
+class ActivitiesGraphicalScreenLevelTwo extends StatefulWidget {
+  const ActivitiesGraphicalScreenLevelTwo({super.key});
 
   @override
-  _ActivityGraphicalScreenState createState() =>
-      _ActivityGraphicalScreenState();
+  _ActivitiesGraphicalScreenState createState() =>
+      _ActivitiesGraphicalScreenState();
 }
 
-class _ActivityGraphicalScreenState extends State<ActivityGraphicalScreen> {
+class _ActivitiesGraphicalScreenState
+    extends State<ActivitiesGraphicalScreenLevelTwo> {
   late Size _whiteboardSize;
   Offset _whiteboardOffset = Offset.zero;
   final GlobalKey _whiteboardKey = GlobalKey();
@@ -25,7 +26,6 @@ class _ActivityGraphicalScreenState extends State<ActivityGraphicalScreen> {
   Future<void> _handlePress() async {
     if (_currentQuestionIndex < _questions.length - 1) {
       await _captureScreenshot();
-      print("screenshot");
       setState(() {
         _currentQuestionIndex++;
       });
@@ -41,7 +41,6 @@ class _ActivityGraphicalScreenState extends State<ActivityGraphicalScreen> {
   }
 
   Future<void> _captureScreenshot() async {
-    print("new ");
     try {
       RenderRepaintBoundary boundary = _repaintBoundaryKey.currentContext!
           .findRenderObject() as RenderRepaintBoundary;
@@ -76,15 +75,6 @@ class _ActivityGraphicalScreenState extends State<ActivityGraphicalScreen> {
     'assets/images/equal.jpg'
   ];
 
-  //list of image path for the hand written images
-  final List<String> _drawnImages = [
-    'assets/images/plus.jpg',
-    'assets/images/subs.jpg',
-    'assets/images/mul.jpg',
-    'assets/images/devide.jpg',
-    'assets/images/equa.jpg',
-  ];
-
   // Store points for each question separately
   final List<List<Offset?>> _questionPoints = List.generate(5, (_) => []);
 
@@ -100,7 +90,7 @@ class _ActivityGraphicalScreenState extends State<ActivityGraphicalScreen> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/back.png'),
+            image: AssetImage('assets/images/back1.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -155,17 +145,6 @@ class _ActivityGraphicalScreenState extends State<ActivityGraphicalScreen> {
                               ),
                               child: Stack(
                                 children: [
-                                  // Low-opacity addition symbol inside the whiteboard
-                                  Positioned.fill(
-                                    child: Opacity(
-                                      opacity: 0.2,
-                                      child: Image.asset(
-                                        _drawnImages[
-                                            _currentQuestionIndex], // Replace with your image path
-                                        fit: BoxFit.contain,
-                                      ),
-                                    ),
-                                  ),
                                   Positioned.fill(
                                     child: GestureDetector(
                                       onPanUpdate: (details) {
@@ -352,7 +331,7 @@ class ActivityLevelTwo extends StatelessWidget {
                     ),
                     padding: const EdgeInsets.all(4.0),
                     child: const Text(
-                      "Now Let's move to the activity Level 02",
+                      'Congratulations!!!',
                       style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
@@ -360,21 +339,44 @@ class ActivityLevelTwo extends StatelessWidget {
                       ),
                     ),
                   ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color.fromRGBO(96, 96, 96, 0.5),
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    padding: const EdgeInsets.all(4.0),
+                    child: const Text(
+                      'You Have Successfully Finish The Activity',
+                      style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const ActivitiesGraphicalScreenLevelTwo()),
-                      );
-                    },
+                    onPressed: () =>
+                        Navigator.of(context).pushNamed(activityDashboardRoute),
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(
+                        const Color.fromARGB(255, 0, 0, 0),
+                      ),
+                      padding: WidgetStateProperty.all(
+                        const EdgeInsets.symmetric(
+                            vertical: 20.0, horizontal: 24.0),
+                      ),
+                      shape: WidgetStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                      ),
+                    ),
                     child: const Text(
-                      "Let's Start",
+                      'Finish',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.black,
+                        color: ui.Color.fromARGB(255, 255, 255, 255),
                         fontSize: 20,
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.bold,
@@ -384,6 +386,7 @@ class ActivityLevelTwo extends StatelessWidget {
                 ],
               ),
             ),
+            const Spacer(),
           ],
         ),
       ),
