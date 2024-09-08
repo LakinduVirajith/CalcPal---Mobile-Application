@@ -29,8 +29,8 @@ class _ActivityDashboardScreenState extends State<ActivityDashboardScreen> {
     'ideognostic': activityIdeognosticRoute,
     'graphical': activityGraphicalRoute,
     'practognostic': activityPractognosticRoute,
-    'visualSpatial': activitySequentialRoute,
-    'sequential': activityVisualSpatialRoute,
+    'visualSpatial': activityVisualSpatialRoute,
+    'sequential': activitySequentialRoute,
   };
   // FUTURE THAT HOLDS THE STATE OF THE DASHBOARD LOADING PROCESS
   late Future<void> _dashboardFuture;
