@@ -78,6 +78,9 @@ dependencies:
   # PACKAGE FOR CREATING NATIVE SPLASH SCREENS
   flutter_native_splash: ^2.4.1
 
+  #PACKAGE FOR CUSTOM ICONS
+  font_awesome_flutter: ^10.5.0
+
   # --- LOCALIZATION & INTERNATIONALIZATION ---
 
   # INTERNATIONALIZATION AND LOCALIZATION SUPPORT
@@ -146,6 +149,28 @@ flutter:
     - assets/images/diagnose_background_v1.png
 
     - assets/images/diagnose_op_background.png
+    - assets/images/operational_activity_dashboard.png
+    - assets/images/operational_activities/operational_level1.png
+    - assets/images/operational_activities/subtraction_level1.png
+    - assets/images/operational_activities/multiplication_level1.png
+    - assets/images/operational_activities/division_level1.png
+    - assets/images/operational_activities/addition_level2_1.png
+    - assets/images/operational_activities/addition_level2_2.png
+    - assets/images/operational_activities/addition_level2_3.png
+    - assets/images/operational_activities/addition_level2_4.png
+    - assets/images/operational_activities/subtraction_level2_1.png
+    - assets/images/operational_activities/subtraction_level2_2.png
+    - assets/images/operational_activities/subtraction_level2_3.png
+    - assets/images/operational_activities/subtraction_level2_4.png
+    - assets/images/operational_activities/multiplication_level2_1.png
+    - assets/images/operational_activities/multiplication_level2_2.png
+    - assets/images/operational_activities/multiplication_level2_3.png
+    - assets/images/operational_activities/multiplication_level2_4.png
+    - assets/images/operational_activities/division_level2_1.png
+    - assets/images/operational_activities/division_level2_2.png
+    - assets/images/operational_activities/division_level2_3.png
+    - assets/images/operational_activities/division_level2_4.png
+
     - assets/images/diagnose_id_background.png
     - assets/images/ideognostic/ideo_q1_1.png
     - assets/images/ideognostic/ideo_q1_2.png
