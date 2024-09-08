@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/operational_question.dart';
-import '../models/diagnosis_result.dart';
 import '../models/diagnosis.dart';
 import '../models/flask_diagnosis_result.dart';
 import '../models/user.dart';
@@ -152,7 +151,7 @@ class _DiagnoseOperationalScreenState extends State<DiagnoseOperationalScreen> {
           DisorderTypes.operational, accessToken, context);
     } else {
       updateStatus = await _userService.updateDisorderType(
-          DisorderTypes.noOperational, accessToken, context);
+          DisorderTypes.nonOperational, accessToken, context);
     }
     print(status);
     print(updateStatus);
