@@ -174,7 +174,7 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
     // CHECK IF ACCESS TOKEN IS AVAILABLE
     if (accessToken == null) {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesAccessTokenError);
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
       return;
     }
 
@@ -184,7 +184,7 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
     // CHECK IF USER AND IQ SCORE ARE AVAILABLE
     if (user == null || user.iqScore == null) {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesIQScoreError);
+          AppLocalizations.of(context)!.commonMessagesIQScoreError);
       return;
     }
 
@@ -212,7 +212,7 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
       diagnoseStatus = diagnosis.prediction!;
     } else {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesResultError);
+          AppLocalizations.of(context)!.commonMessagesResultError);
       return;
     }
 
@@ -253,7 +253,7 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
       );
     } else {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesSomethingError);
+          AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
     }
   }
 
@@ -382,7 +382,7 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
                                   Center(
                                       child: Text(
                                         AppLocalizations.of(context)!
-                                            .diagnoseVerbalMessagesLoadQuestion,
+                                            .commonMessagesLoadQuestion,
                                         style: const TextStyle(
                                             color: Color.fromARGB(255, 0, 0, 0),
                                             fontSize: 20,
