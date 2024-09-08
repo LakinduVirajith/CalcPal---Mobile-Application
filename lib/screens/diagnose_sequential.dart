@@ -202,7 +202,13 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
           seconds: roundedElapsedTimeInSeconds,
         ),
         context);
-
+    print("Q1 :${DiagnoseSequentialScreen.userResponses[0]}");
+    print("Q2 :${DiagnoseSequentialScreen.userResponses[1]}");
+    print("Q3 :${DiagnoseSequentialScreen.userResponses[2]}");
+    print("Q4 :${DiagnoseSequentialScreen.userResponses[3]}");
+    print("Q5 :${DiagnoseSequentialScreen.userResponses[4]}");
+    print("Prediction :${diagnosis?.prediction}");
+    print("Prediction :${diagnosis?.message}");
     // CHECK IF DIAGNOSIS RESULT IS VALID AND GET DIAGNOSE STATUS
     if (diagnosis != null && diagnosis.prediction != null) {
       diagnoseStatus = diagnosis.prediction!;
@@ -301,7 +307,7 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
                         decoration: const BoxDecoration(
                           image: DecorationImage(
                             image: AssetImage(
-                                'assets/images/diagnose_background_v1.png'),
+                                'assets/images/diagnose_background_v3.png'),
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -347,6 +353,7 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
                                   // DISPLAY QUESTION INSTRUCTIONS
                                   : Column(
                                       children: [
+                                        const SizedBox(height: 28.0),
                                         Text(
                                           DiagnoseSequentialScreen.question,
                                           style: TextStyle(
@@ -354,23 +361,27 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
                                               fontSize: DiagnoseSequentialScreen
                                                           .selectedLanguageCode ==
                                                       'ta'
-                                                  ? 16
-                                                  : 20,
+                                                  ? 20
+                                                  : 24,
                                               fontFamily: 'Roboto',
                                               fontWeight: FontWeight.w400),
                                         ),
-                                        const SizedBox(height: 48.0),
+                                        const SizedBox(height: 28.0),
                                         // ANSWER OPTIONS
                                         AnimatedSwitcher(
                                           duration:
                                               const Duration(milliseconds: 300),
-                                          child: Row(
+                                          child: Wrap(
                                             key: ValueKey<int>(
                                               DiagnoseSequentialScreen
                                                   .currentQuestionNumber,
                                             ),
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
+                                            spacing:
+                                                10.0, // spacing between items horizontally
+                                            runSpacing:
+                                                10.0, // spacing between items vertically (between rows)
+                                            alignment: WrapAlignment
+                                                .center, // centers the children horizontally
                                             children: DiagnoseSequentialScreen
                                                 .answers
                                                 .map((answer) {
@@ -378,10 +389,10 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
                                                 onTap: () =>
                                                     _handleAnswer(answer),
                                                 child: AnswerBox(
-                                                  width: 60.0,
-                                                  height: 60,
+                                                  width: 150.0,
+                                                  height: 55,
                                                   value: answer,
-                                                  size: 24.0,
+                                                  size: 20.0,
                                                 ),
                                               );
                                             }).toList(),

@@ -85,13 +85,13 @@ class _DiagnoseResultScreenState extends State<DiagnoseResultScreen> {
           },
         );
         break;
-      case 'visualSpatial':
+      case 'sequential':
         Navigator.of(context).pushNamedAndRemoveUntil(
-          diagnoseSequentialRoute,
+          diagnoseVisualSpatialRoute,
           (route) => false,
         );
         break;
-      case 'sequential':
+      case 'visual':
         Navigator.of(context).pushNamedAndRemoveUntil(
           diagnoseReportRoute,
           (route) => false,

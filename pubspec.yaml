@@ -158,6 +158,15 @@ flutter:
     - assets/images/ideognostic/ideo_q2_3.png
     - assets/images/ideognostic/ideo_q2_4.png
     - assets/images/ideognostic/ideo_q5.png
+    - assets/images/Circle.png
+    - assets/images/Triangle.png
+    - assets/images/7.png
+    - assets/images/Cylinder.png
+    - assets/images/Cube.png
+    - assets/images/activity_background_v3.jpg
+    - assets/images/activity_background_v5.jpg
+    - assets/images/diagnose_background_v3.png
+    - assets/images/diagnose_background_v4.png
 
     - assets/images/diagnose_background_v2.png
     - assets/images/diagnose_result_background.png
