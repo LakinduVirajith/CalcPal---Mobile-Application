@@ -117,7 +117,7 @@ class _MyAppState extends State<MyApp> {
           diagnoseSequentialRoute: (context) =>
               const DiagnoseSequentialScreen(),
           diagnoseVisualSpatialRoute: (context) =>
-              const DiagnoseVisualSpatialScreen(),
+              const DiagnoseVisualScreen(),
           diagnoseResultRoute: (context) => const DiagnoseResultScreen(),
           diagnoseReportRoute: (context) => const DiagnoseReportScreen(),
           activityDashboardRoute: (context) => const ActivityDashboardScreen(),
