@@ -4,7 +4,9 @@ import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ActivityDashboardScreen extends StatefulWidget {
   const ActivityDashboardScreen({super.key});
@@ -17,16 +19,18 @@ class ActivityDashboardScreen extends StatefulWidget {
 class _ActivityDashboardScreenState extends State<ActivityDashboardScreen> {
   // VARIABLES TO HOLD DISORDER TYPES
   late List<String> types;
+  String selectedLanguageCode = 'en';
+
   // MAP TO ASSOCIATE TYPES WITH ROUTE NAMES
   final Map<String, String> _routeNames = {
     'Verbal': activityVerbalRoute,
     'Lexical': activityLexicalRoute,
-    'operational': activityOperationalRoute,
-    'ideognostic': activityIdeognosticRoute,
-    'graphical': activityGraphicalRoute,
-    'practognostic': activityPractognosticRoute,
-    'visualSpatial': activitySequentialRoute,
-    'sequential': activityVisualSpatialRoute,
+    'Operational': activityOperationalRoute,
+    'Ideognostic': activityIdeognosticRoute,
+    'Graphical': activityGraphicalRoute,
+    'Practognostic': activityPractognosticRoute,
+    'Visualspatial': activityVisualSpatialRoute,
+    'Sequential': activitySequentialRoute,
   };
   // FUTURE THAT HOLDS THE STATE OF THE DASHBOARD LOADING PROCESS
   late Future<void> _dashboardFuture;
@@ -55,7 +59,15 @@ class _ActivityDashboardScreenState extends State<ActivityDashboardScreen> {
     );
 
     // LOADING QUESTION DATA
+    _setupLanguage();
     _dashboardFuture = _loadDashboard();
+  }
+
+  // SET SELECTED LANGUAGE BASED ON STORED LANGUAGE CODE
+  Future<void> _setupLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final languageCode = prefs.getString('language_code') ?? 'en';
+    setState(() => selectedLanguageCode = languageCode);
   }
 
   // FUNCTION LOAD THE DASHBOARD DATA
@@ -73,7 +85,8 @@ class _ActivityDashboardScreenState extends State<ActivityDashboardScreen> {
         });
       }
     } else {
-      _toastService.errorToast("Access token not available. Please log in.");
+      _toastService.errorToast(
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
       Navigator.of(context).pushNamed(loginRoute);
     }
   }
@@ -104,26 +117,123 @@ class _ActivityDashboardScreenState extends State<ActivityDashboardScreen> {
             future: _dashboardFuture,
             builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
+                return Center(
+                  child: Container(
+                    height: double.infinity,
+                    width: double.infinity,
+                    color: Colors.black,
+                    child: const SpinKitWave(
+                      color: Colors.white,
+                      size: 60.0,
+                    ),
+                  ),
+                );
               } else {
-                return ListView.builder(
-                  itemCount: types.length,
-                  itemBuilder: (context, index) {
-                    final type = types[index];
-                    final routeName = _routeNames[type] ?? mainDashboardRoute;
-
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pushNamed(routeName);
-                        },
-                        child: Text(type),
+                return Stack(
+                  children: [
+                    Container(
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage(
+                              'assets/images/activity_dashboard_background.png'),
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                    );
-                  },
+                    ),
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 36.0,
+                            vertical: 12.0,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).pushNamedAndRemoveUntil(
+                                    mainDashboardRoute,
+                                    (route) => false,
+                                  );
+                                },
+                                child: Container(
+                                  width: 70.0,
+                                  height: 70.0,
+                                  decoration: const BoxDecoration(
+                                    image: DecorationImage(
+                                      image:
+                                          AssetImage('assets/icons/back.png'),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).pushNamed(profileRoute);
+                                },
+                                child: Container(
+                                  width: 150.0,
+                                  height: 60.0,
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: AssetImage(
+                                          'assets/icons/settings-$selectedLanguageCode.png'),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: types.length,
+                            itemBuilder: (context, index) {
+                              final type = types[index];
+                              final routeName =
+                                  _routeNames[type] ?? mainDashboardRoute;
+
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 44.0,
+                                  vertical: 8.0,
+                                ),
+                                child: ElevatedButton(
+                                  style: ButtonStyle(
+                                    backgroundColor: WidgetStateProperty.all(
+                                      Colors.white,
+                                    ),
+                                    padding: WidgetStateProperty.all(
+                                      const EdgeInsets.symmetric(
+                                          vertical: 12.0, horizontal: 24.0),
+                                    ),
+                                    shape: WidgetStateProperty.all(
+                                      RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
+                                      ),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pushNamed(routeName);
+                                  },
+                                  child: Text(
+                                    '${AppLocalizations.of(context)!.activityDashboardActivityText} - $type',
+                                    style: const TextStyle(
+                                      fontSize: 16.0,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 );
               }
             },

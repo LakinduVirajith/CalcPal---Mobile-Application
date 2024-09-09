@@ -32,7 +32,7 @@ class LexicalService {
         return LexicalQuestion.fromJson(data);
       } else {
         _commonService.handleHttpResponse(response, context, null,
-            {404: AppLocalizations.of(context)!.lexicalServiceNoQuestionError});
+            {404: AppLocalizations.of(context)!.commonMessageNoQuestionError});
         return null;
       }
     } on http.ClientException {

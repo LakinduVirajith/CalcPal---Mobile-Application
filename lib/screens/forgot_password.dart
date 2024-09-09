@@ -2,7 +2,7 @@ import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/widgets/normal_button.dart';
-import 'package:calcpal/widgets/normal_input_lockable.dart';
+import 'package:calcpal/widgets/normal_input.dart';
 import 'package:calcpal/widgets/otp_box.dart';
 import 'package:calcpal/widgets/password_input.dart';
 import 'package:flutter/material.dart';
@@ -197,7 +197,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
         systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
       ),
     );
 
@@ -243,7 +245,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                       .forgotPasswordInstructionText),
                   const SizedBox(height: 12.0),
                   // EMAIL INPUT FIELD
-                  NormalInputLockable(
+                  NormalInput(
                     placeholderText: AppLocalizations.of(context)!
                         .forgotPasswordEmailAddress,
                     iconPath: 'assets/icons/email.svg',

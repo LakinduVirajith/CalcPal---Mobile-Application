@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:audioplayers/audioplayers.dart';
 import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/enums/disorder_types.dart';
@@ -31,7 +29,7 @@ class DiagnoseVerbalScreen extends StatefulWidget {
 
   static List<bool> userResponses = [];
   static int currentQuestionNumber = 1;
-  static String selectedLanguageCode = 'en-US';
+  static String selectedLanguageCode = 'en';
 
   static bool isAudioPlaying = false;
   static bool isDataLoading = false;
@@ -63,6 +61,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
   void initState() {
     super.initState();
     // LOAD THE FIRST QUESTION WHEN THE WIDGET IS INITIALIZED
+    _setupLanguage();
     _questionFuture = _loadQuestion();
   }
 
@@ -84,7 +83,6 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
   // FUNCTION TO LOAD AND PLAY QUESTION
   Future<void> _loadQuestion() async {
     try {
-      await _setupLanguage();
       setState(() {
         DiagnoseVerbalScreen.isErrorOccurred = false;
         DiagnoseVerbalScreen.isDataLoading = true;
@@ -105,7 +103,8 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
         });
         // DECODE BASE64 ENCODED QUESTION
         if (DiagnoseVerbalScreen.selectedLanguageCode != 'en') {
-          _decodeQuestion(DiagnoseVerbalScreen.question);
+          setState(() => DiagnoseVerbalScreen.question =
+              CommonService.decodeString(DiagnoseVerbalScreen.question));
         }
 
         // SYNTHESIZE SPEECH FOR THE QUESTION AND STORE THE AUDIO DATA
@@ -139,23 +138,15 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
     }
   }
 
-  // FUNCTION TO DECODE BASE64 ENCODED QUESTION
-  Future _decodeQuestion(String question) async {
-    try {
-      setState(() {
-        DiagnoseVerbalScreen.question = utf8.decode(base64Decode(question));
-      });
-    } catch (e) {
-      developer.log('Error decoding answers: ${e.toString()}');
-    }
-  }
-
   // FUNCTION TO TOGGLE AUDIO PLAYBACK
   Future<void> _toggleAudioPlayback() async {
     if (DiagnoseVerbalScreen.isAudioPlaying) {
       await _audioPlayer.stop();
     } else {
       await _audioPlayer.play(DiagnoseVerbalScreen.questionVoice);
+
+      // SET PLAYBACK SPEED
+      await _audioPlayer.setPlaybackRate(0.9);
 
       _audioPlayer.onPlayerComplete.listen((event) {
         setState(() => DiagnoseVerbalScreen.isAudioPlaying = false);
@@ -188,102 +179,119 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
 
   // FUNCTION TO SUBMIT RESULTS TO MACHINE LEARNING MODEL
   Future<void> _submitResultsToMLModel() async {
-    // STOP THE TIMER AND RECORD ELAPSED TIME IN SECONDS
-    _stopwatch.stop();
-    final elapsedTimeInSeconds = _stopwatch.elapsedMilliseconds / 1000;
-    final roundedElapsedTimeInSeconds = elapsedTimeInSeconds.round();
+    try {
+      setState(() {
+        DiagnoseVerbalScreen.isErrorOccurred = false;
+        DiagnoseVerbalScreen.isDataLoading = true;
+      });
 
-    // CALCULATE THE TOTAL SCORE BASED ON TRUE RESPONSES
-    final int totalScore =
-        DiagnoseVerbalScreen.userResponses.where((response) => response).length;
+      // STOP THE TIMER AND RECORD ELAPSED TIME IN SECONDS
+      _stopwatch.stop();
+      final elapsedTimeInSeconds = _stopwatch.elapsedMilliseconds / 1000;
+      final roundedElapsedTimeInSeconds = elapsedTimeInSeconds.round();
 
-    // GET THE INSTANCE OF SHARED PREFERENCES
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('access_token');
+      // CALCULATE THE TOTAL SCORE BASED ON TRUE RESPONSES
+      final int totalScore = DiagnoseVerbalScreen.userResponses
+          .where((response) => response)
+          .length;
 
-    // CHECK IF ACCESS TOKEN IS AVAILABLE
-    if (accessToken == null) {
-      _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesAccessTokenError);
-      return;
-    }
+      // GET THE INSTANCE OF SHARED PREFERENCES
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
 
-    // FETCH USER INFO
-    User? user = await _userService.getUser(accessToken, context);
+      // CHECK IF ACCESS TOKEN IS AVAILABLE
+      if (accessToken == null) {
+        _handleErrorAndRedirect(
+            AppLocalizations.of(context)!.commonMessagesAccessTokenError);
+        return;
+      }
 
-    // CHECK IF USER AND IQ SCORE ARE AVAILABLE
-    if (user == null || user.iqScore == null) {
-      _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesIQScoreError);
-      return;
-    }
+      // FETCH USER INFO
+      User? user = await _userService.getUser(accessToken, context);
 
-    // VARIABLES TO STORE DIAGNOSIS AND UPDATE STATUS
-    late bool diagnoseStatus;
-    late bool status;
-    late bool updateStatus;
+      // CHECK IF USER AND IQ SCORE ARE AVAILABLE
+      if (user == null || user.iqScore == null) {
+        _handleErrorAndRedirect(
+            AppLocalizations.of(context)!.commonMessagesIQScoreError);
+        return;
+      }
 
-    // PREPARE DIAGNOSIS DATA AND FETCH DIAGNOSIS RESULT FROM THE SERVICE
-    FlaskDiagnosisResult? diagnosis = await _questionService.getDiagnosisResult(
-        Diagnosis(
-          age: user.age,
-          iq: user.iqScore!,
-          q1: DiagnoseVerbalScreen.userResponses[0] ? 1 : 0,
-          q2: DiagnoseVerbalScreen.userResponses[1] ? 1 : 0,
-          q3: DiagnoseVerbalScreen.userResponses[2] ? 1 : 0,
-          q4: DiagnoseVerbalScreen.userResponses[3] ? 1 : 0,
-          q5: DiagnoseVerbalScreen.userResponses[4] ? 1 : 0,
-          seconds: roundedElapsedTimeInSeconds,
-        ),
-        context);
+      // VARIABLES TO STORE DIAGNOSIS AND UPDATE STATUS
+      late bool diagnoseStatus;
+      late bool status;
+      late bool updateStatus;
 
-    // CHECK IF DIAGNOSIS RESULT IS VALID AND GET DIAGNOSE STATUS
-    if (diagnosis != null && diagnosis.prediction != null) {
-      diagnoseStatus = diagnosis.prediction!;
-    } else {
-      _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesResultError);
-      return;
-    }
+      // PREPARE DIAGNOSIS DATA AND FETCH DIAGNOSIS RESULT FROM THE SERVICE
+      FlaskDiagnosisResult? diagnosis =
+          await _questionService.getDiagnosisResult(
+              Diagnosis(
+                age: user.age,
+                iq: user.iqScore!,
+                q1: DiagnoseVerbalScreen.userResponses[0] ? 1 : 0,
+                q2: DiagnoseVerbalScreen.userResponses[1] ? 1 : 0,
+                q3: DiagnoseVerbalScreen.userResponses[2] ? 1 : 0,
+                q4: DiagnoseVerbalScreen.userResponses[3] ? 1 : 0,
+                q5: DiagnoseVerbalScreen.userResponses[4] ? 1 : 0,
+                seconds: roundedElapsedTimeInSeconds,
+              ),
+              context);
 
-    // UPDATE USER DISORDER STATUS IN THE DATABASE
-    status = await _questionService.addDiagnosisResult(
-        DiagnosisResult(
-          userEmail: user.email,
-          timeSeconds: roundedElapsedTimeInSeconds,
-          q1: DiagnoseVerbalScreen.userResponses[0],
-          q2: DiagnoseVerbalScreen.userResponses[1],
-          q3: DiagnoseVerbalScreen.userResponses[2],
-          q4: DiagnoseVerbalScreen.userResponses[3],
-          q5: DiagnoseVerbalScreen.userResponses[4],
-          totalScore: totalScore.toString(),
-          label: diagnoseStatus,
-        ),
-        context);
+      // CHECK IF DIAGNOSIS RESULT IS VALID AND GET DIAGNOSE STATUS
+      if (diagnosis != null && diagnosis.prediction != null) {
+        diagnoseStatus = diagnosis.prediction!;
+      } else {
+        _handleErrorAndRedirect(
+            AppLocalizations.of(context)!.commonMessagesResultError);
+        return;
+      }
 
-    // UPDATE USER DISORDER TYPE IN THE SERVICE
-    if (diagnoseStatus) {
-      updateStatus = await _userService.updateDisorderType(
-          DisorderTypes.verbal, accessToken, context);
-    } else {
-      updateStatus = await _userService.updateDisorderType(
-          DisorderTypes.noVerbal, accessToken, context);
-    }
+      // UPDATE USER DISORDER STATUS IN THE DATABASE
+      status = await _questionService.addDiagnosisResult(
+          DiagnosisResult(
+            userEmail: user.email,
+            timeSeconds: roundedElapsedTimeInSeconds,
+            q1: DiagnoseVerbalScreen.userResponses[0],
+            q2: DiagnoseVerbalScreen.userResponses[1],
+            q3: DiagnoseVerbalScreen.userResponses[2],
+            q4: DiagnoseVerbalScreen.userResponses[3],
+            q5: DiagnoseVerbalScreen.userResponses[4],
+            totalScore: totalScore.toString(),
+            label: diagnoseStatus,
+          ),
+          context);
 
-    // NAVIGATE BASED ON THE STATUS OF UPDATES
-    if (status && updateStatus) {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        diagnoseResultRoute,
-        (route) => false,
-        arguments: {
-          'diagnoseType': 'verbal',
-          'totalScore': totalScore,
-          'elapsedTime': roundedElapsedTimeInSeconds,
-        },
-      );
-    } else {
-      _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesSomethingError);
+      // UPDATE USER DISORDER TYPE IN THE SERVICE
+      if (diagnoseStatus) {
+        updateStatus = await _userService.updateDisorderType(
+            DisorderTypes.verbal, accessToken, context);
+      } else {
+        updateStatus = await _userService.updateDisorderType(
+            DisorderTypes.nonVerbal, accessToken, context);
+      }
+      
+      // NAVIGATE BASED ON THE STATUS OF UPDATES
+      if (status && updateStatus) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          diagnoseResultRoute,
+          (route) => false,
+          arguments: {
+            'diagnoseType': 'verbal',
+            'totalScore': totalScore,
+            'elapsedTime': roundedElapsedTimeInSeconds,
+          },
+        );
+      } else {
+        _handleErrorAndRedirect(
+            AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
+      }
+    } catch (e) {
+      developer.log(e.toString());
+      setState(() {
+        DiagnoseVerbalScreen.isErrorOccurred = true;
+        DiagnoseVerbalScreen.isDataLoading = false;
+      });
+    } finally {
+      setState(() => DiagnoseVerbalScreen.isDataLoading = false);
     }
   }
 
@@ -308,7 +316,9 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
         systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
       ),
     );
 
@@ -370,7 +380,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                                   Center(
                                       child: Text(
                                         AppLocalizations.of(context)!
-                                            .diagnoseVerbalMessagesLoadQuestion,
+                                            .commonMessagesLoadQuestion,
                                         style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 20,

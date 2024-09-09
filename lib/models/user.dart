@@ -20,7 +20,7 @@ class User {
       json['disorderTypes'] != null
           ? List<String>.from(json['disorderTypes'])
           : null,
-      json['iqScore'],
+      json['iqScore'] != null ? json['iqScore'] as int : null,
       name: json['name'],
       email: json['email'],
       age: json['age'],

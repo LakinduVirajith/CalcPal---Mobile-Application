@@ -8,7 +8,6 @@ import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/widgets/date_input.dart';
 import 'package:calcpal/widgets/normal_button.dart';
 import 'package:calcpal/widgets/normal_input.dart';
-import 'package:calcpal/widgets/normal_input_lockable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -58,7 +57,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
         systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
       ),
     );
 
@@ -100,12 +101,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
       } else {
         _handleErrorAndRedirect(
-            AppLocalizations.of(context)!.profileMessagesLoadDetailsError1);
+            AppLocalizations.of(context)!.commonMessagesUserInformationError);
         return;
       }
     } else {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.profileMessagesLoadDetailsError2);
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
       return;
     }
 
@@ -138,7 +139,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               UpdateUser(name: username, birthday: birthday), context);
         } else {
           _handleErrorAndRedirect(
-              AppLocalizations.of(context)!.profileMessagesUpdateDetailsError3);
+              AppLocalizations.of(context)!.commonMessagesAccessTokenError);
           return;
         }
       }
@@ -323,7 +324,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 4.0),
                   GestureDetector(
                     onTap: _notEditableError,
-                    child: NormalInputLockable(
+                    child: NormalInput(
                       placeholderText:
                           AppLocalizations.of(context)!.profileEmailPlaceholder,
                       iconPath: 'assets/icons/email.svg',
@@ -346,7 +347,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 4.0),
                   GestureDetector(
                     onTap: _notEditableError,
-                    child: NormalInputLockable(
+                    child: NormalInput(
                       placeholderText:
                           AppLocalizations.of(context)!.profileAgePlaceholder,
                       iconPath: 'assets/icons/age.svg',
@@ -361,7 +362,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 4.0),
                     GestureDetector(
                       onTap: _notEditableError,
-                      child: NormalInputLockable(
+                      child: NormalInput(
                         placeholderText: AppLocalizations.of(context)!
                             .profileIQScorePlaceholder,
                         iconPath: 'assets/icons/score.svg',

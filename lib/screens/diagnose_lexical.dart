@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/enums/disorder_types.dart';
 import 'package:calcpal/models/diagnosis.dart';
@@ -27,9 +26,10 @@ class DiagnoseLexicalScreen extends StatefulWidget {
 
   static List<bool> userResponses = [];
   static int currentQuestionNumber = 1;
-  static String selectedLanguage = 'English';
+  static String selectedLanguageCode = 'en';
 
   static bool isMicrophoneOn = false;
+  static bool isDataLoading = false;
   static bool isErrorOccurred = false;
 
   @override
@@ -58,6 +58,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
   void initState() {
     super.initState();
     // LOAD THE FIRST QUESTION WHEN THE WIDGET IS INITIALIZED
+    _setupLanguage();
     _questionFuture = _loadQuestion();
   }
 
@@ -73,13 +74,17 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
   Future<void> _setupLanguage() async {
     final prefs = await SharedPreferences.getInstance();
     final languageCode = prefs.getString('language_code') ?? 'en';
-    DiagnoseLexicalScreen.selectedLanguage = languageCode;
+    DiagnoseLexicalScreen.selectedLanguageCode = languageCode;
   }
 
   // FUNCTION TO LOAD THE QUESTION
   Future<void> _loadQuestion() async {
     try {
-      await _setupLanguage();
+      setState(() {
+        DiagnoseLexicalScreen.isErrorOccurred = false;
+        DiagnoseLexicalScreen.isDataLoading = true;
+      });
+
       final question = await _questionService.fetchQuestion(
           DiagnoseLexicalScreen.currentQuestionNumber, context);
 
@@ -89,7 +94,12 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
           DiagnoseLexicalScreen.answers = question.answers;
         });
         // DECODE BASE64 ENCODED ANSWERS
-        await _decodeAnswers(DiagnoseLexicalScreen.answers);
+        setState(() {
+          DiagnoseLexicalScreen.answers[2] =
+              CommonService.decodeString(DiagnoseLexicalScreen.answers[2]);
+          DiagnoseLexicalScreen.answers[3] =
+              CommonService.decodeString(DiagnoseLexicalScreen.answers[3]);
+        });
         // AWAIT THE ASYNCHRONOUS OPERATION TO CAPTURE THE USER'S VOICE
         _voiceAttempt = 1;
         await _captureVoice();
@@ -99,25 +109,19 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
           _stopwatch.start();
         }
       } else {
-        setState(() => DiagnoseLexicalScreen.isErrorOccurred = true);
+        setState(() {
+          DiagnoseLexicalScreen.isErrorOccurred = true;
+          DiagnoseLexicalScreen.isDataLoading = false;
+        });
       }
     } catch (e) {
       developer.log(e.toString());
-      setState(() => DiagnoseLexicalScreen.isErrorOccurred = true);
-    }
-  }
-
-  // FUNCTION TO DECODE BASE64 ENCODED ANSWERS
-  Future _decodeAnswers(List<String> characters) async {
-    try {
       setState(() {
-        DiagnoseLexicalScreen.answers[2] =
-            utf8.decode(base64Decode(characters[2]));
-        DiagnoseLexicalScreen.answers[3] =
-            utf8.decode(base64Decode(characters[3]));
+        DiagnoseLexicalScreen.isErrorOccurred = true;
+        DiagnoseLexicalScreen.isDataLoading = false;
       });
-    } catch (e) {
-      developer.log('Error decoding answers: ${e.toString()}');
+    } finally {
+      setState(() => DiagnoseLexicalScreen.isDataLoading = false);
     }
   }
 
@@ -128,7 +132,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
         await _speechService.checkAndRequestMicrophonePermission();
     if (!isPermissionGranted) {
       _toastService.errorToast(
-          AppLocalizations.of(context)!.diagnoseLexicalMessagesToProceedError);
+          AppLocalizations.of(context)!.commonLexicalMessagesToProceedError);
       return;
     }
 
@@ -140,7 +144,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
       onError: (error) {
         setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
         _toastService.infoToast(
-            AppLocalizations.of(context)!.diagnoseLexicalMessagesNoSpeechError);
+            AppLocalizations.of(context)!.commonLexicalMessagesNoSpeechError);
         developer.log('Error: $error');
       },
       onStatus: (status) => developer.log('Status: $status'),
@@ -149,7 +153,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
     if (isInitialized) {
       // SET LOCALEID BASED ON SELECTED LANGUAGE
       String localeId = CommonService.getLanguageCode(
-        DiagnoseLexicalScreen.selectedLanguage,
+        DiagnoseLexicalScreen.selectedLanguageCode,
       );
 
       // START LISTENING FOR SPEECH INPUT
@@ -191,112 +195,127 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
           });
     } else {
       _toastService.errorToast(AppLocalizations.of(context)!
-          .diagnoseLexicalMessagesFailedToInitializeError);
+          .commonLexicalMessagesFailedToInitializeError);
       setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
     }
   }
 
   // FUNCTION TO SUBMIT RESULTS TO MACHINE LEARNING MODEL
   Future<void> _submitResultsToMLModel() async {
-    // STOP THE TIMER AND RECORD ELAPSED TIME IN SECONDS
-    _stopwatch.stop();
-    final elapsedTimeInSeconds = _stopwatch.elapsedMilliseconds / 1000;
+    try {
+      setState(() {
+        DiagnoseLexicalScreen.isErrorOccurred = false;
+        DiagnoseLexicalScreen.isDataLoading = true;
+      });
+      // STOP THE TIMER AND RECORD ELAPSED TIME IN SECONDS
+      _stopwatch.stop();
+      final elapsedTimeInSeconds = _stopwatch.elapsedMilliseconds / 1000;
 
-    // ROUND TO THE NEAREST WHOLE SECOND
-    final roundedElapsedTimeInSeconds = elapsedTimeInSeconds.round();
+      // ROUND TO THE NEAREST WHOLE SECOND
+      final roundedElapsedTimeInSeconds = elapsedTimeInSeconds.round();
 
-    // CALCULATE THE TOTAL SCORE BASED ON TRUE RESPONSES
-    final int totalScore = DiagnoseLexicalScreen.userResponses
-        .where((response) => response)
-        .length;
+      // CALCULATE THE TOTAL SCORE BASED ON TRUE RESPONSES
+      final int totalScore = DiagnoseLexicalScreen.userResponses
+          .where((response) => response)
+          .length;
 
-    // GET THE INSTANCE OF SHARED PREFERENCES
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('access_token');
+      // GET THE INSTANCE OF SHARED PREFERENCES
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
 
-    // CHECK IF ACCESS TOKEN IS AVAILABLE
-    if (accessToken == null) {
-      _handleErrorAndRedirect(AppLocalizations.of(context)!
-          .diagnoseLexicalMessagesAccessTokenError);
-      return;
-    }
+      // CHECK IF ACCESS TOKEN IS AVAILABLE
+      if (accessToken == null) {
+        _handleErrorAndRedirect(
+            AppLocalizations.of(context)!.commonMessagesAccessTokenError);
+        return;
+      }
 
-    // FETCH USER INFO
-    User? user = await _userService.getUser(accessToken, context);
+      // FETCH USER INFO
+      User? user = await _userService.getUser(accessToken, context);
 
-    // CHECK IF USER AND IQ SCORE ARE AVAILABLE
-    if (user == null || user.iqScore == null) {
-      _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseLexicalMessagesIQScoreError);
-      return;
-    }
+      // CHECK IF USER AND IQ SCORE ARE AVAILABLE
+      if (user == null || user.iqScore == null) {
+        _handleErrorAndRedirect(
+            AppLocalizations.of(context)!.commonMessagesIQScoreError);
+        return;
+      }
 
-    // VARIABLES TO STORE DIAGNOSIS AND UPDATE STATUS
-    late bool diagnoseStatus;
-    late bool status;
-    late bool updateStatus;
+      // VARIABLES TO STORE DIAGNOSIS AND UPDATE STATUS
+      late bool diagnoseStatus;
+      late bool status;
+      late bool updateStatus;
 
-    // PREPARE DIAGNOSIS DATA AND FETCH DIAGNOSIS RESULT FROM THE SERVICE
-    FlaskDiagnosisResult? diagnosis = await _questionService.getDiagnosisResult(
-        Diagnosis(
-          age: user.age,
-          iq: user.iqScore!,
-          q1: DiagnoseLexicalScreen.userResponses[0] ? 1 : 0,
-          q2: DiagnoseLexicalScreen.userResponses[1] ? 1 : 0,
-          q3: DiagnoseLexicalScreen.userResponses[2] ? 1 : 0,
-          q4: DiagnoseLexicalScreen.userResponses[3] ? 1 : 0,
-          q5: DiagnoseLexicalScreen.userResponses[4] ? 1 : 0,
-          seconds: roundedElapsedTimeInSeconds,
-        ),
-        context);
+      // PREPARE DIAGNOSIS DATA AND FETCH DIAGNOSIS RESULT FROM THE SERVICE
+      FlaskDiagnosisResult? diagnosis =
+          await _questionService.getDiagnosisResult(
+              Diagnosis(
+                age: user.age,
+                iq: user.iqScore!,
+                q1: DiagnoseLexicalScreen.userResponses[0] ? 1 : 0,
+                q2: DiagnoseLexicalScreen.userResponses[1] ? 1 : 0,
+                q3: DiagnoseLexicalScreen.userResponses[2] ? 1 : 0,
+                q4: DiagnoseLexicalScreen.userResponses[3] ? 1 : 0,
+                q5: DiagnoseLexicalScreen.userResponses[4] ? 1 : 0,
+                seconds: roundedElapsedTimeInSeconds,
+              ),
+              context);
 
-    // CHECK IF DIAGNOSIS RESULT IS VALID AND GET DIAGNOSE STATUS
-    if (diagnosis != null && diagnosis.prediction != null) {
-      diagnoseStatus = diagnosis.prediction!;
-    } else {
-      _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseLexicalMessagesDiagnosisError);
-      return;
-    }
+      // CHECK IF DIAGNOSIS RESULT IS VALID AND GET DIAGNOSE STATUS
+      if (diagnosis != null && diagnosis.prediction != null) {
+        diagnoseStatus = diagnosis.prediction!;
+      } else {
+        _handleErrorAndRedirect(
+            AppLocalizations.of(context)!.commonMessagesResultError);
+        return;
+      }
 
-    // UPDATE USER DISORDER STATUS IN THE DATABASE
-    status = await _questionService.addDiagnosisResult(
-        DiagnosisResult(
-          userEmail: user.email,
-          timeSeconds: roundedElapsedTimeInSeconds,
-          q1: DiagnoseLexicalScreen.userResponses[0],
-          q2: DiagnoseLexicalScreen.userResponses[1],
-          q3: DiagnoseLexicalScreen.userResponses[2],
-          q4: DiagnoseLexicalScreen.userResponses[3],
-          q5: DiagnoseLexicalScreen.userResponses[4],
-          totalScore: totalScore.toString(),
-          label: diagnoseStatus,
-        ),
-        context);
+      // UPDATE USER DISORDER STATUS IN THE DATABASE
+      status = await _questionService.addDiagnosisResult(
+          DiagnosisResult(
+            userEmail: user.email,
+            timeSeconds: roundedElapsedTimeInSeconds,
+            q1: DiagnoseLexicalScreen.userResponses[0],
+            q2: DiagnoseLexicalScreen.userResponses[1],
+            q3: DiagnoseLexicalScreen.userResponses[2],
+            q4: DiagnoseLexicalScreen.userResponses[3],
+            q5: DiagnoseLexicalScreen.userResponses[4],
+            totalScore: totalScore.toString(),
+            label: diagnoseStatus,
+          ),
+          context);
 
-    // UPDATE USER DISORDER TYPE IN THE SERVICE
-    if (diagnoseStatus) {
-      updateStatus = await _userService.updateDisorderType(
-          DisorderTypes.lexical, accessToken, context);
-    } else {
-      updateStatus = await _userService.updateDisorderType(
-          DisorderTypes.noLexical, accessToken, context);
-    }
+      // UPDATE USER DISORDER TYPE IN THE SERVICE
+      if (diagnoseStatus) {
+        updateStatus = await _userService.updateDisorderType(
+            DisorderTypes.lexical, accessToken, context);
+      } else {
+        updateStatus = await _userService.updateDisorderType(
+            DisorderTypes.nonLexical, accessToken, context);
+      }
 
-    // NAVIGATE BASED ON THE STATUS OF UPDATES
-    if (status && updateStatus) {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        diagnoseResultRoute,
-        (route) => false,
-        arguments: {
-          'diagnoseType': 'lexical',
-          'totalScore': totalScore,
-          'elapsedTime': roundedElapsedTimeInSeconds,
-        },
-      );
-    } else {
-      _handleErrorAndRedirect(AppLocalizations.of(context)!
-          .diagnoseLexicalMessagesSomethingWrongError);
+      // NAVIGATE BASED ON THE STATUS OF UPDATES
+      if (status && updateStatus) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          diagnoseResultRoute,
+          (route) => false,
+          arguments: {
+            'diagnoseType': 'lexical',
+            'totalScore': totalScore,
+            'elapsedTime': roundedElapsedTimeInSeconds,
+          },
+        );
+      } else {
+        _handleErrorAndRedirect(
+            AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
+      }
+    } catch (e) {
+      developer.log(e.toString());
+      setState(() {
+        DiagnoseLexicalScreen.isErrorOccurred = true;
+        DiagnoseLexicalScreen.isDataLoading = false;
+      });
+    } finally {
+      setState(() => DiagnoseLexicalScreen.isDataLoading = false);
     }
   }
 
@@ -324,7 +343,9 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
         systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
       ),
     );
 
@@ -371,7 +392,8 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
                             borderRadius: BorderRadius.circular(12.0),
                           ),
                           child: (snapshot.connectionState ==
-                                  ConnectionState.waiting)
+                                      ConnectionState.waiting ||
+                                  DiagnoseLexicalScreen.isDataLoading)
                               ? // SHOW LOADER WHILE WAITING FOR THE QUESTION TO LOAD
                               const Center(
                                   child: SpinKitCubeGrid(
@@ -385,7 +407,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
                                   Center(
                                       child: Text(
                                         AppLocalizations.of(context)!
-                                            .diagnoseLexicalMessagesFailedToLoad,
+                                            .commonMessagesLoadQuestion,
                                         style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 18,

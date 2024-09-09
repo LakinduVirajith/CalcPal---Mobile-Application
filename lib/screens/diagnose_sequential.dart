@@ -34,7 +34,8 @@ class DiagnoseSequentialScreen extends StatefulWidget {
   static bool isErrorOccurred = false;
 
   @override
-  State<DiagnoseSequentialScreen> createState() => _DiagnoseSequentialScreenState();
+  State<DiagnoseSequentialScreen> createState() =>
+      _DiagnoseSequentialScreenState();
 }
 
 class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
@@ -158,8 +159,9 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
     final roundedElapsedTimeInSeconds = elapsedTimeInSeconds.round();
 
     // CALCULATE THE TOTAL SCORE BASED ON TRUE RESPONSES
-    final int totalScore =
-        DiagnoseSequentialScreen.userResponses.where((response) => response).length;
+    final int totalScore = DiagnoseSequentialScreen.userResponses
+        .where((response) => response)
+        .length;
 
     // GET THE INSTANCE OF SHARED PREFERENCES
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -168,7 +170,7 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
     // CHECK IF ACCESS TOKEN IS AVAILABLE
     if (accessToken == null) {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesAccessTokenError);
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
       return;
     }
 
@@ -178,7 +180,7 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
     // CHECK IF USER AND IQ SCORE ARE AVAILABLE
     if (user == null || user.iqScore == null) {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesIQScoreError);
+          AppLocalizations.of(context)!.commonMessagesIQScoreError);
       return;
     }
 
@@ -200,13 +202,19 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
           seconds: roundedElapsedTimeInSeconds,
         ),
         context);
-
+    print("Q1 :${DiagnoseSequentialScreen.userResponses[0]}");
+    print("Q2 :${DiagnoseSequentialScreen.userResponses[1]}");
+    print("Q3 :${DiagnoseSequentialScreen.userResponses[2]}");
+    print("Q4 :${DiagnoseSequentialScreen.userResponses[3]}");
+    print("Q5 :${DiagnoseSequentialScreen.userResponses[4]}");
+    print("Prediction :${diagnosis?.prediction}");
+    print("Prediction :${diagnosis?.message}");
     // CHECK IF DIAGNOSIS RESULT IS VALID AND GET DIAGNOSE STATUS
     if (diagnosis != null && diagnosis.prediction != null) {
       diagnoseStatus = diagnosis.prediction!;
     } else {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesResultError);
+          AppLocalizations.of(context)!.commonMessagesResultError);
       return;
     }
 
@@ -228,10 +236,10 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
     // UPDATE USER DISORDER TYPE IN THE SERVICE
     if (diagnoseStatus) {
       updateStatus = await _userService.updateDisorderType(
-          DisorderTypes.verbal, accessToken, context);
+          DisorderTypes.sequential, accessToken, context);
     } else {
       updateStatus = await _userService.updateDisorderType(
-          DisorderTypes.noVerbal, accessToken, context);
+          DisorderTypes.nonSequential, accessToken, context);
     }
 
     // NAVIGATE BASED ON THE STATUS OF UPDATES
@@ -247,7 +255,7 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
       );
     } else {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesSomethingError);
+          AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
     }
   }
 
@@ -299,7 +307,7 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
                         decoration: const BoxDecoration(
                           image: DecorationImage(
                             image: AssetImage(
-                                'assets/images/diagnose_background_v1.png'),
+                                'assets/images/diagnose_background_v3.png'),
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -334,7 +342,7 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
                                   Center(
                                       child: Text(
                                         AppLocalizations.of(context)!
-                                            .diagnoseVerbalMessagesLoadQuestion,
+                                            .commonMessagesLoadQuestion,
                                         style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 20,
@@ -345,6 +353,7 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
                                   // DISPLAY QUESTION INSTRUCTIONS
                                   : Column(
                                       children: [
+                                        const SizedBox(height: 28.0),
                                         Text(
                                           DiagnoseSequentialScreen.question,
                                           style: TextStyle(
@@ -352,23 +361,27 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
                                               fontSize: DiagnoseSequentialScreen
                                                           .selectedLanguageCode ==
                                                       'ta'
-                                                  ? 16
-                                                  : 20,
+                                                  ? 20
+                                                  : 24,
                                               fontFamily: 'Roboto',
                                               fontWeight: FontWeight.w400),
                                         ),
-                                        const SizedBox(height: 48.0),
+                                        const SizedBox(height: 28.0),
                                         // ANSWER OPTIONS
                                         AnimatedSwitcher(
                                           duration:
                                               const Duration(milliseconds: 300),
-                                          child: Row(
+                                          child: Wrap(
                                             key: ValueKey<int>(
                                               DiagnoseSequentialScreen
                                                   .currentQuestionNumber,
                                             ),
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
+                                            spacing:
+                                                10.0, // spacing between items horizontally
+                                            runSpacing:
+                                                10.0, // spacing between items vertically (between rows)
+                                            alignment: WrapAlignment
+                                                .center, // centers the children horizontally
                                             children: DiagnoseSequentialScreen
                                                 .answers
                                                 .map((answer) {
@@ -376,10 +389,10 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
                                                 onTap: () =>
                                                     _handleAnswer(answer),
                                                 child: AnswerBox(
-                                                  width: 60.0,
-                                                  height: 60,
+                                                  width: 150.0,
+                                                  height: 55,
                                                   value: answer,
-                                                  size: 24.0,
+                                                  size: 20.0,
                                                 ),
                                               );
                                             }).toList(),

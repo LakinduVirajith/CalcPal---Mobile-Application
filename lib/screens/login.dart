@@ -1,5 +1,6 @@
 import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/models/auth_response.dart';
+import 'package:calcpal/models/user.dart';
 import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/widgets/login_area.dart';
@@ -32,18 +33,28 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-
     // FORCE PORTRAIT ORIENTATION
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
 
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
+
     _initializeServices();
   }
 
   @override
   void dispose() {
+    super.dispose();
     // DISPOSE CONTROLLERS TO FREE UP RESOURCES
     _userNameController.dispose();
     _passwordController.dispose();
@@ -53,7 +64,16 @@ class _LoginScreenState extends State<LoginScreen> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    super.dispose();
+
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
   }
 
   // INITIALIZE SHARED PREFERENCES
@@ -83,10 +103,15 @@ class _LoginScreenState extends State<LoginScreen> {
           await _prefs.setString('access_token', authResponse.accessToken);
           await _prefs.setString('refresh_token', authResponse.refreshToken);
 
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            mainDashboardRoute,
-            (route) => false,
-          );
+          User? user =
+              await _userService.getUser(authResponse.accessToken, context);
+          if (user?.iqScore == null) {
+            Navigator.of(context).pushNamed(iqTestRoute);
+          } else if (user!.disorderTypes!.isNotEmpty) {
+            Navigator.of(context).pushNamed(activityDashboardRoute);
+          } else {
+            Navigator.of(context).pushNamed(mainDashboardRoute);
+          }
         }
       }
     } catch (e) {
@@ -98,16 +123,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // SET CUSTOM STATUS BAR COLOR
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarIconBrightness: Brightness.light,
-      ),
-    );
-
     return Scaffold(
       body: SafeArea(
         top: false,
