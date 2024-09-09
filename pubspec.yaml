@@ -183,6 +183,19 @@ flutter:
     - assets/images/ideognostic/ideo_q2_3.png
     - assets/images/ideognostic/ideo_q2_4.png
     - assets/images/ideognostic/ideo_q5.png
+
+    - assets/images/ideognostic_activities/numberline_1.png
+    - assets/images/ideognostic_activities/numberline_2.png
+    - assets/images/ideognostic_activities/numberline_3.png
+    - assets/images/ideognostic_activities/numbercre_1.png
+    - assets/images/ideognostic_activities/numbercre_2.png
+    - assets/images/ideognostic_activities/numbercre_3.png
+    - assets/images/ideognostic_activities/numbercre_4.png
+    - assets/images/ideognostic_activities/fractionact_1.png
+    - assets/images/ideognostic_activities/fractionact_2.png
+    - assets/images/ideognostic_activities/fractionact_3.png
+    - assets/images/ideognostic_activities/fractionact_4.png
+
     - assets/images/Circle.png
     - assets/images/Triangle.png
     - assets/images/7.png
