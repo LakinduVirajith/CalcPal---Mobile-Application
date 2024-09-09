@@ -78,6 +78,9 @@ dependencies:
   # PACKAGE FOR CREATING NATIVE SPLASH SCREENS
   flutter_native_splash: ^2.4.1
 
+  #PACKAGE FOR CUSTOM ICONS
+  font_awesome_flutter: ^10.5.0
+
   # --- LOCALIZATION & INTERNATIONALIZATION ---
 
   # INTERNATIONALIZATION AND LOCALIZATION SUPPORT
@@ -148,6 +151,28 @@ flutter:
     - assets/images/diagnose_background_v1.png
 
     - assets/images/diagnose_op_background.png
+    - assets/images/operational_activity_dashboard.png
+    - assets/images/operational_activities/operational_level1.png
+    - assets/images/operational_activities/subtraction_level1.png
+    - assets/images/operational_activities/multiplication_level1.png
+    - assets/images/operational_activities/division_level1.png
+    - assets/images/operational_activities/addition_level2_1.png
+    - assets/images/operational_activities/addition_level2_2.png
+    - assets/images/operational_activities/addition_level2_3.png
+    - assets/images/operational_activities/addition_level2_4.png
+    - assets/images/operational_activities/subtraction_level2_1.png
+    - assets/images/operational_activities/subtraction_level2_2.png
+    - assets/images/operational_activities/subtraction_level2_3.png
+    - assets/images/operational_activities/subtraction_level2_4.png
+    - assets/images/operational_activities/multiplication_level2_1.png
+    - assets/images/operational_activities/multiplication_level2_2.png
+    - assets/images/operational_activities/multiplication_level2_3.png
+    - assets/images/operational_activities/multiplication_level2_4.png
+    - assets/images/operational_activities/division_level2_1.png
+    - assets/images/operational_activities/division_level2_2.png
+    - assets/images/operational_activities/division_level2_3.png
+    - assets/images/operational_activities/division_level2_4.png
+
     - assets/images/diagnose_id_background.png
     - assets/images/ideognostic/ideo_q1_1.png
     - assets/images/ideognostic/ideo_q1_2.png
@@ -158,6 +183,19 @@ flutter:
     - assets/images/ideognostic/ideo_q2_3.png
     - assets/images/ideognostic/ideo_q2_4.png
     - assets/images/ideognostic/ideo_q5.png
+
+    - assets/images/ideognostic_activities/numberline_1.png
+    - assets/images/ideognostic_activities/numberline_2.png
+    - assets/images/ideognostic_activities/numberline_3.png
+    - assets/images/ideognostic_activities/numbercre_1.png
+    - assets/images/ideognostic_activities/numbercre_2.png
+    - assets/images/ideognostic_activities/numbercre_3.png
+    - assets/images/ideognostic_activities/numbercre_4.png
+    - assets/images/ideognostic_activities/fractionact_1.png
+    - assets/images/ideognostic_activities/fractionact_2.png
+    - assets/images/ideognostic_activities/fractionact_3.png
+    - assets/images/ideognostic_activities/fractionact_4.png
+
     - assets/images/Circle.png
     - assets/images/Triangle.png
     - assets/images/7.png
@@ -177,6 +215,41 @@ flutter:
     - assets/images/activity_background_v2.jpg
     - assets/images/flip_card_front_background.jpg
     - assets/images/flip_card_back_background.jpg
+    - assets/images/graphical.jpg
+    - assets/images/schoolVibe.png
+    - assets/images/backImage.png
+    - assets/images/practo.png
+    - assets/images/practoq3.png
+    - assets/images/practoq4.png
+    - assets/images/practoq5.png
+    - assets/images/practoActivity.png
+    - assets/images/activity1.png
+    - assets/images/activity2.png
+    - assets/images/activity3.png
+    - assets/images/activity4.png
+    - assets/images/activity5.png
+    - assets/images/activity6.png
+    - assets/images/activity7.png
+    - assets/images/activity8.png
+    - assets/images/activity9.png
+    - assets/images/actibity10.png
+    - assets/images/actvity11.png
+    - assets/images/activity12.png
+    - assets/images/graphical.jpg
+    - assets/images/division.png
+    - assets/images/multi.png
+    - assets/images/subs.png
+    - assets/images/add.png
+    - assets/images/back.png
+    - assets/images/equa.jpg
+    - assets/images/equal.jpg
+    - assets/images/plus.jpg
+    - assets/images/devide.jpg
+    - assets/images/mul.jpg
+    - assets/images/subs.jpg
+    - assets/images/back4.png
+    - assets/images/back1.png
+    - assets/images/backBtn.png
 
     - assets/icons/user.svg
     - assets/icons/email.svg

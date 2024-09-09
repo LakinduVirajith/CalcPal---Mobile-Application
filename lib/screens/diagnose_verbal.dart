@@ -268,7 +268,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
         updateStatus = await _userService.updateDisorderType(
             DisorderTypes.nonVerbal, accessToken, context);
       }
-
+      
       // NAVIGATE BASED ON THE STATUS OF UPDATES
       if (status && updateStatus) {
         Navigator.of(context).pushNamedAndRemoveUntil(

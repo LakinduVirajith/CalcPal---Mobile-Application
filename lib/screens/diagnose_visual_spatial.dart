@@ -362,7 +362,12 @@ class _DiagnoseVisualScreenState extends State<DiagnoseVisualScreen> {
                                               fontFamily: 'Roboto',
                                               fontWeight: FontWeight.w400),
                                         ),
-                                        const SizedBox(height: 15.0),
+                                        SizedBox(
+                                            height: DiagnoseVisualScreen
+                                                        .correctAnswer ==
+                                                    '7'
+                                                ? 2.0
+                                                : 15.0),
                                         Container(
                                           height: 80,
                                           width: 80,

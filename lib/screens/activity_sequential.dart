@@ -353,7 +353,7 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
                         ),
                       ),
                       Positioned(
-                        top: constraints.maxHeight * 0.35,
+                        top: constraints.maxHeight * 0.30,
                         right: constraints.maxWidth * 0.18,
                         left: constraints.maxWidth * 0.18,
                         bottom: constraints.maxHeight * 0.05,

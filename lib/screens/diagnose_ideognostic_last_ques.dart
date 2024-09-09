@@ -197,7 +197,7 @@ class _DiagnoseIdeognosticLastScreenState
           Center(
             child: Container(
               padding: const EdgeInsets.symmetric(
-                  vertical: 30, horizontal: 20), // Padding around the grey box
+                  vertical: 15, horizontal: 20), // Padding around the grey box
               width: MediaQuery.of(context).size.width * 0.6, // Adjusted width
               decoration: BoxDecoration(
                 color: Colors.grey.shade800
@@ -211,9 +211,9 @@ class _DiagnoseIdeognosticLastScreenState
                   const Text(
                     'Write the fraction shown by the shape below',
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 20,
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -230,8 +230,8 @@ class _DiagnoseIdeognosticLastScreenState
                         ),
                         child: Image.asset(
                           'assets/images/ideognostic/ideo_q5.png', // Replace with your actual image path
-                          height: 150,
-                          width: 200,
+                          height: 100,
+                          width: 140,
                         ),
                       ),
                       const SizedBox(width: 40),
@@ -246,7 +246,7 @@ class _DiagnoseIdeognosticLastScreenState
                           ),
                           const SizedBox(height: 20),
                           Container(
-                            width: 200,
+                            width: 140,
                             height: 2,
                             color: Colors
                                 .white, // Divider line between fraction numerator and denominator
@@ -262,7 +262,7 @@ class _DiagnoseIdeognosticLastScreenState
                       ),
                     ],
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 24),
                   // Finish Button
                   ElevatedButton(
                     onPressed: () {
@@ -297,8 +297,8 @@ class _DiagnoseIdeognosticLastScreenState
   // Widget for the drawing area
   Widget _buildDrawArea(GlobalKey<DrawBoxState> key) {
     return Container(
-      width: 150,
-      height: 150,
+      width: 100,
+      height: 100,
       padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
         color: Colors.white,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:calcpal/screens/diagnose_ideognostic_q3_q4.dart';
-import 'dart:async'; // Import for Timer
+// import 'dart:async'; // Import for Timer
 import 'dart:math';
 
 class DiagnoseIdeognosticScreen extends StatefulWidget {
@@ -86,11 +86,11 @@ class _DiagnoseIdeognosticScreenState extends State<DiagnoseIdeognosticScreen> {
                 children: [
                   // Question Text
                   const Text(
-                    'Select the fraction showed by the image below',
+                    'Select the fraction showed by the image',
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 20,
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -147,11 +147,17 @@ class FractionButton extends StatelessWidget {
   final String numerator;
   final String denominator;
   final VoidCallback onPressed;
+  final double fontSize;
+  final double paddingVertical;
+  final double paddingHorizontal;
 
   const FractionButton({
     required this.numerator,
     required this.denominator,
     required this.onPressed,
+    this.fontSize = 24.0,
+    this.paddingVertical = 20.0,
+    this.paddingHorizontal = 30.0,
     Key? key,
   }) : super(key: key);
 
@@ -159,8 +165,9 @@ class FractionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(
-            vertical: 20, horizontal: 30), // Button size
+        padding: EdgeInsets.symmetric(
+            vertical: paddingVertical,
+            horizontal: paddingHorizontal), // Button size
         backgroundColor: Colors.black,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -172,8 +179,8 @@ class FractionButton extends StatelessWidget {
         children: [
           Text(
             numerator,
-            style: const TextStyle(
-              fontSize: 24, // Font size
+            style: TextStyle(
+              fontSize: fontSize, // Font size
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -186,8 +193,8 @@ class FractionButton extends StatelessWidget {
           ),
           Text(
             denominator,
-            style: const TextStyle(
-              fontSize: 24, // Font size
+            style: TextStyle(
+              fontSize: fontSize, // Font size
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -268,6 +275,9 @@ class SecondQuestionScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       FractionButton(
+                        paddingHorizontal: 24.0,
+                        paddingVertical: 18.0,
+                        fontSize: 18.0,
                         numerator: '1',
                         denominator: '4',
                         onPressed: () =>
@@ -275,6 +285,9 @@ class SecondQuestionScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 20),
                       FractionButton(
+                        paddingHorizontal: 24.0,
+                        paddingVertical: 18.0,
+                        fontSize: 18.0,
                         numerator: '1',
                         denominator: '2',
                         onPressed: () =>
@@ -282,6 +295,9 @@ class SecondQuestionScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 20),
                       FractionButton(
+                        paddingHorizontal: 24.0,
+                        paddingVertical: 18.0,
+                        fontSize: 18.0,
                         numerator: '3',
                         denominator: '4',
                         onPressed: () =>
@@ -289,6 +305,9 @@ class SecondQuestionScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 20),
                       FractionButton(
+                        paddingHorizontal: 24.0,
+                        paddingVertical: 18.0,
+                        fontSize: 18.0,
                         numerator: '1',
                         denominator: '8',
                         onPressed: () =>

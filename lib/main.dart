@@ -183,10 +183,10 @@ class _ValidationScreenState extends State<ValidationScreen> {
 
       if (user == null) {
         Navigator.of(context).pushNamed(loginRoute);
-      } else if (user.disorderTypes!.isNotEmpty) {
-        Navigator.of(context).pushNamed(activityDashboardRoute);
       } else if (user.iqScore == null) {
         Navigator.of(context).pushNamed(iqTestRoute);
+      } else if (user.disorderTypes!.isNotEmpty) {
+        Navigator.of(context).pushNamed(activityDashboardRoute);
       } else {
         Navigator.of(context).pushNamed(mainDashboardRoute);
       }

@@ -128,8 +128,7 @@ class _ActivityVisualSpatialScreenState
                     // attept++;
                     // },
                     // key: ValueKey<int>(attept),
-                    child: _shapeItem(item,
-                        "/Users/macbookpro2018/Desktop/SLIIT/Research/CalcPal---Mobile-Application/assets/images/${item}.png"),
+                    child: _shapeItem(item, "assets/images/${item}.png"),
                   );
                 }).toList(),
               ),
