@@ -37,6 +37,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import 'screens/activity_visual_v3.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -136,6 +137,7 @@ class _MyAppState extends State<MyApp> {
           activityV2SequentialRoute: (context) => NumberLineJumpScreen(),
           activityVisualSpatialRoute: (context) =>
               const ActivityVisualSpatialScreen(),
+          activityDrawVisualSpatialRoute: (context) => ShapeDrawingApp(),
         },
         debugShowCheckedModeBanner: true,
       ),
