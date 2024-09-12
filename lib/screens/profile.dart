@@ -460,13 +460,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _getFlagIcon(String language) {
     switch (language) {
       case 'English':
-        return 'assets/icons/united-states.png'; // PATH TO USA FLAG ICON
+        return 'assets/icons/united-kingdom.png'; // PATH TO UK FLAG ICON
       case 'සිංහල':
         return 'assets/icons/sri-lanka.png'; // PATH TO SRI LANKA FLAG ICON
       case 'தமிழ்':
         return 'assets/icons/india.png'; // PATH TO INDIA FLAG ICON
       default:
-        return 'assets/icon/united-states.png'; // DEFAULT FLAG ICON PATH
+        return 'assets/icon/united-kingdom.png'; // DEFAULT FLAG ICON PATH
     }
   }
 

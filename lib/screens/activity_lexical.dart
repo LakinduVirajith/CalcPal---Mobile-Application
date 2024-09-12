@@ -20,7 +20,7 @@ class ActivityLexicalScreen extends StatefulWidget {
 }
 
 class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
-  // VARIABLES TO HOLD QUESTION AND ANSWER DATA
+  // VARIABLES TO HOLD ACTIVITY AND ANSWER DATA
   late String question;
   late List<String> answers;
   late String correctAnswer;

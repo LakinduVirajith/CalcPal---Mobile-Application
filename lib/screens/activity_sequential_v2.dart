@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:calcpal/constants/routes.dart';
 import 'package:flutter/material.dart';
 
 import '../services/toast_service.dart';
@@ -57,9 +58,7 @@ class _NumberLineJumpScreenState extends State<NumberLineJumpScreen> {
             gridSize, (index) => startNumber * pow(step, index).toInt());
         break;
       default:
-        step = 2; // Default step for any other case
-        numberLine =
-            List.generate(gridSize, (index) => startNumber + index * step);
+        Navigator.of(context).pushNamed(activityDashboardRoute);
         break;
     }
 
@@ -264,7 +263,7 @@ class _NumberLineJumpScreenState extends State<NumberLineJumpScreen> {
   // Move to the next level
   void _nextLevel() {
     setState(() {
-      if (currentLevel < 5) {
+      if (currentLevel < 6) {
         currentLevel++;
       } else {
         currentLevel = 1; // Restart at level 1 after level 5
@@ -274,4 +273,3 @@ class _NumberLineJumpScreenState extends State<NumberLineJumpScreen> {
     });
   }
 }
-

@@ -21,7 +21,7 @@ class ActivityVerbalScreen extends StatefulWidget {
 }
 
 class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
-  // VARIABLES TO HOLD QUESTION AND ANSWER DATA
+  // VARIABLES TO HOLD ACTIVITY AND ANSWER DATA
   late String question;
   late String questionByLan;
   late String answer;

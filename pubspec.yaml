@@ -263,6 +263,9 @@ flutter:
     - assets/icons/settings-en.png
     - assets/icons/settings-si.png
     - assets/icons/settings-ta.png
+    - assets/icons/report-en.png
+    - assets/icons/report-si.png
+    - assets/icons/report-ta.png
     - assets/icons/play-button.svg
     - assets/icons/pause-button.svg
     - assets/icons/microphone.svg
@@ -272,7 +275,7 @@ flutter:
     - assets/icons/age.svg
     - assets/icons/sri-lanka.png
     - assets/icons/india.png
-    - assets/icons/united-states.png
+    - assets/icons/united-kingdom.png
     - assets/icons/apple.png
     - assets/icons/balloon.png
     - assets/icons/cat.png

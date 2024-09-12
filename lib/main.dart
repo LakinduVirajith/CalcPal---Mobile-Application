@@ -26,6 +26,7 @@ import 'package:calcpal/screens/iq_test.dart';
 import 'package:calcpal/screens/login.dart';
 import 'package:calcpal/screens/main_dashboard.dart';
 import 'package:calcpal/screens/profile.dart';
+import 'package:calcpal/screens/report.dart';
 import 'package:calcpal/screens/sign_up.dart';
 import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/splash_screen.dart';
@@ -122,6 +123,7 @@ class _MyAppState extends State<MyApp> {
           diagnoseVisualSpatialRoute: (context) => const DiagnoseVisualScreen(),
           diagnoseResultRoute: (context) => const DiagnoseResultScreen(),
           diagnoseReportRoute: (context) => const DiagnoseReportScreen(),
+          reportRoute: (context) => const ReportScreen(),
           activityDashboardRoute: (context) => const ActivityDashboardScreen(),
           activityVerbalRoute: (context) => const ActivityVerbalScreen(),
           activityLexicalRoute: (context) => const ActivityLexicalScreen(),

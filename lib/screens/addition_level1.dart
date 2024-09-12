@@ -69,8 +69,7 @@ class _OperationalLevel1ScreenState extends State<OperationalLevel1Screen> {
           context,
           MaterialPageRoute(
             builder: (context) => SubtractionLevel1Screen(
-              title:
-                  "3 : Let's Subtract $number1 - $number2", // Set the title for Activity 4
+              title: "3 : Let's Subtract", // Set the title for Activity 4
               number1: 5, // Set the first number for subtraction
               number2: Random().nextInt(4) + 1, // Random number between 1 and 4
               icon: FontAwesomeIcons.leaf,

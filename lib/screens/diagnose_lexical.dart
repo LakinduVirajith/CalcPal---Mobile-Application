@@ -3,6 +3,7 @@ import 'package:calcpal/enums/disorder_types.dart';
 import 'package:calcpal/models/diagnosis.dart';
 import 'package:calcpal/models/diagnosis_result.dart';
 import 'package:calcpal/models/flask_diagnosis_result.dart';
+import 'package:calcpal/models/lexical_question.dart';
 import 'package:calcpal/models/user.dart';
 import 'package:calcpal/services/common_service.dart';
 import 'package:calcpal/services/lexical_service.dart';
@@ -21,42 +22,58 @@ import 'dart:developer' as developer;
 class DiagnoseLexicalScreen extends StatefulWidget {
   const DiagnoseLexicalScreen({super.key});
 
-  static late String question;
-  static late List<String> answers;
-
-  static List<bool> userResponses = [];
-  static int currentQuestionNumber = 1;
-  static String selectedLanguageCode = 'en';
-
-  static bool isMicrophoneOn = false;
-  static bool isDataLoading = false;
-  static bool isErrorOccurred = false;
-
   @override
   State<DiagnoseLexicalScreen> createState() => _DiagnoseLexicalScreenState();
 }
 
 class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
+  // VARIABLES TO HOLD QUESTION AND ANSWER DATA
+  late String question;
+  late List<String> answers;
+
+  List<bool> userResponses = [];
+  int currentQuestionNumber = 1;
+  String selectedLanguageCode = 'en';
+
+  bool isMicrophoneOn = false;
+  bool isDataLoading = false;
+  bool isErrorOccurred = false;
+
   // FUTURE THAT HOLDS THE STATE OF THE QUESTION LOADING PROCESS
   late Future<void> _questionFuture;
+
   // COUNTER TO TRACK THE NUMBER OF VOICE ATTEMPTS
   int _voiceAttempt = 1;
 
-  // INITIALIZING THE VERBAL SERVICE
-  final LexicalService _questionService = LexicalService();
-  // INITIALIZING THE USER SERVICE
-  final UserService _userService = UserService();
   // STOPWATCH INSTANCE FOR TIMING
   final Stopwatch _stopwatch = Stopwatch();
 
-  // INITIALIZING SPEECH-TO-TEXT SERVICE
+  // INITIALIZING SERVICEs
+  final LexicalService _questionService = LexicalService();
+  final UserService _userService = UserService();
   final SpeechToTextService _speechService = SpeechToTextService();
-  // TOAST SERVICE TO SHOW MESSAGES
   final ToastService _toastService = ToastService();
 
   @override
   void initState() {
     super.initState();
+
+    // FORCE LANDSCAPE ORIENTATION
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
+
     // LOAD THE FIRST QUESTION WHEN THE WIDGET IS INITIALIZED
     _setupLanguage();
     _questionFuture = _loadQuestion();
@@ -64,64 +81,63 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
 
   @override
   void dispose() {
-    DiagnoseLexicalScreen.currentQuestionNumber = 1;
-    DiagnoseLexicalScreen.userResponses = [];
-    _stopwatch.reset();
     super.dispose();
+
+    currentQuestionNumber = 1;
+    userResponses = [];
+    _stopwatch.reset();
   }
 
   // FUNCTION TO SET THE SELECTED LANGUAGE BASED ON THE STORED LANGUAGE CODE
   Future<void> _setupLanguage() async {
     final prefs = await SharedPreferences.getInstance();
     final languageCode = prefs.getString('language_code') ?? 'en';
-    DiagnoseLexicalScreen.selectedLanguageCode = languageCode;
+    selectedLanguageCode = languageCode;
   }
 
   // FUNCTION TO LOAD THE QUESTION
   Future<void> _loadQuestion() async {
     try {
       setState(() {
-        DiagnoseLexicalScreen.isErrorOccurred = false;
-        DiagnoseLexicalScreen.isDataLoading = true;
+        isErrorOccurred = false;
+        isDataLoading = true;
       });
 
-      final question = await _questionService.fetchQuestion(
-          DiagnoseLexicalScreen.currentQuestionNumber, context);
+      LexicalQuestion? response =
+          await _questionService.fetchQuestion(currentQuestionNumber, context);
 
-      if (question != null) {
+      if (response != null) {
         setState(() {
-          DiagnoseLexicalScreen.question = question.question;
-          DiagnoseLexicalScreen.answers = question.answers;
+          question = response.question;
+          answers = response.answers;
         });
         // DECODE BASE64 ENCODED ANSWERS
         setState(() {
-          DiagnoseLexicalScreen.answers[2] =
-              CommonService.decodeString(DiagnoseLexicalScreen.answers[2]);
-          DiagnoseLexicalScreen.answers[3] =
-              CommonService.decodeString(DiagnoseLexicalScreen.answers[3]);
+          answers[2] = CommonService.decodeString(answers[2]);
+          answers[3] = CommonService.decodeString(answers[3]);
         });
         // AWAIT THE ASYNCHRONOUS OPERATION TO CAPTURE THE USER'S VOICE
         _voiceAttempt = 1;
         await _captureVoice();
 
         // START THE STOPWATCH FOR THE FIRST QUESTION ONLY
-        if (DiagnoseLexicalScreen.currentQuestionNumber == 1) {
+        if (currentQuestionNumber == 1) {
           _stopwatch.start();
         }
       } else {
         setState(() {
-          DiagnoseLexicalScreen.isErrorOccurred = true;
-          DiagnoseLexicalScreen.isDataLoading = false;
+          isErrorOccurred = true;
+          isDataLoading = false;
         });
       }
     } catch (e) {
       developer.log(e.toString());
       setState(() {
-        DiagnoseLexicalScreen.isErrorOccurred = true;
-        DiagnoseLexicalScreen.isDataLoading = false;
+        isErrorOccurred = true;
+        isDataLoading = false;
       });
     } finally {
-      setState(() => DiagnoseLexicalScreen.isDataLoading = false);
+      setState(() => isDataLoading = false);
     }
   }
 
@@ -137,12 +153,12 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
     }
 
     // TOGGLE MICROPHONE STATE
-    setState(() => DiagnoseLexicalScreen.isMicrophoneOn = true);
+    setState(() => isMicrophoneOn = true);
 
     // INITIALIZE THE SPEECH TO TEXT SERVICE
     bool isInitialized = await _speechService.initializeSpeechToText(
       onError: (error) {
-        setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
+        setState(() => isMicrophoneOn = false);
         _toastService.infoToast(
             AppLocalizations.of(context)!.commonLexicalMessagesNoSpeechError);
         developer.log('Error: $error');
@@ -153,7 +169,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
     if (isInitialized) {
       // SET LOCALEID BASED ON SELECTED LANGUAGE
       String localeId = CommonService.getLanguageCode(
-        DiagnoseLexicalScreen.selectedLanguageCode,
+        selectedLanguageCode,
       );
 
       // START LISTENING FOR SPEECH INPUT
@@ -164,10 +180,9 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
               developer.log('recognizedWord: $recognizedWords');
 
               // COMPARE RECOGNIZED WORDS WITH THE EXPECTED
-              bool isCorrectAnswer = DiagnoseLexicalScreen.answers.any(
-                  (answer) =>
-                      recognizedWords.toLowerCase().trim() ==
-                      answer.toLowerCase().trim());
+              bool isCorrectAnswer = answers.any((answer) =>
+                  recognizedWords.toLowerCase().trim() ==
+                  answer.toLowerCase().trim());
 
               // HANDLE RESPONSE BASED ON ATTEMPT
               if (_voiceAttempt == 1 && !isCorrectAnswer) {
@@ -176,13 +191,12 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
                 _voiceAttempt = 2;
                 await _captureVoice(); // RETRY ON FAILURE
               } else {
-                DiagnoseLexicalScreen.userResponses.insert(
-                    DiagnoseLexicalScreen.currentQuestionNumber - 1,
-                    isCorrectAnswer);
+                userResponses.insert(
+                    currentQuestionNumber - 1, isCorrectAnswer);
 
                 // CHECK IF THERE ARE MORE QUESTIONS LEFT
-                if (DiagnoseLexicalScreen.currentQuestionNumber < 5) {
-                  DiagnoseLexicalScreen.currentQuestionNumber++;
+                if (currentQuestionNumber < 5) {
+                  currentQuestionNumber++;
                   await _loadQuestion();
                 } else {
                   await _submitResultsToMLModel();
@@ -191,12 +205,12 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
             }
           },
           onDone: () async {
-            setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
+            setState(() => isMicrophoneOn = false);
           });
     } else {
       _toastService.errorToast(AppLocalizations.of(context)!
           .commonLexicalMessagesFailedToInitializeError);
-      setState(() => DiagnoseLexicalScreen.isMicrophoneOn = false);
+      setState(() => isMicrophoneOn = false);
     }
   }
 
@@ -204,8 +218,8 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
   Future<void> _submitResultsToMLModel() async {
     try {
       setState(() {
-        DiagnoseLexicalScreen.isErrorOccurred = false;
-        DiagnoseLexicalScreen.isDataLoading = true;
+        isErrorOccurred = false;
+        isDataLoading = true;
       });
       // STOP THE TIMER AND RECORD ELAPSED TIME IN SECONDS
       _stopwatch.stop();
@@ -215,9 +229,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
       final roundedElapsedTimeInSeconds = elapsedTimeInSeconds.round();
 
       // CALCULATE THE TOTAL SCORE BASED ON TRUE RESPONSES
-      final int totalScore = DiagnoseLexicalScreen.userResponses
-          .where((response) => response)
-          .length;
+      final int totalScore = userResponses.where((response) => response).length;
 
       // GET THE INSTANCE OF SHARED PREFERENCES
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -251,11 +263,11 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
               Diagnosis(
                 age: user.age,
                 iq: user.iqScore!,
-                q1: DiagnoseLexicalScreen.userResponses[0] ? 1 : 0,
-                q2: DiagnoseLexicalScreen.userResponses[1] ? 1 : 0,
-                q3: DiagnoseLexicalScreen.userResponses[2] ? 1 : 0,
-                q4: DiagnoseLexicalScreen.userResponses[3] ? 1 : 0,
-                q5: DiagnoseLexicalScreen.userResponses[4] ? 1 : 0,
+                q1: userResponses[0] ? 1 : 0,
+                q2: userResponses[1] ? 1 : 0,
+                q3: userResponses[2] ? 1 : 0,
+                q4: userResponses[3] ? 1 : 0,
+                q5: userResponses[4] ? 1 : 0,
                 seconds: roundedElapsedTimeInSeconds,
               ),
               context);
@@ -274,11 +286,11 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
           DiagnosisResult(
             userEmail: user.email,
             timeSeconds: roundedElapsedTimeInSeconds,
-            q1: DiagnoseLexicalScreen.userResponses[0],
-            q2: DiagnoseLexicalScreen.userResponses[1],
-            q3: DiagnoseLexicalScreen.userResponses[2],
-            q4: DiagnoseLexicalScreen.userResponses[3],
-            q5: DiagnoseLexicalScreen.userResponses[4],
+            q1: userResponses[0],
+            q2: userResponses[1],
+            q3: userResponses[2],
+            q4: userResponses[3],
+            q5: userResponses[4],
             totalScore: totalScore.toString(),
             label: diagnoseStatus,
           ),
@@ -311,11 +323,11 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
     } catch (e) {
       developer.log(e.toString());
       setState(() {
-        DiagnoseLexicalScreen.isErrorOccurred = true;
-        DiagnoseLexicalScreen.isDataLoading = false;
+        isErrorOccurred = true;
+        isDataLoading = false;
       });
     } finally {
-      setState(() => DiagnoseLexicalScreen.isDataLoading = false);
+      setState(() => isDataLoading = false);
     }
   }
 
@@ -333,22 +345,6 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // FORCE LANDSCAPE ORIENTATION
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-
-    // SET CUSTOM STATUS BAR COLOR
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.black,
-        statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: Colors.black,
-        systemNavigationBarIconBrightness: Brightness.light,
-      ),
-    );
-
     return PopScope(
       canPop: false, // CANPOP IS SET TO FALSE TO PREVENT POPPING THE ROUTE
       // CALLBACK WHEN BACK BUTTON IS PRESSED
@@ -393,7 +389,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
                           ),
                           child: (snapshot.connectionState ==
                                       ConnectionState.waiting ||
-                                  DiagnoseLexicalScreen.isDataLoading)
+                                  isDataLoading)
                               ? // SHOW LOADER WHILE WAITING FOR THE QUESTION TO LOAD
                               const Center(
                                   child: SpinKitCubeGrid(
@@ -401,8 +397,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
                                     size: 80.0,
                                   ),
                                 )
-                              : (snapshot.hasError ||
-                                      DiagnoseLexicalScreen.isErrorOccurred)
+                              : (snapshot.hasError || isErrorOccurred)
                                   ? // DISPLAY ERROR IF LOADING FAILED
                                   Center(
                                       child: Text(
@@ -442,8 +437,7 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
                                             AnswerBox(
                                               width: 160.0,
                                               height: 160.0,
-                                              value: DiagnoseLexicalScreen
-                                                  .question,
+                                              value: question,
                                               size: 64.0,
                                             ),
                                           ],
@@ -457,14 +451,13 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
                         right: constraints.maxWidth * 0.25,
                         left: constraints.maxWidth * 0.6,
                         bottom: constraints.maxHeight * 0.15,
-                        child: (snapshot.hasError ||
-                                DiagnoseLexicalScreen.isErrorOccurred)
+                        child: (snapshot.hasError || isErrorOccurred)
                             ? Container()
                             : AnimatedSwitcher(
                                 duration: const Duration(milliseconds: 300),
                                 child: GestureDetector(
                                   key: ValueKey<bool>(
-                                    DiagnoseLexicalScreen.isMicrophoneOn,
+                                    isMicrophoneOn,
                                   ),
                                   onTap: _captureVoice,
                                   child: Opacity(
@@ -473,14 +466,12 @@ class _DiagnoseLexicalScreenState extends State<DiagnoseLexicalScreen> {
                                       height: 60,
                                       width: 60,
                                       decoration: BoxDecoration(
-                                        color:
-                                            DiagnoseLexicalScreen.isMicrophoneOn
-                                                ? Colors.black
-                                                : Colors.white,
+                                        color: isMicrophoneOn
+                                            ? Colors.black
+                                            : Colors.white,
                                         shape: BoxShape.circle,
                                       ),
-                                      child: DiagnoseLexicalScreen
-                                              .isMicrophoneOn
+                                      child: isMicrophoneOn
                                           ? Image.asset(
                                               'assets/icons/sound-wave.gif',
                                               fit: BoxFit.contain,

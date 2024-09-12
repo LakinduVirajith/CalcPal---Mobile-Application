@@ -16,6 +16,7 @@ const diagnoseVisualSpatialRoute = '/diagnose/visual-spatial/';
 
 const diagnoseResultRoute = '/diagnose/result/';
 const diagnoseReportRoute = '/diagnose/report/';
+const reportRoute = 'activity/report/';
 const activityDashboardRoute = '/activity/dashboard/';
 
 const activityVerbalRoute = '/activity/verbal/';

@@ -5,6 +5,7 @@ import 'package:calcpal/models/diagnosis.dart';
 import 'package:calcpal/models/diagnosis_result.dart';
 import 'package:calcpal/models/flask_diagnosis_result.dart';
 import 'package:calcpal/models/user.dart';
+import 'package:calcpal/models/verbal_question.dart';
 import 'package:calcpal/services/common_service.dart';
 import 'package:calcpal/services/text_to_speech_service.dart';
 import 'package:calcpal/services/toast_service.dart';
@@ -22,44 +23,60 @@ import 'dart:developer' as developer;
 class DiagnoseVerbalScreen extends StatefulWidget {
   const DiagnoseVerbalScreen({super.key});
 
-  static late BytesSource questionVoice;
-  static late String question;
-  static late List<String> answers;
-  static late String correctAnswer;
-
-  static List<bool> userResponses = [];
-  static int currentQuestionNumber = 1;
-  static String selectedLanguageCode = 'en';
-
-  static bool isAudioPlaying = false;
-  static bool isDataLoading = false;
-  static bool isErrorOccurred = false;
-
   @override
   State<DiagnoseVerbalScreen> createState() => _DiagnoseVerbalScreenState();
 }
 
 class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
+  // VARIABLES TO HOLD QUESTION AND ANSWER DATA
+  late BytesSource questionVoice;
+  late String question;
+  late List<String> answers;
+  late String correctAnswer;
+
+  List<bool> userResponses = [];
+  int currentQuestionNumber = 1;
+  String selectedLanguageCode = 'en';
+
+  bool isAudioPlaying = false;
+  bool isDataLoading = false;
+  bool isErrorOccurred = false;
+
   // FUTURE THAT HOLDS THE STATE OF THE QUESTION LOADING PROCESS
   late Future<void> _questionFuture;
 
-  // INITIALIZING THE VERBAL SERVICE
-  final VerbalService _questionService = VerbalService();
-  // INITIALIZING THE USER SERVICE
-  final UserService _userService = UserService();
-  // TOAST SERVICE TO SHOW MESSAGES
-  final ToastService _toastService = ToastService();
   // STOPWATCH INSTANCE FOR TIMING
   final Stopwatch _stopwatch = Stopwatch();
 
-  // INITIALIZING TEXT-TO-SPEECH SERVICE
-  final TextToSpeechService _textToSpeechService = TextToSpeechService();
   // INITIALIZING AUDIO PLAYER
   final AudioPlayer _audioPlayer = AudioPlayer();
+
+  // INITIALIZING SERVICEs
+  final VerbalService _questionService = VerbalService();
+  final UserService _userService = UserService();
+  final ToastService _toastService = ToastService();
+  final TextToSpeechService _textToSpeechService = TextToSpeechService();
 
   @override
   void initState() {
     super.initState();
+
+    // FORCE LANDSCAPE ORIENTATION
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
+
     // LOAD THE FIRST QUESTION WHEN THE WIDGET IS INITIALIZED
     _setupLanguage();
     _questionFuture = _loadQuestion();
@@ -67,110 +84,104 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
 
   @override
   void dispose() {
-    DiagnoseVerbalScreen.currentQuestionNumber = 1;
-    DiagnoseVerbalScreen.userResponses = [];
-    _stopwatch.reset();
     super.dispose();
+
+    currentQuestionNumber = 1;
+    userResponses = [];
+    _stopwatch.reset();
   }
 
   // FUNCTION TO SET THE SELECTED LANGUAGE BASED ON THE STORED LANGUAGE CODE
   Future<void> _setupLanguage() async {
     final prefs = await SharedPreferences.getInstance();
     final languageCode = prefs.getString('language_code') ?? 'en';
-    DiagnoseVerbalScreen.selectedLanguageCode = languageCode;
+    selectedLanguageCode = languageCode;
   }
 
   // FUNCTION TO LOAD AND PLAY QUESTION
   Future<void> _loadQuestion() async {
     try {
       setState(() {
-        DiagnoseVerbalScreen.isErrorOccurred = false;
-        DiagnoseVerbalScreen.isDataLoading = true;
+        isErrorOccurred = false;
+        isDataLoading = true;
       });
 
-      final question = await _questionService.fetchQuestion(
-          DiagnoseVerbalScreen.currentQuestionNumber,
-          CommonService.getLanguageForAPI(
-              DiagnoseVerbalScreen.selectedLanguageCode),
+      VerbalQuestion? response = await _questionService.fetchQuestion(
+          currentQuestionNumber,
+          CommonService.getLanguageForAPI(selectedLanguageCode),
           context);
 
-      if (question != null) {
+      if (response != null) {
         setState(() {
-          DiagnoseVerbalScreen.question = question.question;
-          DiagnoseVerbalScreen.answers = question.answers;
-          DiagnoseVerbalScreen.answers.shuffle();
-          DiagnoseVerbalScreen.correctAnswer = question.correctAnswer;
+          question = response.question;
+          answers = response.answers;
+          answers.shuffle();
+          correctAnswer = response.correctAnswer;
         });
         // DECODE BASE64 ENCODED QUESTION
-        if (DiagnoseVerbalScreen.selectedLanguageCode != 'en') {
-          setState(() => DiagnoseVerbalScreen.question =
-              CommonService.decodeString(DiagnoseVerbalScreen.question));
+        if (selectedLanguageCode != 'en') {
+          setState(() => question = CommonService.decodeString(question));
         }
 
         // SYNTHESIZE SPEECH FOR THE QUESTION AND STORE THE AUDIO DATA
-        DiagnoseVerbalScreen.questionVoice =
-            await _textToSpeechService.synthesizeSpeech(
-          DiagnoseVerbalScreen.question,
-          CommonService.getLanguageCode(
-              DiagnoseVerbalScreen.selectedLanguageCode),
+        questionVoice = await _textToSpeechService.synthesizeSpeech(
+          question,
+          CommonService.getLanguageCode(selectedLanguageCode),
         );
 
         await _toggleAudioPlayback();
 
         // START THE STOPWATCH FOR THE FIRST QUESTION ONLY
-        if (DiagnoseVerbalScreen.currentQuestionNumber == 1) {
+        if (currentQuestionNumber == 1) {
           _stopwatch.start();
         }
       } else {
         setState(() {
-          DiagnoseVerbalScreen.isErrorOccurred = true;
-          DiagnoseVerbalScreen.isDataLoading = false;
+          isErrorOccurred = true;
+          isDataLoading = false;
         });
       }
     } catch (e) {
       developer.log(e.toString());
       setState(() {
-        DiagnoseVerbalScreen.isErrorOccurred = true;
-        DiagnoseVerbalScreen.isDataLoading = false;
+        isErrorOccurred = true;
+        isDataLoading = false;
       });
     } finally {
-      setState(() => DiagnoseVerbalScreen.isDataLoading = false);
+      setState(() => isDataLoading = false);
     }
   }
 
   // FUNCTION TO TOGGLE AUDIO PLAYBACK
   Future<void> _toggleAudioPlayback() async {
-    if (DiagnoseVerbalScreen.isAudioPlaying) {
+    if (isAudioPlaying) {
       await _audioPlayer.stop();
     } else {
-      await _audioPlayer.play(DiagnoseVerbalScreen.questionVoice);
+      await _audioPlayer.play(questionVoice);
 
       // SET PLAYBACK SPEED
       await _audioPlayer.setPlaybackRate(0.9);
 
       _audioPlayer.onPlayerComplete.listen((event) {
-        setState(() => DiagnoseVerbalScreen.isAudioPlaying = false);
+        setState(() => isAudioPlaying = false);
       });
     }
 
-    setState(() => DiagnoseVerbalScreen.isAudioPlaying =
-        !DiagnoseVerbalScreen.isAudioPlaying);
+    setState(() => isAudioPlaying = !isAudioPlaying);
   }
 
   // FUNCTION TO HANDLE USER ANSWERS
   Future<void> _handleAnswer(String userAnswer) async {
     // CHECK IF THE USER'S ANSWER IS CORRECT
-    if (userAnswer == DiagnoseVerbalScreen.correctAnswer) {
-      DiagnoseVerbalScreen.userResponses
-          .insert(DiagnoseVerbalScreen.currentQuestionNumber - 1, true);
+    if (userAnswer == correctAnswer) {
+      userResponses.insert(currentQuestionNumber - 1, true);
     } else {
-      DiagnoseVerbalScreen.userResponses
-          .insert(DiagnoseVerbalScreen.currentQuestionNumber - 1, false);
+      userResponses.insert(currentQuestionNumber - 1, false);
     }
 
     // CHECK IF THERE ARE MORE QUESTIONS LEFT
-    if (DiagnoseVerbalScreen.currentQuestionNumber != 5) {
-      DiagnoseVerbalScreen.currentQuestionNumber++;
+    if (currentQuestionNumber != 5) {
+      currentQuestionNumber++;
       _loadQuestion();
     } else {
       _submitResultsToMLModel();
@@ -181,8 +192,8 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
   Future<void> _submitResultsToMLModel() async {
     try {
       setState(() {
-        DiagnoseVerbalScreen.isErrorOccurred = false;
-        DiagnoseVerbalScreen.isDataLoading = true;
+        isErrorOccurred = false;
+        isDataLoading = true;
       });
 
       // STOP THE TIMER AND RECORD ELAPSED TIME IN SECONDS
@@ -191,9 +202,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
       final roundedElapsedTimeInSeconds = elapsedTimeInSeconds.round();
 
       // CALCULATE THE TOTAL SCORE BASED ON TRUE RESPONSES
-      final int totalScore = DiagnoseVerbalScreen.userResponses
-          .where((response) => response)
-          .length;
+      final int totalScore = userResponses.where((response) => response).length;
 
       // GET THE INSTANCE OF SHARED PREFERENCES
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -227,11 +236,11 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
               Diagnosis(
                 age: user.age,
                 iq: user.iqScore!,
-                q1: DiagnoseVerbalScreen.userResponses[0] ? 1 : 0,
-                q2: DiagnoseVerbalScreen.userResponses[1] ? 1 : 0,
-                q3: DiagnoseVerbalScreen.userResponses[2] ? 1 : 0,
-                q4: DiagnoseVerbalScreen.userResponses[3] ? 1 : 0,
-                q5: DiagnoseVerbalScreen.userResponses[4] ? 1 : 0,
+                q1: userResponses[0] ? 1 : 0,
+                q2: userResponses[1] ? 1 : 0,
+                q3: userResponses[2] ? 1 : 0,
+                q4: userResponses[3] ? 1 : 0,
+                q5: userResponses[4] ? 1 : 0,
                 seconds: roundedElapsedTimeInSeconds,
               ),
               context);
@@ -250,11 +259,11 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
           DiagnosisResult(
             userEmail: user.email,
             timeSeconds: roundedElapsedTimeInSeconds,
-            q1: DiagnoseVerbalScreen.userResponses[0],
-            q2: DiagnoseVerbalScreen.userResponses[1],
-            q3: DiagnoseVerbalScreen.userResponses[2],
-            q4: DiagnoseVerbalScreen.userResponses[3],
-            q5: DiagnoseVerbalScreen.userResponses[4],
+            q1: userResponses[0],
+            q2: userResponses[1],
+            q3: userResponses[2],
+            q4: userResponses[3],
+            q5: userResponses[4],
             totalScore: totalScore.toString(),
             label: diagnoseStatus,
           ),
@@ -268,7 +277,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
         updateStatus = await _userService.updateDisorderType(
             DisorderTypes.nonVerbal, accessToken, context);
       }
-      
+
       // NAVIGATE BASED ON THE STATUS OF UPDATES
       if (status && updateStatus) {
         Navigator.of(context).pushNamedAndRemoveUntil(
@@ -287,11 +296,11 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
     } catch (e) {
       developer.log(e.toString());
       setState(() {
-        DiagnoseVerbalScreen.isErrorOccurred = true;
-        DiagnoseVerbalScreen.isDataLoading = false;
+        isErrorOccurred = true;
+        isDataLoading = false;
       });
     } finally {
-      setState(() => DiagnoseVerbalScreen.isDataLoading = false);
+      setState(() => isDataLoading = false);
     }
   }
 
@@ -306,22 +315,6 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // FORCE LANDSCAPE ORIENTATION
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-
-    // SET CUSTOM STATUS BAR COLOR
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.black,
-        statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: Colors.black,
-        systemNavigationBarIconBrightness: Brightness.light,
-      ),
-    );
-
     return PopScope(
       canPop: false, // CANPOP IS SET TO FALSE TO PREVENT POPPING THE ROUTE
       // CALLBACK WHEN BACK BUTTON IS PRESSED
@@ -366,7 +359,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                           ),
                           child: (snapshot.connectionState ==
                                       ConnectionState.waiting ||
-                                  DiagnoseVerbalScreen.isDataLoading)
+                                  isDataLoading)
                               ? // SHOW LOADER WHILE WAITING FOR THE QUESTION TO LOAD
                               const Center(
                                   child: SpinKitCubeGrid(
@@ -374,8 +367,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                                     size: 80.0,
                                   ),
                                 )
-                              : (snapshot.hasError ||
-                                      DiagnoseVerbalScreen.isErrorOccurred)
+                              : (snapshot.hasError || isErrorOccurred)
                                   ? // DISPLAY ERROR IF LOADING FAILED
                                   Center(
                                       child: Text(
@@ -396,11 +388,10 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                                               .diagnoseVerbalMessagesListenAndAnswer,
                                           style: TextStyle(
                                               color: Colors.white,
-                                              fontSize: DiagnoseVerbalScreen
-                                                          .selectedLanguageCode ==
-                                                      'ta'
-                                                  ? 16
-                                                  : 20,
+                                              fontSize:
+                                                  selectedLanguageCode == 'ta'
+                                                      ? 16
+                                                      : 20,
                                               fontFamily: 'Roboto',
                                               fontWeight: FontWeight.w400),
                                         ),
@@ -411,8 +402,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                                               const Duration(milliseconds: 300),
                                           child: GestureDetector(
                                             key: ValueKey<bool>(
-                                              DiagnoseVerbalScreen
-                                                  .isAudioPlaying,
+                                              isAudioPlaying,
                                             ),
                                             onTap: _toggleAudioPlayback,
                                             child: Opacity(
@@ -428,8 +418,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                                                   ),
                                                 ),
                                                 child: SvgPicture.asset(
-                                                  DiagnoseVerbalScreen
-                                                          .isAudioPlaying
+                                                  isAudioPlaying
                                                       ? 'assets/icons/pause-button.svg'
                                                       : 'assets/icons/play-button.svg',
                                                   semanticsLabel: 'Play Icon',
@@ -445,14 +434,11 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
                                               const Duration(milliseconds: 300),
                                           child: Row(
                                             key: ValueKey<int>(
-                                              DiagnoseVerbalScreen
-                                                  .currentQuestionNumber,
+                                              currentQuestionNumber,
                                             ),
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceAround,
-                                            children: DiagnoseVerbalScreen
-                                                .answers
-                                                .map((answer) {
+                                            children: answers.map((answer) {
                                               return GestureDetector(
                                                 onTap: () =>
                                                     _handleAnswer(answer),
