@@ -3,7 +3,7 @@ import 'package:calcpal/models/diagnosis_result_ideo.dart';
 import 'package:flutter/material.dart';
 import 'package:calcpal/models/diagnosis.dart';
 import 'package:calcpal/models/flask_diagnosis_result.dart';
-import 'package:calcpal/models/operational_question.dart';
+import 'package:calcpal/models/ideognostic_question.dart';
 import 'package:calcpal/services/toast_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:calcpal/services/common_service.dart';
@@ -21,24 +21,32 @@ class IdeognosticService {
   final ToastService _toastService = ToastService();
 
   // Fetch a question
-  Future<OperationalQuestion?> fetchIdeognosticQuestion(
+  Future<IdeognosticQuestion?> fetchIdeognosticQuestion(
       int questionNumber) async {
-    final url = Uri.parse('$_baseUrl/ideognostic/questionbank/$questionNumber');
+    final url = Uri.parse('$_baseUrl/ideognostic/question/$questionNumber');
 
     try {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        return OperationalQuestion.fromJson(jsonDecode(response.body));
+        final jsonResponse = jsonDecode(response.body);
+        return IdeognosticQuestion.fromJson(jsonResponse);
       } else {
+        print('Failed to load question, status code: ${response.statusCode}');
         _toastService.errorToast('Failed to load question');
         return null;
       }
-    } on http.ClientException {
+    } on FormatException catch (e) {
+      print('Format error: ${e.message}');
+      _toastService.errorToast('Data format error. Please try again later.');
+      return null;
+    } on http.ClientException catch (e) {
+      print('Client error: ${e.message}');
       _toastService
           .errorToast('Network error occurred. Please check your connection.');
       return null;
     } catch (e) {
+      print('Unexpected error: $e');
       _toastService.errorToast('An unexpected error occurred.');
       return null;
     }
