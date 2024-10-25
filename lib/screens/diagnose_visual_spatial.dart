@@ -245,7 +245,7 @@ class _DiagnoseVisualScreenState extends State<DiagnoseVisualScreen> {
         diagnoseResultRoute,
         (route) => false,
         arguments: {
-          'diagnoseType': 'visual',
+          'diagnoseType': 'VisualSpatial',
           'totalScore': totalScore,
           'elapsedTime': roundedElapsedTimeInSeconds,
         },
