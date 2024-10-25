@@ -10,7 +10,11 @@ import 'package:calcpal/screens/activity_practonostic.dart';
 import 'package:calcpal/screens/activity_sequential.dart';
 import 'package:calcpal/screens/activity_verbal.dart';
 import 'package:calcpal/screens/activity_visual_spatial.dart';
+
 import 'package:calcpal/screens/activity_visual_v3.dart';
+
+import 'package:calcpal/screens/activity_sequential_v2.dart';
+
 import 'package:calcpal/screens/diagnose_graphical.dart';
 import 'package:calcpal/screens/diagnose_ideognostic.dart';
 import 'package:calcpal/screens/diagnose_lexical.dart';
@@ -26,6 +30,7 @@ import 'package:calcpal/screens/iq_test.dart';
 import 'package:calcpal/screens/login.dart';
 import 'package:calcpal/screens/main_dashboard.dart';
 import 'package:calcpal/screens/profile.dart';
+import 'package:calcpal/screens/report.dart';
 import 'package:calcpal/screens/sign_up.dart';
 import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/splash_screen.dart';
@@ -36,6 +41,8 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import 'screens/activity_visual_v3.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -120,6 +127,7 @@ class _MyAppState extends State<MyApp> {
           diagnoseVisualSpatialRoute: (context) => const DiagnoseVisualScreen(),
           diagnoseResultRoute: (context) => const DiagnoseResultScreen(),
           diagnoseReportRoute: (context) => const DiagnoseReportScreen(),
+          reportRoute: (context) => const ReportScreen(),
           activityDashboardRoute: (context) => const ActivityDashboardScreen(),
           activityVerbalRoute: (context) => const ActivityVerbalScreen(),
           activityLexicalRoute: (context) => const ActivityLexicalScreen(),
@@ -132,6 +140,7 @@ class _MyAppState extends State<MyApp> {
               const ActivityPractonosticScreen(),
           activitySequentialRoute: (context) =>
               const ActivitySequentialScreen(),
+          activityV2SequentialRoute: (context) => NumberLineJumpScreen(),
           activityVisualSpatialRoute: (context) =>
               const ActivityVisualSpatialScreen(),
           activityDrawVisualSpatialRoute: (context) => ShapeDrawingApp(),
@@ -180,10 +189,10 @@ class _ValidationScreenState extends State<ValidationScreen> {
 
       if (user == null) {
         Navigator.of(context).pushNamed(loginRoute);
-      } else if (user.disorderTypes!.isNotEmpty) {
-        Navigator.of(context).pushNamed(activityDashboardRoute);
       } else if (user.iqScore == null) {
         Navigator.of(context).pushNamed(iqTestRoute);
+      } else if (user.disorderTypes!.isNotEmpty) {
+        Navigator.of(context).pushNamed(activityDashboardRoute);
       } else {
         Navigator.of(context).pushNamed(mainDashboardRoute);
       }

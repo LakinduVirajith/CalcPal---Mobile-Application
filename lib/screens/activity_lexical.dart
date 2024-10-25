@@ -20,7 +20,7 @@ class ActivityLexicalScreen extends StatefulWidget {
 }
 
 class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
-  // VARIABLES TO HOLD QUESTION AND ANSWER DATA
+  // VARIABLES TO HOLD ACTIVITY AND ANSWER DATA
   late String question;
   late List<String> answers;
   late String correctAnswer;
@@ -124,7 +124,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
 
   // FUNTION VALIDATE QUESTION AND UPDATE STATE
   Future<void> _validateQuestion() async {
-    if (attempt == 2) {
+    if (attempt == 10) {
       setState(() {
         currentActivityNumber++;
         attempt = 1;

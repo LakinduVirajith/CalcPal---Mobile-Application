@@ -25,12 +25,12 @@ class _ActivityDashboardScreenState extends State<ActivityDashboardScreen> {
   final Map<String, String> _routeNames = {
     'Verbal': activityVerbalRoute,
     'Lexical': activityLexicalRoute,
-    'operational': activityOperationalRoute,
-    'ideognostic': activityIdeognosticRoute,
-    'graphical': activityGraphicalRoute,
-    'practognostic': activityPractognosticRoute,
-    'visualSpatial': activitySequentialRoute,
-    'sequential': activityVisualSpatialRoute,
+    'Operational': activityOperationalRoute,
+    'Ideognostic': activityIdeognosticRoute,
+    'Graphical': activityGraphicalRoute,
+    'Practognostic': activityPractognosticRoute,
+    'Visualspatial': activityVisualSpatialRoute,
+    'Sequential': activitySequentialRoute,
   };
   // FUTURE THAT HOLDS THE STATE OF THE DASHBOARD LOADING PROCESS
   late Future<void> _dashboardFuture;
@@ -168,21 +168,41 @@ class _ActivityDashboardScreenState extends State<ActivityDashboardScreen> {
                                   ),
                                 ),
                               ),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.of(context).pushNamed(profileRoute);
-                                },
-                                child: Container(
-                                  width: 150.0,
-                                  height: 60.0,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: AssetImage(
-                                          'assets/icons/settings-$selectedLanguageCode.png'),
+                              Row(children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context)
+                                        .pushNamed(profileRoute);
+                                  },
+                                  child: Container(
+                                    width: 150.0,
+                                    height: 60.0,
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                        image: AssetImage(
+                                            'assets/icons/settings-$selectedLanguageCode.png'),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
+                                const SizedBox(width: 12.0),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context)
+                                        .pushNamed(reportRoute);
+                                  },
+                                  child: Container(
+                                    width: 150.0,
+                                    height: 60.0,
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                        image: AssetImage(
+                                            'assets/icons/report-$selectedLanguageCode.png'),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ]),
                             ],
                           ),
                         ),

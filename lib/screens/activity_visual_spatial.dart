@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../services/toast_service.dart';
-
 class ActivityVisualSpatialScreen extends StatefulWidget {
   const ActivityVisualSpatialScreen({super.key});
   @override
@@ -196,3 +195,33 @@ class _ActivityVisualSpatialScreenState
     );
   }
 }
+
+// class ShapeItem extends StatelessWidget {
+//   final String shape;
+//   final String imagePath;
+
+//   ShapeItem({required this.shape, required this.imagePath});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Draggable<String>(
+//       data: shape,
+//       onDragCompleted: () => shape.,
+//       child: _buildShapeWidget(),
+//       feedback: _buildShapeWidget(), // What is shown while dragging
+//       childWhenDragging: Container(), // Shape disappears when being dragged
+//     );
+//   }
+
+//   Widget _buildShapeWidget() {
+//     return Container(
+//       width: 50,
+//       height: 50,
+//       child: Center(
+//         child: Image.asset(imagePath), // Display image
+//       ),
+//     );
+//   }
+// }
+
+ 
