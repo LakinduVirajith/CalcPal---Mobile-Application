@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../screens/number_line_activity.dart';
 import '../screens/fraction_activity.dart';
 import '../screens/number_creation_activity.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ActivityIdeognosticScreen extends StatelessWidget {
   const ActivityIdeognosticScreen({super.key});
@@ -49,7 +50,8 @@ class ActivityIdeognosticScreen extends StatelessWidget {
                       switch (index) {
                         case 0:
                           return DashboardButton(
-                            text: 'Level 1 - Number Lines',
+                            text: AppLocalizations.of(context)!
+                                .level1NumberLinesLbl,
                             onPressed: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -58,7 +60,8 @@ class ActivityIdeognosticScreen extends StatelessWidget {
                           );
                         case 1:
                           return DashboardButton(
-                            text: 'Level 2 - Fractions',
+                            text: AppLocalizations.of(context)!
+                                .level2FractionsLbl,
                             onPressed: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -67,7 +70,8 @@ class ActivityIdeognosticScreen extends StatelessWidget {
                           );
                         case 2:
                           return DashboardButton(
-                            text: 'Level 2 - Number Creation',
+                            text: AppLocalizations.of(context)!
+                                .level2NumberCreationLbl,
                             onPressed: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(

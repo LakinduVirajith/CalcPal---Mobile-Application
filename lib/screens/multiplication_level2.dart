@@ -1,8 +1,15 @@
+import 'package:calcpal/models/activity_result.dart';
+import 'package:calcpal/models/user.dart';
+import 'package:calcpal/services/operational_service.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 import '../screens/activity_operational.dart';
-import '../screens/division_level2.dart';
+import 'package:calcpal/widgets/place_value_table.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MultiplicationLevel2 extends StatefulWidget {
   MultiplicationLevel2();
@@ -18,10 +25,17 @@ class _MultiplicationLevel2State extends State<MultiplicationLevel2> {
   int exerciseNumber = 1;
   int number1 = 0;
   int number2 = 0;
-  int totalScore = 0;
   String backgroundImage = '';
   String infoMessage = '';
   Stopwatch stopwatch = Stopwatch();
+
+  String completionDate = ''; // For storing the current date
+  int totalTimeTaken = 0; //For Storing time take for the activity
+  int totalScore = 0; //For Storing total acore for the activity
+  int correctCount = 0; //For Stroing no of correctly ans excercises
+
+  final UserService _userService = UserService();
+  final OperationalService _activityService = OperationalService();
 
   @override
   void initState() {
@@ -30,39 +44,57 @@ class _MultiplicationLevel2State extends State<MultiplicationLevel2> {
     stopwatch.start();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Ensure layout completion logic happens after the frame is rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        layoutCompleted = true;
+      });
+    });
+
+    _initializeInfoMessage();
+  }
+
   void _initializeExercise() {
+    backgroundImage =
+        'assets/images/operational_activities/multiplication_level2_$exerciseNumber.png';
     switch (exerciseNumber) {
       case 1:
         number1 = Random().nextInt(50) + 1; // Number1 between 1 and 50
         number2 = 1;
-        backgroundImage =
-            'assets/images/operational_activities/multiplication_level2_1.png';
-        infoMessage = 'Any number multiplied by 1 gives the same number';
-
         break;
       case 2:
         number1 = generateNumberWithSecondDigitLessThanFive();
         number2 = 2; // Number2 is always 2
-        backgroundImage =
-            'assets/images/operational_activities/multiplication_level2_2.png';
-        infoMessage =
-            'Any number multiplied by 2 means, adding the number twice';
         break;
       case 3:
         number1 =
             generateRandomMultipleOfTen(); // Number1 is any multiple of 10 less than 100
         number2 = 5; // number2 is 5
-        backgroundImage =
-            'assets/images/operational_activities/multiplication_level2_3.png';
-        infoMessage = 'To multiply by 5, recall the 5 times table';
         break;
       case 4:
         number1 = Random().nextInt(100) + 1; // Number1 between 1 and 100
         number2 = 10; // number2 is 10
-        backgroundImage =
-            'assets/images/operational_activities/multiplication_level2_4.png';
-        infoMessage =
-            'When multiplied by 10, an new zero is added to the number';
+        break;
+    }
+  }
+
+  void _initializeInfoMessage() {
+    switch (exerciseNumber) {
+      case 1:
+        infoMessage = AppLocalizations.of(context)!.multiLvl2Num1Text;
+        break;
+      case 2:
+        infoMessage = AppLocalizations.of(context)!.multiLvl2Num2Text;
+        break;
+      case 3:
+        infoMessage = AppLocalizations.of(context)!.multiLvl2Num5Text;
+        break;
+      case 4:
+        infoMessage = AppLocalizations.of(context)!.multiLvl2Num10Text;
         break;
     }
   }
@@ -128,7 +160,7 @@ class _MultiplicationLevel2State extends State<MultiplicationLevel2> {
                           Column(
                             children: [
                               Text(
-                                'Exercise ${exerciseNumber} - ${number1} x ${number2}',
+                                '${exerciseNumber}) - ${number1} x ${number2}',
                                 style: TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold),
                               ),
@@ -140,8 +172,11 @@ class _MultiplicationLevel2State extends State<MultiplicationLevel2> {
                             children: [
                               SizedBox(
                                 width: constraints.maxWidth *
-                                    0.40, // Set the width to 35% of the screen
-                                child: PlaceValueTable(number: number1),
+                                    0.40, // Set the width to 40% of the screen
+                                child: PlaceValueTable(
+                                  number: number1,
+                                  iconType: Icons.star,
+                                ),
                               ),
                               // Box around multiplication sign 'x'
                               Container(
@@ -175,9 +210,7 @@ class _MultiplicationLevel2State extends State<MultiplicationLevel2> {
                                   ),
                                 ),
                               ),
-                              SizedBox(
-                                  width:
-                                      20), // Add space between the boxes and the place value table
+                              SizedBox(width: 20),
                               // Limit the width of the PlaceValueTable
                             ],
                           ),
@@ -214,12 +247,13 @@ class _MultiplicationLevel2State extends State<MultiplicationLevel2> {
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 4.0), // Adjusts the height
                                   constraints: BoxConstraints(
-                                    maxWidth: 200, // Adjusts the width
+                                    maxWidth: 300, // Adjusts the width
                                   ),
                                   child: TextField(
                                     controller: answerController,
                                     decoration: InputDecoration(
-                                      labelText: 'Enter your answer',
+                                      labelText: AppLocalizations.of(context)!
+                                          .enterAnswerPlaceholder,
                                       border: OutlineInputBorder(),
                                       filled: true,
                                       fillColor: Colors.grey.shade200,
@@ -238,30 +272,9 @@ class _MultiplicationLevel2State extends State<MultiplicationLevel2> {
 
                           SizedBox(height: 20),
                           ElevatedButton(
-                            onPressed: layoutCompleted
-                                ? () {
-                                    int correctAnswer = number1 * number2;
-                                    int userAnswer =
-                                        int.tryParse(answerController.text) ??
-                                            0;
-
-                                    if (userAnswer == correctAnswer) {
-                                      totalScore++;
-                                      _showCelebrationPopup();
-                                    } else {
-                                      retryCount++;
-                                      if (retryCount < 3) {
-                                        _showTryAgainPopup();
-                                      } else {
-                                        _showCorrectAnswerDialog(correctAnswer);
-                                      }
-                                    }
-
-                                    // Clear the input field after submission
-                                    answerController.clear();
-                                  }
-                                : null, // Disable the button if the layout isn't complete
-                            child: Text('Next'),
+                            onPressed: layoutCompleted ? evaluateAnswer : null,
+                            child:
+                                Text(AppLocalizations.of(context)!.nextBtnText),
                             style: ElevatedButton.styleFrom(
                               padding: EdgeInsets.symmetric(
                                   horizontal: 30, vertical: 15),
@@ -282,14 +295,30 @@ class _MultiplicationLevel2State extends State<MultiplicationLevel2> {
     );
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        layoutCompleted = true;
-      });
-    });
+  void evaluateAnswer() {
+    int correctAnswer = number1 * number2;
+    int userAnswer = int.tryParse(answerController.text) ?? 0;
+
+    if (userAnswer == correctAnswer) {
+      correctCount++;
+      if (retryCount == 0) {
+        totalScore += 10; //  10 points if correct on first try
+      } else if (retryCount == 1) {
+        totalScore += 5; //  5 points if correct on second try
+      }
+      retryCount = 0; // Reset retry count for the next question
+      _showCelebrationPopup();
+    } else {
+      retryCount++;
+      if (retryCount < 3) {
+        _showTryAgainPopup();
+      } else {
+        _showCorrectAnswerDialog(correctAnswer);
+      }
+    }
+
+    // Clear the input field after submission
+    answerController.clear();
   }
 
   void _showCelebrationPopup() {
@@ -354,138 +383,79 @@ class _MultiplicationLevel2State extends State<MultiplicationLevel2> {
         exerciseNumber++;
         retryCount = 0;
         _initializeExercise();
+        _initializeInfoMessage();
       });
     } else {
+      //Submit Multiplication level 2 results
+      completionDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
       stopwatch.stop();
-      _showCompletionDialog();
+      totalTimeTaken = stopwatch.elapsed.inSeconds;
+
+      _submitResultsToDB();
     }
   }
 
-  void _showCompletionDialog() {
-    final totalTime = stopwatch.elapsed.inSeconds;
+  Future<void> _submitResultsToDB() async {
+    // Get shared preference
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Well done!'),
-        content: Text(
-            'You have completed all exercises.\nTotal Score: $totalScore/4\nTotal Time: $totalTime seconds'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => DivisionLevel2(),
-                ),
-              );
-            },
-            child: Text('Next Activity'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => ActivityOperationalScreen(),
-                ),
-              );
-            },
-            child: Text('Back'),
-          ),
-        ],
-      ),
-    );
-  }
-}
+    if (accessToken == null) {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
+      return;
+    }
 
-class PlaceValueTable extends StatelessWidget {
-  final int number;
+    // Fetch user
+    User? user = await _userService.getUser(accessToken, context);
 
-  PlaceValueTable({required this.number});
+    if (user == null || user.iqScore == null) {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesIQScoreError);
+      return;
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    int hundreds = (number ~/ 100) % 10;
-    int tens = (number ~/ 10) % 10;
-    int ones = number % 10;
+    // Variables to store diagnosis and status
+    late bool activityStatus;
 
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.all(8.0),
-          margin: EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade300, // Set grey background color
-            border: Border.all(),
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Hundreds',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 15),
-                    ),
-                  ),
-                  VerticalDivider(
-                      color: Colors.black,
-                      thickness: 2), // Add a black line between columns
-                  Expanded(
-                    child: Text(
-                      'Tens',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 15),
-                    ),
-                  ),
-                  VerticalDivider(
-                      color: Colors.black,
-                      thickness: 2), // Add a black line between columns
-                  Expanded(
-                    child: Text(
-                      'Ones',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 15),
-                    ),
-                  ),
-                ],
-              ),
-              Divider(color: Colors.black), // Black line below the headers
-              Row(
-                children: [
-                  Expanded(child: createStars(hundreds)),
-                  VerticalDivider(
-                      color: Colors.black,
-                      thickness: 2), // Add a black line between columns
-                  Expanded(child: createStars(tens)),
-                  VerticalDivider(
-                      color: Colors.black,
-                      thickness: 2), // Add a black line between columns
-                  Expanded(child: createStars(ones)),
-                ],
-              ),
-            ],
-          ),
+    // Update user disorder status in the database
+    activityStatus = await _activityService.addActivityResult(ActivityResult(
+      userEmail: user.email,
+      date: completionDate,
+      activityName: 'Level2 - Multiplication',
+      timeTaken: totalTimeTaken,
+      totalScore: totalScore,
+      retries: correctCount,
+    ));
+
+    // Navigate based on the status of updates
+    if (activityStatus) {
+      _handleSuccess(AppLocalizations.of(context)!.progressStoredTxt);
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ActivityOperationalScreen(),
         ),
-        // Display number below the place value table
-        Text(
-          '$number',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
+      );
+    } else {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
+    }
   }
 
-  Widget createStars(int count) {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 8.0,
-      runSpacing: 8.0,
-      children: List.generate(
-        count,
-        (index) => Icon(Icons.star, size: 22, color: Colors.black),
-      ),
-    );
+  void _handleErrorAndRedirect(String message) {
+    // Handle errors and redirect
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+    ));
+  }
+
+  void _handleSuccess(String message) {
+    // Handle errors and redirect
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.green,
+    ));
   }
 }

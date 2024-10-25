@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:calcpal/models/activity_result.dart';
 import 'package:calcpal/models/diagnosis_result_op.dart';
 import 'package:flutter/material.dart';
 import 'package:calcpal/models/diagnosis.dart';
@@ -107,5 +108,38 @@ class OperationalService {
     }
 
     return null;
+  }
+
+  //Activities Handlers
+
+  // Submit a activity result
+  Future<bool> addActivityResult(ActivityResult result) async {
+    final url = Uri.parse('$_baseUrl/operational/activities/');
+
+    try {
+      final body = jsonEncode(result.toJson());
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        print(response.statusCode);
+        return false;
+      }
+    } on http.ClientException {
+      _toastService
+          .errorToast('Network error occurred. Please check your connection.');
+      return false;
+    } catch (e) {
+      _toastService.errorToast('An unexpected error occurred.');
+      return false;
+    }
   }
 }

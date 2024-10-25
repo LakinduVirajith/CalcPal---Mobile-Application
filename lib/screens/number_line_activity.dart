@@ -1,9 +1,14 @@
 import 'dart:math';
+import 'package:calcpal/models/activity_result.dart';
 import 'package:calcpal/screens/activity_ideognostic.dart';
-import 'package:calcpal/screens/fraction_activity.dart';
+import 'package:calcpal/services/ideognostic_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:calcpal/services/user_service.dart';
+import 'package:calcpal/models/user.dart';
 
 class NumberLineActivity extends StatefulWidget {
   final int initialExerciseNumber = 1;
@@ -17,10 +22,18 @@ class _NumberLineActivityState extends State<NumberLineActivity> {
   late PageController _pageController;
   int currentExerciseNumber = 0;
 
+  String completionDate = ''; // For storing the current date
+  int elapsedTime = 0; //For Storing time take for the activity
+  int totalScore = 0; //For Storing total acore for the activity
+  int correctCount = 0; //For Stroing no of correctly ans excercises
+
+  final UserService _userService = UserService();
+  final IdeognosticService _activityService = IdeognosticService();
+
   // Variables to track scores and retries
-  List<bool> exerciseResults = [false, false, false];
-  List<int> retries = [0, 0, 0];
-  int totalScore = 0;
+  List<bool> exerciseResults = [false, false, false, false, false];
+  List<int> retries = [0, 0, 0, 0, 0];
+
   Stopwatch stopwatch = Stopwatch();
 
   @override
@@ -44,57 +57,94 @@ class _NumberLineActivityState extends State<NumberLineActivity> {
     setState(() {
       exerciseResults[exerciseIndex] = isCorrect;
       if (isCorrect) {
-        totalScore += 10; // score increment
+        correctCount++;
+        if (retries[exerciseIndex] == 0) {
+          totalScore += 10; // First attempt, +10 points
+        } else if (retries[exerciseIndex] == 1) {
+          totalScore += 5; // Second attempt, +5 points
+        }
       }
 
       // Stop the stopwatch if it's the last exercise
-      if (exerciseIndex == 2) {
+      if (exerciseIndex == 4) {
         stopwatch.stop();
 
-        // Convert Duration to seconds
-        int elapsedTime = stopwatch.elapsed.inSeconds;
+        completionDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-        _showCompletionDialog(elapsedTime, totalScore);
-        print('Time taken: ${stopwatch.elapsed}');
-        print('Exercise Results: $exerciseResults');
-        print('Retries: $retries');
+        // Convert Duration to seconds
+        elapsedTime = stopwatch.elapsed.inSeconds;
+
+        print('Time taken: $elapsedTime');
+        print('date: $completionDate');
+        print('correct no: $correctCount');
         print('Total Score: $totalScore');
+
+        _submitResultsToDB();
       }
     });
   }
 
-  void _showCompletionDialog(int elapsedTime, int total) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Well done!'),
-        content: Text(
-          'You have completed all exercises.\nTotal Score: $total/40\nTotal Time: $elapsedTime seconds',
+  Future<void> _submitResultsToDB() async {
+    // Get shared preference
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
+
+    if (accessToken == null) {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
+      return;
+    }
+
+    // Fetch user
+    User? user = await _userService.getUser(accessToken, context);
+
+    if (user == null || user.iqScore == null) {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesIQScoreError);
+      return;
+    }
+
+    // Variables to store diagnosis and status
+    late bool activityStatus;
+
+    // Update user disorder status in the database
+    activityStatus = await _activityService.addActivityResult(ActivityResult(
+      userEmail: user.email,
+      date: completionDate,
+      activityName: 'Number Line',
+      timeTaken: elapsedTime,
+      totalScore: totalScore,
+      retries: correctCount,
+    ));
+
+    // Navigate based on the status of updates
+    if (activityStatus) {
+      _handleSuccess(AppLocalizations.of(context)!.progressStoredTxt);
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => ActivityIdeognosticScreen(),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => FractionActivityScreen(),
-                ),
-              );
-            },
-            child: Text('Next Activity'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => ActivityIdeognosticScreen(),
-                ),
-              );
-            },
-            child: Text('Back'),
-          ),
-        ],
-      ),
-    );
+      );
+    } else {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
+    }
+  }
+
+  void _handleErrorAndRedirect(String message) {
+    // Handle errors and redirect
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+    ));
+  }
+
+  void _handleSuccess(String message) {
+    // Handle errors and redirect
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.green,
+    ));
   }
 
   @override
@@ -108,7 +158,7 @@ class _NumberLineActivityState extends State<NumberLineActivity> {
     return Scaffold(
       body: PageView.builder(
         controller: _pageController,
-        itemCount: 3, // Assuming you have 3 exercises
+        itemCount: 5,
         onPageChanged: (pageIndex) {
           setState(() {
             currentExerciseNumber = pageIndex + 1;
@@ -178,6 +228,14 @@ class _NumberLineExerciseState extends State<NumberLineExercise> {
       numberLine = List.generate(6, (index) => 25 + index); // 25 to 30
       missingNumbers = _getRandomNumbers(
           3, numberLine, random); // Get 3 random missing numbers
+    } else if (widget.exerciseNumber == 4) {
+      numberLine = List.generate(6, (index) => 45 + index); // 45 to 50
+      missingNumbers = _getRandomNumbers(
+          3, numberLine, random); // Get 3 random missing numbers
+    } else if (widget.exerciseNumber == 5) {
+      numberLine = List.generate(6, (index) => 90 + index); // 90 to 95
+      missingNumbers = _getRandomNumbers(
+          3, numberLine, random); // Get 3 random missing numbers
     }
 
     for (int num in missingNumbers) {
@@ -209,7 +267,7 @@ class _NumberLineExerciseState extends State<NumberLineExercise> {
               widget.updateScoreAndStopwatch(
                   true, widget.exerciseIndex); // Update score and stopwatch
 
-              if (widget.exerciseNumber < 3) {
+              if (widget.exerciseNumber < 6) {
                 widget.pageController.nextPage(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
@@ -276,7 +334,7 @@ class _NumberLineExerciseState extends State<NumberLineExercise> {
           decoration: BoxDecoration(
             image: DecorationImage(
               image: AssetImage(
-                  'assets/images/ideognostic_activities/numberline_${widget.exerciseNumber}.png'),
+                  'assets/images/ideognostic_activities/numberline_1.png'),
               fit: BoxFit.cover,
             ),
           ),
@@ -286,7 +344,7 @@ class _NumberLineExerciseState extends State<NumberLineExercise> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                'Exercise ${widget.exerciseNumber}: Label the Number Line',
+                '${widget.exerciseNumber}: ${AppLocalizations.of(context)!.numberLineTopic}',
                 style:
                     const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
@@ -433,7 +491,7 @@ class _NumberLineExerciseState extends State<NumberLineExercise> {
                   _showFailureDialog();
                 }
               },
-              child: const Text('Check Answer'),
+              child: Text(AppLocalizations.of(context)!.checkAnsBtn),
             ),
           ],
         ),

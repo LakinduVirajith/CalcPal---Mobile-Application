@@ -1,7 +1,14 @@
+import 'package:calcpal/models/activity_result.dart';
+import 'package:calcpal/models/user.dart';
 import 'package:calcpal/screens/activity_operational.dart';
+import 'package:calcpal/services/operational_service.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DivisionLevel1Screen extends StatefulWidget {
   final int number1;
@@ -25,9 +32,21 @@ class _DivisionLevel1ScreenState extends State<DivisionLevel1Screen> {
   late int correctAnswer;
   late Color iconColor;
 
+  int retryCount = 0;
+  late Stopwatch stopwatch; // For timing
+
+  String completionDate = ''; // For storing the current date
+  int totalTimeTaken = 0; //For Storing time take for the activity
+  int totalScore = 0; //For Storing total acore for the activity
+  int correctCount = 0; //For Stroing no of correctly ans excercises
+
+  final UserService _userService = UserService();
+  final OperationalService _activityService = OperationalService();
+
   @override
   void initState() {
     super.initState();
+    stopwatch = Stopwatch();
     // Set the correct answer based on the division of number1 by number2
     correctAnswer = (widget.number1 / widget.number2).round();
 
@@ -39,9 +58,21 @@ class _DivisionLevel1ScreenState extends State<DivisionLevel1Screen> {
     } else {
       iconColor = Colors.green;
     }
+    stopwatch.start();
   }
 
   void showFeedback(bool isCorrect) {
+    if (isCorrect) {
+      correctCount++;
+      if (retryCount == 0) {
+        totalScore += 10; //  10 points if correct on first try
+      } else if (retryCount == 1) {
+        totalScore += 5; //  5 points if correct on second try
+      }
+      retryCount = 0; // Reset retry count for the next question
+    } else {
+      retryCount++; // Increment retryCount if the answer is incorrect
+    }
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -73,6 +104,70 @@ class _DivisionLevel1ScreenState extends State<DivisionLevel1Screen> {
     );
   }
 
+  Future<void> _submitResultsToDB() async {
+    // Get shared preference
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
+
+    if (accessToken == null) {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
+      return;
+    }
+
+    // Fetch user
+    User? user = await _userService.getUser(accessToken, context);
+
+    if (user == null || user.iqScore == null) {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesIQScoreError);
+      return;
+    }
+
+    // Variables to store diagnosis and status
+    late bool activityStatus;
+
+    // Update user disorder status in the database
+    activityStatus = await _activityService.addActivityResult(ActivityResult(
+      userEmail: user.email,
+      date: completionDate,
+      activityName: 'Level1 - Division',
+      timeTaken: totalTimeTaken,
+      totalScore: totalScore,
+      retries: correctCount,
+    ));
+
+    // Navigate based on the status of updates
+    if (activityStatus) {
+      _handleSuccess(AppLocalizations.of(context)!.progressStoredTxt);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ActivityOperationalScreen(),
+        ),
+      );
+    } else {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
+    }
+  }
+
+  void _handleErrorAndRedirect(String message) {
+    // Handle errors and redirect
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+    ));
+  }
+
+  void _handleSuccess(String message) {
+    // Handle errors and redirect
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.green,
+    ));
+  }
+
   void navigateToNextActivity() {
     if (widget.title.contains('7')) {
       Navigator.push(
@@ -82,18 +177,19 @@ class _DivisionLevel1ScreenState extends State<DivisionLevel1Screen> {
             number1: 20, // Set appropriate number1 for the next activity
             number2: 5, // Set appropriate number2 for the next activity
             title:
-                '8 : Let\'s Divide - Select the correct answer 😊', // Set the new title
+                '8 : ${AppLocalizations.of(context)!.opActivityLvl1Div} 😊', // Set the new title
             icon: FontAwesomeIcons.flag, // Set the appropriate icon
           ),
         ),
       );
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ActivityOperationalScreen(),
-        ),
-      );
+      //Submit Division level 1 results
+      completionDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+      stopwatch.stop();
+      totalTimeTaken = stopwatch.elapsed.inSeconds;
+
+      _submitResultsToDB();
     }
   }
 

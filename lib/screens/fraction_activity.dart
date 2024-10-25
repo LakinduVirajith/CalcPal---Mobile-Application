@@ -1,12 +1,16 @@
+import 'package:calcpal/models/activity_result.dart';
+import 'package:calcpal/models/user.dart';
 import 'package:calcpal/screens/activity_ideognostic.dart';
-import 'package:calcpal/screens/number_creation_activity.dart';
+import 'package:calcpal/services/ideognostic_service.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:intl/intl.dart';
 import 'dart:async'; // For timing
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FractionActivityScreen extends StatefulWidget {
-  final int exerciseNumber = 1;
-
   const FractionActivityScreen({super.key});
 
   @override
@@ -21,16 +25,23 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
   int totalParts = 0;
   int coloredParts = 0;
   Color exerciseColor = Colors.grey;
-  int totalScore = 0;
-  int totalTimeTaken = 0;
   bool isCorrect = false;
   late Stopwatch stopwatch; // For timing
+  int exerciseNumber = 1;
+
+  String completionDate = ''; // For storing the current date
+  int totalTimeTaken = 0; //For Storing time take for the activity
+  int totalScore = 0; //For Storing total acore for the activity
+  int correctCount = 0; //For Stroing no of correctly ans excercises
+
+  final UserService _userService = UserService();
+  final IdeognosticService _activityService = IdeognosticService();
 
   @override
   void initState() {
     super.initState();
     stopwatch = Stopwatch();
-    _initializeExercise(widget.exerciseNumber);
+    _initializeExercise(exerciseNumber);
   }
 
   void _initializeExercise(int exerciseNumber) {
@@ -40,6 +51,7 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
         totalParts = 2;
         coloredParts = _getRandomNumber(1, totalParts - 1);
         exerciseColor = Colors.pinkAccent; // Set color for exercise 1
+        stopwatch.start(); // Start timing the exercise
         break;
       case 2:
         totalParts = 5;
@@ -63,7 +75,6 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
     // Clear input boxes when initializing new exercise
     numeratorController.clear();
     denominatorController.clear();
-    stopwatch.start(); // Start timing the exercise
   }
 
   @override
@@ -77,7 +88,8 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
         },
         onPageChanged: (index) {
           setState(() {
-            _initializeExercise(index + 1); // Initialize the next exercise
+            exerciseNumber++;
+            _initializeExercise(exerciseNumber); // Initialize the next exercise
           });
         },
       ),
@@ -102,7 +114,7 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                'Exercise $exerciseNumber: Type the Fraction below',
+                '$exerciseNumber: ${AppLocalizations.of(context)!.typeFractionLbl}',
                 style:
                     const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
@@ -125,8 +137,7 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           // Information Boxes
-                          _infoBox(
-                              'Did you know 😲? You can find the numerator by counting the no of shaded parts.',
+                          _infoBox(AppLocalizations.of(context)!.numeratorDesc,
                               exerciseColor),
                           const SizedBox(width: 20),
                           Expanded(
@@ -193,7 +204,7 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
                           ),
                           const SizedBox(width: 20),
                           _infoBox(
-                              'Did you know 😲? You can find the denominator by counting the total no of parts.',
+                              AppLocalizations.of(context)!.denominatorDesc,
                               exerciseColor),
                         ],
                       ),
@@ -211,18 +222,8 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
                 children: <Widget>[
                   ElevatedButton(
                     onPressed: _validateAnswer,
-                    child: const Text('Submit'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => ActivityIdeognosticScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text('Back'),
-                  ),
+                    child: Text(AppLocalizations.of(context)!.nextBtnText),
+                  )
                 ],
               ),
             ),
@@ -283,13 +284,14 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
     int numerator = int.tryParse(numeratorController.text) ?? 0;
     int denominator = int.tryParse(denominatorController.text) ?? 0;
 
-    stopwatch.stop();
-    totalTimeTaken = stopwatch.elapsedMilliseconds ~/
-        1000; // Convert milliseconds to seconds
-
     if (numerator == coloredParts && denominator == totalParts) {
       isCorrect = true;
-      totalScore += 10; // Example score increment
+      correctCount++;
+      if (retryCount == 0) {
+        totalScore += 10;
+      } else {
+        totalScore += 5;
+      }
       _showDialog('Correct!', '🎉 Congratulations! 🎉', true);
     } else {
       retryCount++;
@@ -301,12 +303,6 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
             'The correct fraction is $coloredParts/$totalParts.', true);
       }
     }
-
-    print('Exercise ${widget.exerciseNumber} results:');
-    print('Retries: $retryCount');
-    print('Total Score: $totalScore');
-    print('Total Time Taken: $totalTimeTaken seconds');
-    print('Is Correct: $isCorrect');
   }
 
   void _showDialog(String title, String content, bool isSuccess) {
@@ -320,26 +316,22 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                if (widget.exerciseNumber == 3) {
-                  _showCompletionDialog();
-                  // // End of activity, print results to the console
-                  // print('Activity End Results:');
-                  // print('Total Retries: $retryCount');
-                  // print('Final Score: $totalScore');
-                  // print('Total Time Taken: $totalTimeTaken seconds');
-                  // print('Was the last attempt Correct? $isCorrect');
+                if (exerciseNumber == 4) {
+                  //finalize date and time in last exercise
+                  completionDate =
+                      DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+                  stopwatch.stop();
+                  totalTimeTaken = stopwatch.elapsed.inSeconds;
+                  _submitResultsToDB();
                 } else if (isSuccess) {
                   _pageController.nextPage(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeIn,
                   );
-                  stopwatch
-                      .reset(); // Reset the stopwatch for the next exercise
                 } else {
                   numeratorController.clear();
                   denominatorController.clear();
-                  stopwatch.reset(); // Reset the stopwatch for a retry
-                  stopwatch.start();
                 }
               },
               child: Text(isSuccess ? 'Next' : 'Retry'),
@@ -350,32 +342,73 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
     );
   }
 
-  void _showCompletionDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Activity Completed!'),
-        content: Text('Here are your results:\n'
-            'Final Score: $totalScore\n'
-            'Total Time Taken: $totalTimeTaken seconds\n'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-            child: Text('Back'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _submitResultsToDB() async {
+    // Get shared preference
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
+
+    if (accessToken == null) {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
+      return;
+    }
+
+    // Fetch user
+    User? user = await _userService.getUser(accessToken, context);
+
+    if (user == null || user.iqScore == null) {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesIQScoreError);
+      return;
+    }
+
+    // Variables to store diagnosis and status
+    late bool activityStatus;
+
+    // Update user disorder status in the database
+    activityStatus = await _activityService.addActivityResult(ActivityResult(
+      userEmail: user.email,
+      date: completionDate,
+      activityName: 'Fractions',
+      timeTaken: totalTimeTaken,
+      totalScore: totalScore,
+      retries: correctCount,
+    ));
+
+    // Navigate based on the status of updates
+    if (activityStatus) {
+      _handleSuccess(AppLocalizations.of(context)!.progressStoredTxt);
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => ActivityIdeognosticScreen(),
+        ),
+      );
+    } else {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
+    }
+  }
+
+  void _handleErrorAndRedirect(String message) {
+    // Handle errors and redirect
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+    ));
+  }
+
+  void _handleSuccess(String message) {
+    // Handle errors and redirect
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.green,
+    ));
   }
 
   @override
   void dispose() {
     numeratorController.dispose();
     denominatorController.dispose();
-    stopwatch.stop();
     super.dispose();
   }
 }
