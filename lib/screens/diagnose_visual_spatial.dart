@@ -167,7 +167,7 @@ class _DiagnoseVisualScreenState extends State<DiagnoseVisualScreen> {
     // CHECK IF ACCESS TOKEN IS AVAILABLE
     if (accessToken == null) {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesAccessTokenError);
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
       return;
     }
 
@@ -177,7 +177,7 @@ class _DiagnoseVisualScreenState extends State<DiagnoseVisualScreen> {
     // CHECK IF USER AND IQ SCORE ARE AVAILABLE
     if (user == null || user.iqScore == null) {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesIQScoreError);
+          AppLocalizations.of(context)!.commonMessagesIQScoreError);
       return;
     }
 
@@ -211,7 +211,7 @@ class _DiagnoseVisualScreenState extends State<DiagnoseVisualScreen> {
       diagnoseStatus = diagnosis.prediction!;
     } else {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesResultError);
+          AppLocalizations.of(context)!.commonMessagesResultError);
       return;
     }
 
@@ -252,7 +252,7 @@ class _DiagnoseVisualScreenState extends State<DiagnoseVisualScreen> {
       );
     } else {
       _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.diagnoseVerbalMessagesSomethingError);
+          AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
     }
   }
 
@@ -339,7 +339,7 @@ class _DiagnoseVisualScreenState extends State<DiagnoseVisualScreen> {
                                   Center(
                                       child: Text(
                                         AppLocalizations.of(context)!
-                                            .diagnoseVerbalMessagesLoadQuestion,
+                                            .commonMessagesLoadQuestion,
                                         style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 20,

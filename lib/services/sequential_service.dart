@@ -31,7 +31,7 @@ class SequentialService {
         return SequentialQuestion.fromJson(data);
       } else {
         _commonService.handleHttpResponse(response, context, null,
-            {404: AppLocalizations.of(context)!.sequentialServiceNoQuestionError});
+            {404: AppLocalizations.of(context)!.commonMessageNoQuestionError});
         return null;
       }
     } on http.ClientException {
@@ -55,7 +55,7 @@ class SequentialService {
         return SequentialQuestion.fromJson(data);
       } else {
         _commonService.handleHttpResponse(response, context, null,
-            {404: AppLocalizations.of(context)!.sequentialServiceNoQuestionError});
+            {404: AppLocalizations.of(context)!.commonMessageNoQuestionError});
         return null;
       }
     } on http.ClientException {

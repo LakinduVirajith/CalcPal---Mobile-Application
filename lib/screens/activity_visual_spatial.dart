@@ -1,5 +1,8 @@
 import 'dart:math';
 
+import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/screens/activity_dashboard.dart';
+import 'package:calcpal/screens/main_dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -46,18 +49,14 @@ class _ActivityVisualSpatialScreenState
   List<String> generateRandomItems(List<String> shapes, int totalItems) {
     // Create an empty list to store the randomly generated items
     List<String> randomItems = [];
-
     Random random = Random();
-
     // Repeat the process until we have 'totalItems' in the list
     for (int i = 0; i < totalItems; i++) {
       // Randomly pick an item from the shapes list
       int randomIndex = random.nextInt(shapes.length);
-
       // Add the random shape to the list
       randomItems.add(shapes[randomIndex]);
     }
-
     return randomItems;
   }
 
@@ -94,13 +93,23 @@ class _ActivityVisualSpatialScreenState
                           decoration: BoxDecoration(
                               color: gridValues[index] != null
                                   ? const Color.fromARGB(31, 145, 221, 148)
-                                  : const Color.fromARGB(134, 224, 167, 167),
+                                  : const Color.fromARGB(174, 235, 231, 231),
                               border: Border.all(
                                   color: const Color.fromARGB(255, 0, 0, 0),
                                   width: 5.0),
-                              borderRadius: BorderRadius.circular(150.0)),
-                          child: Center(
-                            child: Text(shapes[index]),
+                              borderRadius: BorderRadius.circular(120.0)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Container(
+                              child: Text(
+                                shapes[index],
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                           ),
                         );
                       },
@@ -126,11 +135,6 @@ class _ActivityVisualSpatialScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: itemGenerate.map((item) {
                   return GestureDetector(
-                    // onTap: () {
-                    // itemGenerate.remove(item);
-                    // attept++;
-                    // },
-                    // key: ValueKey<int>(attept),
                     child: _shapeItem(item,
                         "/Users/macbookpro2018/Desktop/SLIIT/Research/CalcPal---Mobile-Application/assets/images/${item}.png"),
                   );
@@ -145,50 +149,50 @@ class _ActivityVisualSpatialScreenState
   Widget _shapeItem(String shape, String imagePath) {
     return Draggable<String>(
       data: shape,
-      onDragCompleted: () => itemGenerate.remove(shape),
+      onDragCompleted: () {
+        setState(() {
+          itemGenerate.remove(shape); // Remove the shape from the list
+          // Check if itemGenerate is empty after removal
+          if (itemGenerate.isEmpty) {
+            // Show a dialog with a button when all shapes have been placed
+            _showCompletionDialog();
+          }
+        });
+      },
       child: _buildShapeWidget(imagePath),
       feedback: _buildShapeWidget(imagePath), // What is shown while dragging
       childWhenDragging: Container(), // Shape disappears when being dragged
     );
   }
 
+  void _showCompletionDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Well Done!"),
+          content: Text("You've completed the activity!"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Navigate to Activity Dashboard when the button is pressed
+                Navigator.of(context).pushNamed(activityDashboardRoute);
+              },
+              child: Text("Go to Activity Dashboard"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildShapeWidget(String imagePath) {
     return Container(
-      width: 60,
-      height: 60,
+      width: 80,
+      height: 80,
       child: Center(
         child: Image.asset(imagePath), // Display image
       ),
     );
   }
 }
-
-// class ShapeItem extends StatelessWidget {
-//   final String shape;
-//   final String imagePath;
-
-//   ShapeItem({required this.shape, required this.imagePath});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Draggable<String>(
-//       data: shape,
-//       onDragCompleted: () => shape.,
-//       child: _buildShapeWidget(),
-//       feedback: _buildShapeWidget(), // What is shown while dragging
-//       childWhenDragging: Container(), // Shape disappears when being dragged
-//     );
-//   }
-
-//   Widget _buildShapeWidget() {
-//     return Container(
-//       width: 50,
-//       height: 50,
-//       child: Center(
-//         child: Image.asset(imagePath), // Display image
-//       ),
-//     );
-//   }
-// }
-
- 

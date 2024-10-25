@@ -26,3 +26,4 @@ const activityGraphicalRoute = '/activity/graphical/';
 const activityPractognosticRoute = '/activity/practognostic/';
 const activitySequentialRoute = '/activity/sequential/';
 const activityVisualSpatialRoute = '/activity/visual-spatial/';
+const activityDrawVisualSpatialRoute = '/activity/visual-spatial/v2';
