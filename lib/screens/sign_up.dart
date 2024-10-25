@@ -1,123 +1,151 @@
-import 'package:calcpal/screens/main_dashboard.dart';
+import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/models/sign_up.dart';
 import 'package:calcpal/services/toast_service.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/widgets/signup_area.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
-import 'dart:io';
-import 'dart:convert';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
+
+  static bool isLoading = false;
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  final TextEditingController _userNameController = TextEditingController();
+  // CONTROLLERS FOR FORM FIELDS
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _birthDayController = TextEditingController();
+  final TextEditingController _birthdayController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-// SIGNUP HANDLER
-  Future<void> _signup() async {
-    final String userName = _userNameController.text;
-    final String email = _emailController.text;
-    final String birthDay = _birthDayController.text;
-    final String password = _passwordController.text;
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const MainDashboardScreen()),
-    );
-
-    try {
-      final response = await http.post(
-        Uri.parse('https://api/v1/signup'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{
-          'userName': userName,
-          'email': email,
-          'birthDay': birthDay,
-          'password': password,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        ToastService.showSuccessToast("SignUp successful");
-
-        Navigator.push(
-          // ignore: use_build_context_synchronously
-          context,
-          MaterialPageRoute(builder: (context) => const MainDashboardScreen()),
-        );
-      } else {
-        ToastService.showErrorToast("SignUp failed");
-      }
-    } on SocketException catch (_) {
-      // CONNECTION ERROR
-      ToastService.showErrorToast("Failed to connect to the server");
-    } on HttpException catch (_) {
-      // HTTP ERROR
-      ToastService.showErrorToast("An HTTP error occurred during login");
-    } catch (e) {
-      // OTHER ERRORS
-      ToastService.showErrorToast("An error occurred during login");
-    }
-  }
+  // INITIALIZING THE USER SERVICE
+  final UserService _userService = UserService();
+  // TOAST SERVICE TO SHOW MESSAGES
+  final ToastService _toastService = ToastService();
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
+
     // FORCE PORTRAIT ORIENTATION
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            // SIGNUP BACKGROUND
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/login_background.png'),
-                fit: BoxFit.fill,
-              ),
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    // DISPOSE CONTROLLERS TO FREE UP RESOURCES
+    _usernameController.dispose();
+    _emailController.dispose();
+    _birthdayController.dispose();
+    _passwordController.dispose();
+
+    super.dispose();
+  }
+
+  // HANDLER FOR THE SIGN-UP PROCESS
+  Future<void> _signup() async {
+    try {
+      setState(() => SignUpScreen.isLoading = true);
+
+      final String username = _usernameController.text;
+      final String email = _emailController.text;
+      final String birthday = _birthdayController.text;
+      final String password = _passwordController.text;
+
+      if (username.isEmpty ||
+          email.isEmpty ||
+          birthday.isEmpty ||
+          password.isEmpty) {
+        _toastService
+            .errorToast(AppLocalizations.of(context)!.signupMessagesFillAll);
+      } else {
+        // CALL THE SIGN-UP SERVICE
+        final status = await _userService.signUp(
+            SignUp(
+              name: username,
+              email: email,
+              birthday: birthday,
+              password: password,
             ),
-          ),
-          const Positioned(
-            top: 50,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Text(
-                'CalcPal',
-                style: TextStyle(
-                  fontSize: 48,
-                  fontFamily: 'Aclonica',
-                  color: Colors.white,
+            context);
+
+        if (status) {
+          Navigator.of(context).pushNamed(loginRoute);
+        }
+      }
+    } catch (e) {
+      setState(() => SignUpScreen.isLoading = false);
+    } finally {
+      setState(() => SignUpScreen.isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        top: false,
+        bottom: false,
+        child: Stack(
+          children: [
+            Container(
+              // SIGNUP BACKGROUND
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/login_background.png'),
+                  fit: BoxFit.fill,
                 ),
               ),
             ),
-          ),
-          Positioned(
-            // SIGNUP AREA
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: SignUpArea(
-              userNameController: _userNameController,
-              emailController: _emailController,
-              birthDayController: _birthDayController,
-              passwordController: _passwordController,
-              onPressed: _signup,
+            const Positioned(
+              top: 50,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Text(
+                  'CalcPal',
+                  style: TextStyle(
+                    fontSize: 48,
+                    fontFamily: 'Aclonica',
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
-          )
-        ],
+            Positioned(
+              // SIGNUP AREA
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SignUpArea(
+                userNameController: _usernameController,
+                emailController: _emailController,
+                birthDayController: _birthdayController,
+                passwordController: _passwordController,
+                isLoading: SignUpScreen.isLoading,
+                onPressed: _signup,
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

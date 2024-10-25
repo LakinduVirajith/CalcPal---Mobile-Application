@@ -35,6 +35,7 @@ class DateInput extends StatelessWidget {
                 hintStyle: const TextStyle(
                   color: Colors.black87,
                   fontSize: 14,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               readOnly: true,
@@ -60,7 +61,7 @@ class DateInput extends StatelessWidget {
               iconPath,
               semanticsLabel: '$placeholderText Icon',
             ),
-          )
+          ),
         ],
       ),
     );

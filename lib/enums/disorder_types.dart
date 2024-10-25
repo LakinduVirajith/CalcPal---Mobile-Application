@@ -1,0 +1,18 @@
+enum DisorderTypes {
+  verbal,
+  nonVerbal,
+  lexical,
+  nonLexical,
+  operational,
+  nonOperational,
+  ideognostic,
+  nonIdeognostic,
+  graphical,
+  nonGraphical,
+  practognostic,
+  nonPractognostic,
+  visualSpatial,
+  nonVisualSpatial,
+  sequential,
+  nonSequential,
+}

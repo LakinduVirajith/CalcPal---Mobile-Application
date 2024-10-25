@@ -7,11 +7,13 @@ class NormalInput extends StatelessWidget {
     required this.placeholderText,
     required this.iconPath,
     required this.normalController,
+    this.lockable = false,
   }) : super(key: key);
 
   final String placeholderText;
   final String iconPath;
   final TextEditingController normalController;
+  final bool lockable;
 
   @override
   Widget build(BuildContext context) {
@@ -34,8 +36,10 @@ class NormalInput extends StatelessWidget {
                 hintStyle: const TextStyle(
                   color: Colors.black87,
                   fontSize: 14,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
+              enabled: !lockable,
             ),
           ),
           SizedBox(
