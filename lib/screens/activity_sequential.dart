@@ -243,7 +243,7 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
     // NAVIGATE BASED ON THE STATUS OF UPDATES
     if (status && updateStatus) {
       Navigator.of(context).pushNamedAndRemoveUntil(
-        activityVisualSpatialRoute,
+        diagnoseResultRoute,
         (route) => false,
         arguments: {
           'diagnoseType': 'visual',
@@ -353,7 +353,8 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
                         ),
                       ),
                       Positioned(
-                        top: constraints.maxHeight * 0.30,
+
+                        top: constraints.maxHeight * 0.35,
                         right: constraints.maxWidth * 0.18,
                         left: constraints.maxWidth * 0.18,
                         bottom: constraints.maxHeight * 0.05,

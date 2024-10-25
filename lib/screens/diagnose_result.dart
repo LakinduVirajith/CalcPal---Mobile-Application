@@ -91,7 +91,7 @@ class _DiagnoseResultScreenState extends State<DiagnoseResultScreen> {
           (route) => false,
         );
         break;
-      case 'visual':
+      case 'visualSpatial':
         Navigator.of(context).pushNamedAndRemoveUntil(
           diagnoseReportRoute,
           (route) => false,

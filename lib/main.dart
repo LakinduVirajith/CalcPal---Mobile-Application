@@ -10,7 +10,11 @@ import 'package:calcpal/screens/activity_practonostic.dart';
 import 'package:calcpal/screens/activity_sequential.dart';
 import 'package:calcpal/screens/activity_verbal.dart';
 import 'package:calcpal/screens/activity_visual_spatial.dart';
+
+import 'package:calcpal/screens/activity_visual_v3.dart';
+
 import 'package:calcpal/screens/activity_sequential_v2.dart';
+
 import 'package:calcpal/screens/diagnose_graphical.dart';
 import 'package:calcpal/screens/diagnose_ideognostic.dart';
 import 'package:calcpal/screens/diagnose_lexical.dart';
