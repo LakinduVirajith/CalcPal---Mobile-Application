@@ -6,6 +6,7 @@ import 'package:calcpal/services/ideognostic_service.dart';
 import 'dart:async'; // Import for Timer
 import 'dart:convert'; // Import to handle base64 encoding
 import '../widgets/fraction_button.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DiagnoseIdeognosticScreen extends StatefulWidget {
   const DiagnoseIdeognosticScreen({super.key});
@@ -114,7 +115,8 @@ class _DiagnoseIdeognosticScreenState extends State<DiagnoseIdeognosticScreen> {
                       children: [
                         // Question Text
                         Text(
-                          _questionData!.question,
+                          AppLocalizations.of(context)!
+                              .ideognosticQuestionType1,
                           style: TextStyle(
                             fontSize: 20,
                             color: Colors.white,

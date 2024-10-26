@@ -2,7 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async'; // Import for Stopwatch
 import 'dart:math';
-import '../screens/activity_ideognostic.dart';
+import 'package:calcpal/screens/activity_ideognostic.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:calcpal/services/user_service.dart';
+import 'package:calcpal/services/ideognostic_service.dart';
+import 'package:calcpal/models/user.dart';
+import 'package:calcpal/models/activity_result.dart';
+import 'package:intl/intl.dart';
+
+int totalScore = 0; //For Storing total acore for the activity
+int correctCount = 0; //For Stroing no of correctly ans excercises
 
 class NumberCreationActivityScreen extends StatefulWidget {
   const NumberCreationActivityScreen({super.key});
@@ -19,6 +29,12 @@ class _NumberCreationActivityScreenState
   final List<int> _retryCounts = [];
   int _completedExercises = 0; // Track the number of completed exercises
   Stopwatch _stopwatch = Stopwatch(); // Stopwatch to track time
+
+  String completionDate = ''; // For storing the current date
+  int elapsedTime = 0; //For Storing time take for the activity
+
+  final UserService _userService = UserService();
+  final IdeognosticService _activityService = IdeognosticService();
 
   @override
   void initState() {
@@ -45,18 +61,76 @@ class _NumberCreationActivityScreenState
       // Check if all exercises are completed
       if (_completedExercises == 4) {
         _stopwatch.stop(); // Stop the stopwatch
-        _printResults();
+
+        elapsedTime = _stopwatch.elapsed.inSeconds;
+        completionDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+        _submitResultsToDB();
       }
     });
   }
 
-  void _printResults() {
-    print(
-        'Time taken: ${_stopwatch.elapsed.inSeconds} seconds'); // Print elapsed time
-    for (int i = 0; i < _isCorrectAnswers.length; i++) {
-      print(
-          'Exercise ${i + 1}: Correct - ${_isCorrectAnswers[i]}, Retries - ${_retryCounts[i]}');
+  Future<void> _submitResultsToDB() async {
+    // Get shared preference
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
+
+    if (accessToken == null) {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
+      return;
     }
+
+    // Fetch user
+    User? user = await _userService.getUser(accessToken, context);
+
+    if (user == null || user.iqScore == null) {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesIQScoreError);
+      return;
+    }
+
+    // Variables to store diagnosis and status
+    late bool activityStatus;
+
+    // Update user disorder status in the database
+    activityStatus = await _activityService.addActivityResult(ActivityResult(
+      userEmail: user.email,
+      date: completionDate,
+      activityName: 'Number Creation',
+      timeTaken: elapsedTime,
+      totalScore: totalScore,
+      retries: correctCount,
+    ));
+
+    // Navigate based on the status of updates
+    if (activityStatus) {
+      _handleSuccess(AppLocalizations.of(context)!.progressStoredTxt);
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => ActivityIdeognosticScreen(),
+        ),
+      );
+    } else {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
+    }
+  }
+
+  void _handleErrorAndRedirect(String message) {
+    // Handle errors and redirect
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+    ));
+  }
+
+  void _handleSuccess(String message) {
+    // Handle errors and redirect
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.green,
+    ));
   }
 
   @override
@@ -95,13 +169,13 @@ class _NumberCreationActivityScreenState
   String _getExerciseTitle(int exerciseNumber) {
     switch (exerciseNumber) {
       case 1:
-        return 'Create the Largest 2-Digit Number';
+        return AppLocalizations.of(context)!.largest2DigitNumber;
       case 2:
-        return 'Create the Smallest 2-Digit Number';
+        return AppLocalizations.of(context)!.smallest2DigitNumber;
       case 3:
-        return 'Create the Largest 3-Digit Number';
+        return AppLocalizations.of(context)!.largest3DigitNumber;
       case 4:
-        return 'Create the Largest 4-Digit Number';
+        return AppLocalizations.of(context)!.largest4DigitNumber;
       default:
         return '';
     }
@@ -163,6 +237,12 @@ class _NumberCreationExerciseScreenState
     if (_answers.every((element) => element != null) &&
         _answers.join() == _correctAnswer.join()) {
       widget.onExerciseCompleted(true, _retryCount);
+      if (_retryCount == 0) {
+        totalScore = totalScore + 10;
+      } else {
+        totalScore = totalScore + 5;
+      }
+      correctCount++;
       _showSuccessDialog();
     } else {
       _retryCount++;
@@ -292,17 +372,7 @@ class _NumberCreationExerciseScreenState
                     children: <Widget>[
                       ElevatedButton(
                         onPressed: _checkAnswer,
-                        child: const Text('Submit'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (context) => ActivityIdeognosticScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text('Back'),
+                        child: Text(AppLocalizations.of(context)!.checkAnsBtn),
                       ),
                     ],
                   ),
@@ -342,20 +412,24 @@ class _NumberCreationExerciseScreenState
 
   Widget _buildDigitBox(int digit,
       {bool isDragging = false, double opacity = 1.0, bool isEmpty = false}) {
-    return Container(
-      width: 50,
-      height: 50,
-      decoration: BoxDecoration(
-        color: isEmpty ? Colors.grey : Colors.blue,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.black),
-      ),
-      child: Center(
-        child: Text(
-          isEmpty ? '' : digit.toString(),
-          style: TextStyle(
-            fontSize: 24,
-            color: isEmpty ? Colors.black.withOpacity(0.5) : Colors.white,
+    return Padding(
+      padding:
+          const EdgeInsets.all(8.0), // Add invisible padding around the box
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: isEmpty ? Colors.grey : Colors.deepPurple,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.black),
+        ),
+        child: Center(
+          child: Text(
+            isEmpty ? '' : digit.toString(),
+            style: TextStyle(
+              fontSize: 24,
+              color: isEmpty ? Colors.black.withOpacity(0.5) : Colors.white,
+            ),
           ),
         ),
       ),
