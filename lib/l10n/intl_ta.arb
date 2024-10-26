@@ -160,6 +160,10 @@
   "correctText":"சரி!",
   "tryAgainText":"மீண்டும் முயற்சிக்கவும்!",
   "level1GeneralLbl": "நிலை 1 - பொது",
+  "level1AdditionLbl": "நிலை 1 - கூட்டல்",
+  "level1SubtractionLbl": "நிலை 1 - கழித்தல்",
+  "level1MultiplicationLbl": "நிலை 1 - பெருக்கல்",
+  "level1DivisionLbl": "நிலை 1 - வகுத்தல்",
   "level2AdditionLbl": "நிலை 2 - கூட்டல்",
   "level2SubtractionLbl": "நிலை 2 - கழித்தல்",
   "level2MultiplicationLbl": "நிலை 2 - பெருக்கல்",
@@ -188,5 +192,13 @@
   "divLvl2Num2Text": "செய்தி! சீரெழுத்துக் கணக்குகள் 2-ல் வகுக்கலாம்.",
   "divLvl2Num3Text": "செய்தி! எண் ஒன்றின் இலக்கங்கள் கூட்டம் 3 ஆகவோ 3 மடங்காகவோ இருந்தால், அது 3-ல் வகுக்கலாம்.",
   "divLvl2Num10Text": "செய்தி! 10 மடங்குகள் எளிதாக 10-ல் வகுக்கலாம்.",
-  "progressStoredTxt":"முன்னேற்றம் வெற்றிகரமாக சேமிக்கப்பட்ட"
+  "progressStoredTxt":"முன்னேற்றம் வெற்றிகரமாக சேமிக்கப்பட்ட",
+  "activityReportsTitle": "செயல்பாடுகள் அறிக்கைகள்",
+  "selectActivity": "செயல்பாட்டை தேர்ந்தெடுக்கவும்",
+  "noActivitySelected": "செயல்பாடு தேர்வு செய்யப்படவில்லை",
+  "noResultsFound": "தேர்ந்தெடுக்கப்பட்ட செயலுக்கான எந்த முடிவுகளும் கிடைக்கவில்லை.",
+  "datePlayed": "விளையாடிய தேதி",
+  "score": "மதிப்பெண்",
+  "correctNumber": "சரியான எண்",
+  "timePlayedInSecs": "விளையாடிய நேரம் (விநாடிகளில்)"
 }

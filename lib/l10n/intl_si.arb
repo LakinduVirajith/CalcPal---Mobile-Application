@@ -160,6 +160,10 @@
   "correctText":"නිවැරදියි!",
   "tryAgainText":"නැවත උත්සාහ කරන්න!",
   "level1GeneralLbl": "අධීරය 1 - පොදු",
+  "level1AdditionLbl": "අධීරය 1 - එකතු කිරීම",
+  "level1SubtractionLbl": "අධීරය 1 - අඩු කිරීම",
+  "level1MultiplicationLbl": "අධීරය 1 - ගුණ කිරීම",
+  "level1DivisionLbl": "අධීරය 1 - බෙදීම",
   "level2AdditionLbl": "අධීරය 2 - එකතු කිරීම",
   "level2SubtractionLbl": "අධීරය 2 - අඩු කිරීම",
   "level2MultiplicationLbl": "අධීරය 2 - ගුණ කිරීම",
@@ -188,5 +192,13 @@
   "divLvl2Num2Text": "ඉඟිය! සමා සංඛ්‍යා 2 න් වෙන් කල හැක.",
   "divLvl2Num3Text": "ඉඟිය! සංඛ්‍යා ඉලක්කම් එකතුව 3 ගුණයක් නම්, එය 3න් වෙන් කළ හැක.",
   "divLvl2Num10Text": "ඉඟිය! 10 ගුණ සංඛ්‍යා 10 න් වෙන් කිරීම පහසුය.",
-  "progressStoredTxt":"ප්‍රගතිය සාර්ථකව සුරකින ලදි"
+  "progressStoredTxt":"ප්‍රගතිය සාර්ථකව සුරකින ලදි",
+  "activityReportsTitle": "ක්‍රියාකාරකම් වාර්තා",
+  "selectActivity": "ක්‍රියාකාරකම තෝරන්න",
+  "noActivitySelected": "ක්‍රියාකාරකම තෝරා නොමැත",
+  "noResultsFound": "තෝරාගත් ක්‍රියාකාරකම සඳහා ප්‍රතිඵල නැත.",
+  "datePlayed": "ක්‍රීයා කළ දිනය",
+  "score": "ලකුණු",
+  "correctNumber": "නිවැරදි අංකය",
+  "timePlayedInSecs": "ක්‍රීයා කළ කාලය (තත්පර වලින්)"
 }

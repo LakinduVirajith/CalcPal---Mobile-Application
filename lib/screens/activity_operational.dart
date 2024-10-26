@@ -1,11 +1,12 @@
+import 'package:calcpal/screens/operational_result_report.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:calcpal/screens/division_level2.dart';
 import 'package:calcpal/screens/multiplication_level2.dart';
-import '../screens/addition_level1.dart';
-import '../screens/addition_level2.dart';
-import '../screens/subtraction_level2.dart';
+import 'package:calcpal/screens/addition_level1.dart';
+import 'package:calcpal/screens/addition_level2.dart';
+import 'package:calcpal/screens/subtraction_level2.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ActivityOperationalScreen extends StatelessWidget {
@@ -29,6 +30,29 @@ class ActivityOperationalScreen extends StatelessWidget {
                 image: AssetImage(
                     'assets/images/operational_activity_dashboard.png'), // Background image path
                 fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          // "Reports" button
+          Positioned(
+            top: 20.0,
+            right: 20.0,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white, // White background
+                foregroundColor: Colors.black, // Black text color
+                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TableScreenOp()),
+              ),
+              child: Text(
+                AppLocalizations.of(context)!.activityReportsTitle,
+                style: TextStyle(fontSize: 16.0),
               ),
             ),
           ),

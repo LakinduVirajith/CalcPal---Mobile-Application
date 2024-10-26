@@ -160,6 +160,10 @@
   "correctText":"Correct!",
   "tryAgainText":"Try Again!",
   "level1GeneralLbl": "Level 1 - General",
+  "level1AdditionLbl": "Level 1 - Addition",
+  "level1SubtractionLbl": "Level 1 - Subtraction",
+  "level1MultiplicationLbl": "Level 1 - Multiplication",
+  "level1DivisionLbl": "Level 1 - Division",
   "level2AdditionLbl": "Level 2 - Addition",
   "level2SubtractionLbl": "Level 2 - Subtraction",
   "level2MultiplicationLbl": "Level 2 - Multiplication",
@@ -188,5 +192,13 @@
   "divLvl2Num2Text":"Tip! Even numbers are divisible by 2.",
   "divLvl2Num3Text":"Tip! A number is divisible by 3 if its digits sum is a multiple of 3",
   "divLvl2Num10Text":"Tip! Multiples of 10 are easy to divide by 10.",
-  "progressStoredTxt":"Progress saved successfully"
+  "progressStoredTxt":"Progress saved successfully",
+  "activityReportsTitle": "Activity Reports",
+  "selectActivity": "Select Activity",
+  "noActivitySelected": "No activity selected",
+  "noResultsFound": "No results found for the selected activity.",
+  "datePlayed": "Date Played",
+  "score": "Score",
+  "correctNumber": "Correct Number",
+  "timePlayedInSecs": "Time Played (in secs)"
 }
