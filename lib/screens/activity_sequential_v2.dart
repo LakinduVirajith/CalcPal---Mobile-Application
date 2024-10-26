@@ -149,7 +149,7 @@ class _NumberLineJumpScreenState extends State<NumberLineJumpScreen> {
               Center(
                 child: SizedBox(
                     height: 80,
-                    width: 450,
+                    width: 600,
                     child: shuffledNumbers.isNotEmpty
                         ? ListView.builder(
                             scrollDirection: Axis.horizontal,
@@ -158,7 +158,7 @@ class _NumberLineJumpScreenState extends State<NumberLineJumpScreen> {
                               return Draggable<int>(
                                 data: shuffledNumbers[index],
                                 child: Container(
-                                  width: 60,
+                                  width: 100,
                                   height: 60,
                                   margin: EdgeInsets.all(8),
                                   decoration: BoxDecoration(
@@ -185,7 +185,7 @@ class _NumberLineJumpScreenState extends State<NumberLineJumpScreen> {
                                 feedback: Material(
                                   color: Colors.transparent,
                                   child: Container(
-                                    width: 60,
+                                    width: 100,
                                     height: 60,
                                     color: Colors.blue.withOpacity(0.5),
                                     child: Center(
@@ -198,7 +198,7 @@ class _NumberLineJumpScreenState extends State<NumberLineJumpScreen> {
                                   ),
                                 ),
                                 childWhenDragging: Container(
-                                  width: 60,
+                                  width: 100,
                                   height: 60,
                                   color: Colors.grey[400],
                                 ),
@@ -208,7 +208,7 @@ class _NumberLineJumpScreenState extends State<NumberLineJumpScreen> {
                         : Container(
                             padding: EdgeInsets.all(
                                 4.0), // Add padding around the text
-                            color: const Color.fromARGB(126, 16, 56, 30),
+                            color: const Color.fromARGB(226, 234, 252, 68),
                             child: Center(
                               child: Text(
                                 'All numbers placed!',
@@ -216,12 +216,14 @@ class _NumberLineJumpScreenState extends State<NumberLineJumpScreen> {
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
                                   color: const Color.fromARGB(
-                                      255, 247, 5, 5), // Text color
+                                      255, 0, 0, 0), // Text color
                                   letterSpacing: 1.5, // Spacing between letters
                                   shadows: [
                                     Shadow(
                                       blurRadius: 4.0,
-                                      color: Colors.black.withOpacity(0.3),
+                                      color:
+                                          const Color.fromARGB(255, 111, 97, 97)
+                                              .withOpacity(0.3),
                                       offset: Offset(2.0, 2.0),
                                     ),
                                   ],
