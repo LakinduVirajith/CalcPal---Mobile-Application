@@ -1,4 +1,5 @@
 class ActivityResult {
+  final String? id;
   final String userEmail;
   final String date;
   final String activityName;
@@ -7,6 +8,7 @@ class ActivityResult {
   final int retries;
 
   ActivityResult({
+    this.id,
     required this.userEmail,
     required this.date,
     required this.activityName,
@@ -25,5 +27,18 @@ class ActivityResult {
       'totalScore': totalScore,
       'retries': retries,
     };
+  }
+
+  // Define the 'fromJson' factory method
+  factory ActivityResult.fromJson(Map<String, dynamic> json) {
+    return ActivityResult(
+      id: json['id'] as String,
+      userEmail: json['userEmail'] as String,
+      date: json['date'] as String,
+      activityName: json['activityName'] as String,
+      timeTaken: json['timeTaken'] as int,
+      totalScore: json['totalScore'] as int,
+      retries: json['retries'] as int,
+    );
   }
 }

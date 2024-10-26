@@ -142,4 +142,39 @@ class OperationalService {
       return false;
     }
   }
+
+  // Fetch all activity results for a given user email
+  Future<List<ActivityResult>?> getActivityResultsByEmailAndActivity(
+      String userEmail, String activity, BuildContext context) async {
+    String email = userEmail.replaceAll('@', '%40');
+    final url = Uri.parse(
+        '$_baseUrl/operational/activities/level?email=$email&activityname=$activity');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Parse the JSON response into a list of ActivityResult objects
+        final List<dynamic> jsonResponse = jsonDecode(response.body);
+        final List<ActivityResult> results =
+            jsonResponse.map((json) => ActivityResult.fromJson(json)).toList();
+
+        return results;
+      } else {
+        developer
+            .log('Failed to fetch activity results: ${response.statusCode}');
+      }
+    } on http.ClientException {
+      _commonService.handleNetworkError(context);
+    } catch (e) {
+      _commonService.handleException(e, context);
+    }
+
+    return null;
+  }
 }

@@ -1,3 +1,4 @@
+import 'package:calcpal/screens/ideognostic_result_report.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -27,6 +28,28 @@ class ActivityIdeognosticScreen extends StatelessWidget {
                 image: AssetImage(
                     'assets/images/operational_activity_dashboard.png'), // Background image path
                 fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 20.0,
+            right: 20.0,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white, // White background
+                foregroundColor: Colors.black, // Black text color
+                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TableScreenIde()),
+              ),
+              child: Text(
+                AppLocalizations.of(context)!.activityReportsTitle,
+                style: TextStyle(fontSize: 16.0),
               ),
             ),
           ),
