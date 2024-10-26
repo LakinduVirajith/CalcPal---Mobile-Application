@@ -200,5 +200,9 @@
   "datePlayed": "Date Played",
   "score": "Score",
   "correctNumber": "Correct Number",
-  "timePlayedInSecs": "Time Played (in secs)"
+  "timePlayedInSecs": "Time Played (in secs)",
+
+  "showCongratulatoryDialogTitle": "Congratulations!",
+  "showCongratulatoryDialogContent": "You answered correctly!",
+  "showCongratulatoryDialogButton": "Next"
 }

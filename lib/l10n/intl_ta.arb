@@ -200,5 +200,9 @@
   "datePlayed": "விளையாடிய தேதி",
   "score": "மதிப்பெண்",
   "correctNumber": "சரியான எண்",
-  "timePlayedInSecs": "விளையாடிய நேரம் (விநாடிகளில்)"
+  "timePlayedInSecs": "விளையாடிய நேரம் (விநாடிகளில்)",
+
+  "showCongratulatoryDialogTitle": "அன்பு வாழ்த்துக்கள்!",
+  "showCongratulatoryDialogContent": "நீங்கள் சரியாக பதிலளித்தீர்கள்!",
+  "showCongratulatoryDialogButton": "அடுத்தது"
 }

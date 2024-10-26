@@ -200,5 +200,9 @@
   "datePlayed": "ක්‍රීයා කළ දිනය",
   "score": "ලකුණු",
   "correctNumber": "නිවැරදි අංකය",
-  "timePlayedInSecs": "ක්‍රීයා කළ කාලය (තත්පර වලින්)"
+  "timePlayedInSecs": "ක්‍රීයා කළ කාලය (තත්පර වලින්)",
+
+  "showCongratulatoryDialogTitle": "සුභ පැතුම්!",
+  "showCongratulatoryDialogContent": "ඔබ නිවැරදිව පිළිතුරු ලබාදී ඇත!",
+  "showCongratulatoryDialogButton": "ඊළඟ"
 }

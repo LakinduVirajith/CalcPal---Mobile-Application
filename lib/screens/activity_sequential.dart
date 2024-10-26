@@ -1,15 +1,9 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:calcpal/constants/routes.dart';
-import 'package:calcpal/enums/disorder_types.dart';
-import 'package:calcpal/models/diagnosis.dart';
-import 'package:calcpal/models/diagnosis_result.dart';
-import 'package:calcpal/models/flask_diagnosis_result.dart';
-import 'package:calcpal/models/user.dart';
 import 'package:calcpal/screens/activity_sequential_v2.dart';
 import 'package:calcpal/services/common_service.dart';
 import 'package:calcpal/services/sequential_service.dart';
 import 'package:calcpal/services/toast_service.dart';
-import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/widgets/sequential_answer_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -46,8 +40,6 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
 
   // INITIALIZING THE VERBAL SERVICE
   final SequentialService _questionService = SequentialService();
-  // INITIALIZING THE USER SERVICE
-  final UserService _userService = UserService();
   // TOAST SERVICE TO SHOW MESSAGES
   final ToastService _toastService = ToastService();
   // STOPWATCH INSTANCE FOR TIMING

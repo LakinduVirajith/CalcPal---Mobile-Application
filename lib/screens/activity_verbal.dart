@@ -127,14 +127,10 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
 
         // SYNTHESIZE SPEECH FOR THE QUESTION AND STORE THE AUDIO DATA
         correctAnswerVoice = await _textToSpeechService.synthesizeSpeech(
-          correctAnswerAudioText,
-          CommonService.getLanguageCode(selectedLanguageCode),
-        );
+            correctAnswerAudioText, selectedLanguageCode);
 
         wrongAnswerVoice = await _textToSpeechService.synthesizeSpeech(
-          wrongAnswerAudioText,
-          CommonService.getLanguageCode(selectedLanguageCode),
-        );
+            wrongAnswerAudioText, selectedLanguageCode);
       } else {
         setState(() {
           isErrorOccurred = true;
@@ -213,6 +209,12 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
     if (isCorrect) {
       await _audioPlayer.play(correctAnswerVoice);
       _cardKey.currentState?.toggleCard();
+
+      // SHOW A CONGRATULATORY DIALOG WHEN THE ANSWER IS CORRECT
+      bool status = await CommonService.showCongratulatoryDialog(context);
+      if (status) {
+        await _loadActivity();
+      }
     } else {
       await _audioPlayer.play(wrongAnswerVoice);
     }
@@ -222,7 +224,6 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
       if (isCorrect) {
         _cardKey.currentState?.toggleCard();
         isCorrect = false;
-        _activityFuture = _loadActivity();
       }
     });
   }

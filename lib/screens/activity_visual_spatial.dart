@@ -1,12 +1,11 @@
 import 'dart:math';
 
 import 'package:calcpal/constants/routes.dart';
-import 'package:calcpal/screens/activity_dashboard.dart';
-import 'package:calcpal/screens/main_dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../services/toast_service.dart';
+
 class ActivityVisualSpatialScreen extends StatefulWidget {
   const ActivityVisualSpatialScreen({super.key});
   @override

@@ -3,7 +3,6 @@ import 'package:calcpal/constants/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
-import 'package:calcpal/screens/diagnose_practonostic.dart';
 
 class DiagnoseGraphicalScreen extends StatefulWidget {
   const DiagnoseGraphicalScreen({super.key});

@@ -10,11 +10,8 @@ import 'package:calcpal/screens/activity_practonostic.dart';
 import 'package:calcpal/screens/activity_sequential.dart';
 import 'package:calcpal/screens/activity_verbal.dart';
 import 'package:calcpal/screens/activity_visual_spatial.dart';
-
 import 'package:calcpal/screens/activity_visual_v3.dart';
-
 import 'package:calcpal/screens/activity_sequential_v2.dart';
-
 import 'package:calcpal/screens/diagnose_graphical.dart';
 import 'package:calcpal/screens/diagnose_ideognostic.dart';
 import 'package:calcpal/screens/diagnose_lexical.dart';
@@ -41,8 +38,6 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-import 'screens/activity_visual_v3.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
