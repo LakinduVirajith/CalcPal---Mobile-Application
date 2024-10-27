@@ -1,9 +1,21 @@
 import 'dart:ui' as ui;
 import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/enums/disorder_types.dart';
+import 'package:calcpal/models/diagnosis.dart';
+import 'package:calcpal/models/diagnosis_result.dart';
+import 'package:calcpal/models/flask_diagnosis_result.dart';
+import 'package:calcpal/models/user.dart';
+import 'package:calcpal/services/graphical_service.dart';
+import 'package:calcpal/services/toast_service.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
-import 'package:calcpal/screens/diagnose_practonostic.dart';
+import 'dart:convert'; // Import this library for base64 encoding
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'dart:developer' as developer;
 
 class DiagnoseGraphicalScreen extends StatefulWidget {
   const DiagnoseGraphicalScreen({super.key});
@@ -19,25 +31,92 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
   final GlobalKey _whiteboardKey = GlobalKey();
   final GlobalKey _repaintBoundaryKey = GlobalKey(); // for the screenshot
   int _currentQuestionIndex = 0;
+  bool isErrorOccurred = false;
+  bool isDataLoading = false;
+
+  final Stopwatch _stopwatch = Stopwatch();
+  List<bool> userResponses = [];
+
+  // INITIALIZING SERVICEs
+  final GraphicalService _questionService = GraphicalService();
+  final UserService _userService = UserService();
+  final ToastService _toastService = ToastService();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // FORCE LANDSCAPE ORIENTATION
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
+    // SET CUSTOM STATUS BAR COLOR
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
+
+    _stopwatch.start();
+
+    // LOADING ACTIVITY DATA
+    // _initiated();
+    // _activityFuture = _loadActivity();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _currentQuestionIndex = 0;
+    userResponses = [];
+    _stopwatch.reset();
+  }
 
   Future<void> _handlePress() async {
     if (_currentQuestionIndex < _questions.length - 1) {
-      await _captureScreenshot();
+      final response = await _captureScreenshot();
+      developer.log("response : $response");
+
+      //await _captureScreenshot();
       setState(() {
-        _currentQuestionIndex++;
+        if (response == _questionAnwers[_currentQuestionIndex]) {
+          userResponses.insert(_currentQuestionIndex, true);
+        } else {
+          userResponses.insert(_currentQuestionIndex, false);
+        }
+
+        _currentQuestionIndex++; // Move to the next question
       });
     } else {
+      final response = await _captureScreenshot();
+      developer.log("response : $response");
+
+      setState(() {
+        if (response == _questionAnwers[_currentQuestionIndex]) {
+          userResponses.insert(_currentQuestionIndex, true);
+        } else {
+          userResponses.insert(_currentQuestionIndex, false);
+        }
+      });
       //navigate to the graphical diagnos results
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => const GraphicalDiagnosisresult()),
-      );
+      // Navigator.push(
+      //   context,
+      //   MaterialPageRoute(
+      //       builder: (context) => const GraphicalDiagnosisresult()),
+      // );
+      await _submitResultsToMLModel();
     }
   }
 
-  //Capture screenshot method
-  Future<void> _captureScreenshot() async {
+  //Capture screenshot method and get the symbol lable
+  Future<String> _captureScreenshot() async {
+    String predictedLabel = "";
     try {
       RenderRepaintBoundary boundary = _repaintBoundaryKey.currentContext!
           .findRenderObject() as RenderRepaintBoundary;
@@ -46,12 +125,152 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
           await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-      // Now you have the screenshot in pngBytes. You can save it, display it, etc.
-      // For example, you can print its length to see that it has been captured:
-      print("Screenshot captured: ${pngBytes.length} bytes");
+      // Convert pngBytes to base64 string
+      String base64String = base64Encode(pngBytes);
+
+      // Get the image lable
+      final responseSymbol = await http.post(
+        Uri.parse('http://149.102.141.132:5002/predict-symbol'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"image": base64String}),
+      );
+
+      if (responseSymbol.statusCode == 200) {
+        final Map<String, dynamic> responseData =
+            jsonDecode(responseSymbol.body);
+        predictedLabel = responseData['predicted_class'];
+        return predictedLabel;
+      } else {
+        developer.log(
+            "Failed to send first image. Status code: ${responseSymbol.statusCode}");
+      }
     } catch (e) {
-      print("Error capturing screenshot: $e");
+      developer.log("Error capturing screenshot: $e");
     }
+    return predictedLabel; // Return the predicted label
+  }
+
+  // FUNCTION TO SUBMIT RESULTS TO MACHINE LEARNING MODEL
+  Future<void> _submitResultsToMLModel() async {
+    try {
+      setState(() {
+        isErrorOccurred = false;
+        isDataLoading = true;
+      });
+      // STOP THE TIMER AND RECORD ELAPSED TIME IN SECONDS
+      _stopwatch.stop();
+      final elapsedTimeInSeconds = _stopwatch.elapsedMilliseconds / 1000;
+      final roundedElapsedTimeInSeconds = elapsedTimeInSeconds.round();
+
+      // CALCULATE THE TOTAL SCORE BASED ON TRUE RESPONSES
+      final int totalScore = userResponses.where((response) => response).length;
+
+      // GET THE INSTANCE OF SHARED PREFERENCES
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+      // CHECK IF ACCESS TOKEN IS AVAILABLE
+      if (accessToken == null) {
+        print("hello1");
+        _handleErrorAndRedirect(
+            AppLocalizations.of(context)!.commonMessagesAccessTokenError);
+        return;
+      }
+      // FETCH USER INFO
+      User? user = await _userService.getUser(accessToken, context);
+
+      // CHECK IF USER AND IQ SCORE ARE AVAILABLE
+      if (user == null || user.iqScore == null) {
+        print("hello2");
+        _handleErrorAndRedirect(
+            AppLocalizations.of(context)!.commonMessagesIQScoreError);
+        return;
+      }
+      // VARIABLES TO STORE DIAGNOSIS AND UPDATE STATUS
+      late bool diagnoseStatus;
+      late bool status;
+      late bool updateStatus;
+      // PREPARE DIAGNOSIS DATA AND FETCH DIAGNOSIS RESULT FROM THE SERVICE
+      FlaskDiagnosisResult? diagnosis =
+          await _questionService.getDiagnosisResult(
+              Diagnosis(
+                age: user.age,
+                iq: user.iqScore!,
+                q1: userResponses[0] ? 1 : 0,
+                q2: userResponses[1] ? 1 : 0,
+                q3: userResponses[2] ? 1 : 0,
+                q4: userResponses[3] ? 1 : 0,
+                q5: userResponses[4] ? 1 : 0,
+                seconds: roundedElapsedTimeInSeconds,
+              ),
+              context);
+      // CHECK IF DIAGNOSIS RESULT IS VALID AND GET DIAGNOSE STATUS
+      if (diagnosis != null && diagnosis.prediction != null) {
+        diagnoseStatus = diagnosis.prediction!;
+      } else {
+        print("hello3");
+        _handleErrorAndRedirect(
+            AppLocalizations.of(context)!.commonMessagesResultError);
+        return;
+      }
+      // UPDATE USER DISORDER STATUS IN THE DATABASE
+      status = await _questionService.addDiagnosisResult(
+          DiagnosisResult(
+            userEmail: user.email,
+            timeSeconds: roundedElapsedTimeInSeconds,
+            q1: userResponses[0],
+            q2: userResponses[1],
+            q3: userResponses[2],
+            q4: userResponses[3],
+            q5: userResponses[4],
+            totalScore: totalScore.toString(),
+            label: diagnoseStatus,
+          ),
+          context);
+      // UPDATE USER DISORDER TYPE IN THE SERVICE
+      if (diagnoseStatus) {
+        updateStatus = await _userService.updateDisorderType(
+            DisorderTypes.graphical, accessToken, context);
+      } else {
+        updateStatus = await _userService.updateDisorderType(
+            DisorderTypes.nonGraphical, accessToken, context);
+      }
+      print("status: $status");
+      print("updateStatus: $updateStatus");
+
+      // NAVIGATE BASED ON THE STATUS OF UPDATES
+      if (status && updateStatus) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          diagnoseResultRoute,
+          (route) => false,
+          arguments: {
+            'diagnoseType': 'graphical',
+            'totalScore': totalScore,
+            'elapsedTime': roundedElapsedTimeInSeconds,
+          },
+        );
+      } else {
+        print("hello4");
+        _handleErrorAndRedirect(
+            AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
+      }
+    } catch (e) {
+      developer.log(e.toString());
+      setState(() {
+        isErrorOccurred = true;
+        isDataLoading = false;
+      });
+    } finally {
+      setState(() => isDataLoading = false);
+    }
+  }
+
+  // FUNCTION TO HANDLE ERRORS AND REDIRECT TO LOGIN PAGE
+  void _handleErrorAndRedirect(String message) {
+    _toastService.warningToast(message);
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      loginRoute,
+      (route) => false,
+    );
   }
 
   // List of drawing questions
@@ -61,6 +280,24 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
     'Draw a multiplication symbol.',
     'Draw a division symbol.',
     'Draw an equal symbol.',
+  ];
+
+  // List of drawing questions
+  final List<String> _sinhalQuestions = [
+    'එකතු කිරීමේ ලකුණ අඳින්න.',
+    'අඩුකිරීමේ ලකුණ අඳින්න.',
+    'ගුණ කිරීමේ ලකුණ අඳින්න.',
+    'බෙදීමේ ලකුණ අඳින්න.',
+    'සමාන ලකුණ අඳින්න.',
+  ];
+
+  final List<String> _questionAnwers = [
+    'Add',
+    'Minus',
+    'Multiply',
+    'Divide',
+    'Equal',
+    'Decimal',
   ];
 
   // Store points for each question separately
@@ -78,7 +315,7 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/graphical.jpg'),
+            image: AssetImage('assets/images/diagnose_background_v2.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -113,74 +350,72 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
                           fontSize: 28, fontWeight: FontWeight.bold),
                     ),
                   ),
-
                   Expanded(
                     child: Center(
-                      child: RepaintBoundary(
-                        key: _repaintBoundaryKey,
-                        child: Container(
-                          key: _whiteboardKey,
-                          width: _whiteboardSize.width,
-                          height: _whiteboardSize.height,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black, width: 1),
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Stack(
-                            children: [
-                              Positioned.fill(
-                                child: GestureDetector(
-                                  onPanUpdate: (details) {
-                                    final RenderBox renderBox =
-                                        context.findRenderObject() as RenderBox;
-                                    final localPosition = renderBox
-                                        .globalToLocal(details.globalPosition);
+                      child: Stack(
+                        children: [
+                          RepaintBoundary(
+                            key: _repaintBoundaryKey,
+                            child: Container(
+                              key: _whiteboardKey,
+                              width: _whiteboardSize.width,
+                              height: _whiteboardSize.height,
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.black, width: 1),
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: GestureDetector(
+                                onPanUpdate: (details) {
+                                  final RenderBox renderBox =
+                                      context.findRenderObject() as RenderBox;
+                                  final localPosition = renderBox
+                                      .globalToLocal(details.globalPosition);
 
-                                    // Convert global position to local position relative to the whiteboard container
-                                    final offset =
-                                        localPosition - _whiteboardOffset;
+                                  // Convert global position to local position relative to the whiteboard container
+                                  final offset =
+                                      localPosition - _whiteboardOffset;
 
-                                    if (_isWithinBounds(
-                                        offset, _whiteboardSize)) {
-                                      setState(() {
-                                        _questionPoints[_currentQuestionIndex]
-                                            .add(offset);
-                                      });
-                                    }
-                                  },
-                                  onPanEnd: (details) {
+                                  if (_isWithinBounds(
+                                      offset, _whiteboardSize)) {
                                     setState(() {
                                       _questionPoints[_currentQuestionIndex]
-                                          .add(null);
+                                          .add(offset);
                                     });
-                                  },
-                                  child: CustomPaint(
-                                    painter: WhiteboardPainter(
-                                      points: _questionPoints[
-                                          _currentQuestionIndex],
-                                    ),
+                                  }
+                                },
+                                onPanEnd: (details) {
+                                  setState(() {
+                                    _questionPoints[_currentQuestionIndex]
+                                        .add(null);
+                                  });
+                                },
+                                child: CustomPaint(
+                                  painter: WhiteboardPainter(
+                                    points:
+                                        _questionPoints[_currentQuestionIndex],
                                   ),
                                 ),
                               ),
-
-                              // Clear all button
-                              Positioned(
-                                top: 10,
-                                right: 10,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _questionPoints[_currentQuestionIndex]
-                                          .clear();
-                                    });
-                                  },
-                                  child: const Text('Clear All'),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
+
+                          // Clear all button (outside RepaintBoundary)
+                          Positioned(
+                            top: 10,
+                            right: 10,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _questionPoints[_currentQuestionIndex]
+                                      .clear();
+                                });
+                              },
+                              child: const Text('Clear All'),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -195,6 +430,10 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
                           onPressed: _currentQuestionIndex > 0
                               ? () {
                                   setState(() {
+                                    // Remove the last inserted value in the array if it exists
+                                    if (userResponses.isNotEmpty) {
+                                      userResponses.removeLast();
+                                    }
                                     _currentQuestionIndex--;
                                   });
                                 }

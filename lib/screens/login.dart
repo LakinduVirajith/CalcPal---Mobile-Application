@@ -107,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
               await _userService.getUser(authResponse.accessToken, context);
           if (user?.iqScore == null) {
             Navigator.of(context).pushNamed(iqTestRoute);
-          } else if (user!.disorderTypes!.isNotEmpty) {
+          } else if (user!.disorderTypes != null) {
             Navigator.of(context).pushNamed(activityDashboardRoute);
           } else {
             Navigator.of(context).pushNamed(mainDashboardRoute);
