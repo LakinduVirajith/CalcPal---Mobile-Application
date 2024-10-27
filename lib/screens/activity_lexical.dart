@@ -124,7 +124,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
 
   // FUNTION VALIDATE QUESTION AND UPDATE STATE
   Future<void> _validateQuestion() async {
-    if (attempt == 10) {
+    if (attempt == 2) {
       setState(() {
         currentActivityNumber++;
         attempt = 1;
@@ -140,7 +140,16 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
   // FUNTION TO CHECK USER DROP ANSWER
   Future<void> _checkAnswer(String answer) async {
     if (answer == correctAnswer) {
+      _toastService.successToast(
+        AppLocalizations.of(context)!.activityLexicalMessageCorrectAnswer,
+      );
       await _loadActivity();
+
+      // SHOW A CONGRATULATORY DIALOG WHEN THE ANSWER IS CORRECT
+      // bool status = await CommonService.showCongratulatoryDialog(context);
+      // if (status) {
+      //   await _loadActivity();
+      // }
     } else {
       _toastService.infoToast(
         AppLocalizations.of(context)!.activityLexicalMessageWrongAnswer,

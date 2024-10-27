@@ -14,6 +14,7 @@ import '../models/diagnosis.dart';
 import '../enums/disorder_types.dart';
 import '../constants/routes.dart';
 import '../services/user_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'dart:async'; // Import for Stopwatch
 
@@ -94,7 +95,8 @@ class _DiagnoseIdeognosticLastScreenState
     final accessToken = prefs.getString('access_token');
 
     if (accessToken == null) {
-      _handleErrorAndRedirect('Access token error. Please log in again.');
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
       return;
     }
 
@@ -102,7 +104,8 @@ class _DiagnoseIdeognosticLastScreenState
     User? user = await _userService.getUser(accessToken, context);
 
     if (user == null || user.iqScore == null) {
-      _handleErrorAndRedirect('Error fetching user IQ score.');
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesIQScoreError);
       return;
     }
 
@@ -129,7 +132,8 @@ class _DiagnoseIdeognosticLastScreenState
     if (diagnosis != null && diagnosis.prediction != null) {
       diagnoseStatus = diagnosis.prediction!;
     } else {
-      _handleErrorAndRedirect('Error fetching diagnosis result.');
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesResultError);
       return;
     }
 
@@ -175,7 +179,8 @@ class _DiagnoseIdeognosticLastScreenState
         },
       );
     } else {
-      _handleErrorAndRedirect('Error updating diagnosis result.');
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
     }
   }
 
@@ -205,7 +210,7 @@ class _DiagnoseIdeognosticLastScreenState
 
         // Send POST request with the Base64 string for the first drawing
         final response1 = await http.post(
-          Uri.parse('http://20.244.85.25:5002/predict-number'),
+          Uri.parse('http://149.102.141.132:5002/predict-number'),
           headers: {"Content-Type": "application/json"},
           body: jsonEncode({"image": base64String1}),
         );
@@ -236,7 +241,7 @@ class _DiagnoseIdeognosticLastScreenState
 
         // Send POST request with the Base64 string for the second drawing
         final response2 = await http.post(
-          Uri.parse('http://20.244.85.25:5002/predict-number'),
+          Uri.parse('http://149.102.141.132:5002/predict-number'),
           headers: {"Content-Type": "application/json"},
           body: jsonEncode({"image": base64String2}),
         );
@@ -315,7 +320,8 @@ class _DiagnoseIdeognosticLastScreenState
                       children: [
                         // Question Text
                         Text(
-                          _questionData!.question,
+                          AppLocalizations.of(context)!
+                              .ideognosticQuestionType3,
                           style: const TextStyle(
                             fontSize: 20,
                             color: Colors.white,
@@ -360,8 +366,8 @@ class _DiagnoseIdeognosticLastScreenState
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                   ),
-                                  child: const Text(
-                                    'Finish',
+                                  child: Text(
+                                    AppLocalizations.of(context)!.nextBtnText,
                                     style: TextStyle(
                                       fontSize: 15,
                                       color: Colors.white,

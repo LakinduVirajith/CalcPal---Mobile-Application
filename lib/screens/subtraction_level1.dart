@@ -1,8 +1,16 @@
+import 'package:calcpal/models/activity_result.dart';
+import 'package:calcpal/models/user.dart';
+import 'package:calcpal/services/operational_service.dart';
+import 'package:calcpal/services/toast_service.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:calcpal/screens/multiplication_level1.dart';
 import 'dart:math';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SubtractionLevel1Screen extends StatefulWidget {
   final String title;
@@ -27,50 +35,85 @@ class SubtractionLevel1Screen extends StatefulWidget {
 
 class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
   late int correctAnswer;
+  int retryCount = 0;
+  late Stopwatch stopwatch; // For timing
+
+  String completionDate = ''; // For storing the current date
+  int totalTimeTaken = 0; //For Storing time take for the activity
+  int totalScore = 0; //For Storing total acore for the activity
+  int correctCount = 0; //For Stroing no of correctly ans excercises
+
+  final UserService _userService = UserService();
+  final OperationalService _activityService = OperationalService();
+  final ToastService _toastService = ToastService();
 
   @override
   void initState() {
     super.initState();
+    stopwatch = Stopwatch();
     correctAnswer = widget.number1 - widget.number2;
+    stopwatch.start();
   }
 
   void showFeedback(bool isCorrect) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: isCorrect
-              ? const Icon(Icons.check_circle, color: Colors.green, size: 50)
-              : const Icon(Icons.error, color: Colors.red, size: 50),
-          content: Text(
-            isCorrect ? 'Correct! 🎉' : 'Try Again!',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 24),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                if (isCorrect) {
-                  moveToNextActivity(
-                      context,
-                      widget
-                          .isActivity4); // Call this function only if the answer is correct
-                }
-              },
-              child: const Text(
-                'OK',
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    if (isCorrect) {
+      correctCount++;
+      if (retryCount == 0) {
+        totalScore += 10; //  10 points if correct on first try
+      } else if (retryCount == 1) {
+        totalScore += 5; //  5 points if correct on second try
+      }
+      retryCount = 0; // Reset retry count for the next question
+    } else {
+      retryCount++; // Increment retryCount if the answer is incorrect
+    }
+    if (isCorrect) {
+      _toastService.successToast(AppLocalizations.of(context)!.correctToast);
+      Future.delayed(const Duration(seconds: 1), () {
+        moveToNextActivity(context,
+            widget.isActivity4); // Move to next activity after 1 second
+      });
+    } else {
+      _toastService.errorToast(AppLocalizations.of(context)!.tryAgainToast);
+    }
   }
 
-  void moveToNextActivity(BuildContext context, bool isActivity4) {
-    if (isActivity4) {
+  Future<void> _submitResultsToDB() async {
+    // Get shared preference
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
+
+    if (accessToken == null) {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
+      return;
+    }
+
+    // Fetch user
+    User? user = await _userService.getUser(accessToken, context);
+
+    if (user == null || user.iqScore == null) {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesIQScoreError);
+      return;
+    }
+
+    // Variables to store diagnosis and status
+    late bool activityStatus;
+
+    // Update user disorder status in the database
+    activityStatus = await _activityService.addActivityResult(ActivityResult(
+      userEmail: user.email,
+      date: completionDate,
+      activityName: 'Level1 - Subtraction',
+      timeTaken: totalTimeTaken,
+      totalScore: totalScore,
+      retries: correctCount,
+    ));
+
+    // Navigate based on the status of updates
+    if (activityStatus) {
+      _handleSuccess(AppLocalizations.of(context)!.progressStoredTxt);
       // Navigate to MultiplicationScreen
       Navigator.push(
         context,
@@ -78,22 +121,56 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
           builder: (context) => MultiplicationLevel1Screen(
             number1: 3,
             number2: 2,
-            title: "5 : Let's Multiply - Select the correct answer 😊",
+            title: "5 : ${AppLocalizations.of(context)!.opActivityLvl1Mul} 😊",
             icon: FontAwesomeIcons.book,
           ),
         ),
       );
     } else {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
+    }
+  }
+
+  void _handleErrorAndRedirect(String message) {
+    // Handle errors and redirect
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+    ));
+  }
+
+  void _handleSuccess(String message) {
+    // Handle errors and redirect
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.green,
+    ));
+  }
+
+  void moveToNextActivity(BuildContext context, bool isActivity4) {
+    if (isActivity4) {
+      //Submit Subtraction level 1 results
+      completionDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+      stopwatch.stop();
+      totalTimeTaken = stopwatch.elapsed.inSeconds;
+
+      _submitResultsToDB();
+    } else {
       // Navigate to Activity 4 (Subtraction)
+      int rand1 = Random().nextInt(4) + 6; // Random number between 6 and 15
+      int rand2 = Random().nextInt(6) + 1; // Random number between 1 and 6
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => SubtractionLevel1Screen(
-            title: "4 : Let's Subtract",
-            number1: Random().nextInt(4) + 6, // Random number between 6 and 15
-            number2: Random().nextInt(6) + 1, // Random number between 1 and 6
+            title:
+                "4 : ${AppLocalizations.of(context)!.opActivityLvl1Sub} $rand1 - $rand2",
+            number1: rand1,
+            number2: rand2,
             icon: FontAwesomeIcons.mugHot,
-            isActivity4: true, // Set flag to true for Activity 4
+            isActivity4: true,
           ),
         ),
       );
@@ -115,8 +192,7 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(
-                    'assets/images/operational_activities/subtraction_level1.png'),
+                image: AssetImage('assets/images/level1general.png'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -130,12 +206,27 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
                 Positioned(
                   top: 20,
                   left: 20,
-                  child: Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(
+                          0.6), // Contrasting background color with transparency
+                      border: Border.all(
+                        color: Colors
+                            .white, // Border color to contrast with background
+                        width: 1, // Thin border
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(4), // Optional: rounded corners
+                    ),
+                    child: Text(
+                      widget.title,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

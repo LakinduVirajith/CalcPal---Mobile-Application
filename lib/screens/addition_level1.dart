@@ -1,8 +1,16 @@
+import 'package:calcpal/models/activity_result.dart';
+import 'package:calcpal/models/user.dart';
+import 'package:calcpal/services/operational_service.dart';
+import 'package:calcpal/services/toast_service.dart';
+import 'package:calcpal/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:calcpal/screens/subtraction_level1.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OperationalLevel1Screen extends StatefulWidget {
   const OperationalLevel1Screen({super.key});
@@ -17,43 +25,117 @@ class _OperationalLevel1ScreenState extends State<OperationalLevel1Screen> {
   int number2 = Random().nextInt(5) + 1; // Random number between 1 and 5
   int correctAnswer = 0;
   bool isActivity1 = true;
+  int retryCount = 0;
+  late Stopwatch stopwatch; // For timing
+
+  String completionDate = ''; // For storing the current date
+  int totalTimeTaken = 0; //For Storing time take for the activity
+  int totalScore = 0; //For Storing total acore for the activity
+  int correctCount = 0; //For Stroing no of correctly ans excercises
+
+  final UserService _userService = UserService();
+  final OperationalService _activityService = OperationalService();
+  final ToastService _toastService = ToastService();
 
   @override
   void initState() {
     super.initState();
+    stopwatch = Stopwatch();
     correctAnswer = number1 + number2;
+    stopwatch.start();
   }
 
   void showFeedback(bool isCorrect) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: isCorrect
-              ? const Icon(Icons.check_circle, color: Colors.green, size: 50)
-              : const Icon(Icons.error, color: Colors.red, size: 50),
-          content: Text(
-            isCorrect ? 'Correct! 🎉' : 'Try Again!',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 24),
+    if (isCorrect) {
+      correctCount++;
+      if (retryCount == 0) {
+        totalScore += 10; //  10 points if correct on first try
+      } else if (retryCount == 1) {
+        totalScore += 5; //  5 points if correct on second try
+      }
+      retryCount = 0; // Reset retry count for the next question
+    } else {
+      retryCount++; // Increment retryCount if the answer is incorrect
+    }
+    if (isCorrect) {
+      _toastService.successToast(AppLocalizations.of(context)!.correctToast);
+      Future.delayed(const Duration(seconds: 1), () {
+        moveToNextActivity(); // Move to next activity after 1 second
+      });
+    } else {
+      _toastService.errorToast(AppLocalizations.of(context)!.tryAgainToast);
+    }
+  }
+
+  Future<void> _submitResultsToDB() async {
+    // Get shared preference
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
+
+    if (accessToken == null) {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
+      return;
+    }
+
+    // Fetch user
+    User? user = await _userService.getUser(accessToken, context);
+
+    if (user == null || user.iqScore == null) {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesIQScoreError);
+      return;
+    }
+
+    // Variables to store diagnosis and status
+    late bool activityStatus;
+
+    // Update user disorder status in the database
+    activityStatus = await _activityService.addActivityResult(ActivityResult(
+      userEmail: user.email,
+      date: completionDate,
+      activityName: 'Level1 - Addition',
+      timeTaken: totalTimeTaken,
+      totalScore: totalScore,
+      retries: correctCount,
+    ));
+
+    // Navigate based on the status of updates
+    if (activityStatus) {
+      _handleSuccess(AppLocalizations.of(context)!.progressStoredTxt);
+      int rand = Random().nextInt(4) + 1;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SubtractionLevel1Screen(
+            title:
+                "3 : ${AppLocalizations.of(context)!.opActivityLvl1Sub} 5 - $rand", // Set the title for Activity 4
+            number1: 5,
+            number2: rand, // Random number between 1 and 4
+            icon: FontAwesomeIcons.leaf,
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                if (isCorrect) {
-                  moveToNextActivity(); // Call this function only if the answer is correct
-                }
-              },
-              child: const Text(
-                'OK',
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+        ),
+      );
+    } else {
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
+    }
+  }
+
+  void _handleErrorAndRedirect(String message) {
+    // Handle errors and redirect
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+    ));
+  }
+
+  void _handleSuccess(String message) {
+    // Handle errors and redirect
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.green,
+    ));
   }
 
   void moveToNextActivity() {
@@ -65,17 +147,13 @@ class _OperationalLevel1ScreenState extends State<OperationalLevel1Screen> {
         correctAnswer = number1 + number2;
         isActivity1 = false;
       } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SubtractionLevel1Screen(
-              title: "3 : Let's Subtract", // Set the title for Activity 4
-              number1: 5, // Set the first number for subtraction
-              number2: Random().nextInt(4) + 1, // Random number between 1 and 4
-              icon: FontAwesomeIcons.leaf,
-            ),
-          ),
-        );
+        //Submit Addition level 1 results
+        completionDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+        stopwatch.stop();
+        totalTimeTaken = stopwatch.elapsed.inSeconds;
+
+        _submitResultsToDB();
       }
     });
   }
@@ -95,8 +173,7 @@ class _OperationalLevel1ScreenState extends State<OperationalLevel1Screen> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(
-                    'assets/images/operational_activities/operational_level1.png'),
+                image: AssetImage('assets/images/level1general.png'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -108,20 +185,36 @@ class _OperationalLevel1ScreenState extends State<OperationalLevel1Screen> {
               children: [
                 // Title Text on Top Left
                 Positioned(
-                  top: 20,
+                  top: 40,
                   left: 20,
-                  child: Text(
-                    isActivity1
-                        ? "1 : Let's Add $number1 + $number2"
-                        : "2 : Let's Add $number1 + $number2",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4), // Add padding around the text
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(
+                          0.6), // Set a contrasting background color with some transparency
+                      border: Border.all(
+                        color: Colors
+                            .white, // Set border color to contrast with background
+                        width: 1, // Very thin border
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(4), // Optional: rounded corners
+                    ),
+                    child: Text(
+                      isActivity1
+                          ? "1 : ${AppLocalizations.of(context)!.opActivityLvl1Add} $number1 + $number2"
+                          : "2 : ${AppLocalizations.of(context)!.opActivityLvl1Add} $number1 + $number2",
+                      style: const TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 30),
                 // Number and Apples/Sweets Row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -150,8 +243,6 @@ class _OperationalLevel1ScreenState extends State<OperationalLevel1Screen> {
                 // Visualization of the Correct Answer (Without Number)
                 buildNumberBox(correctAnswer, showNumber: false),
                 const SizedBox(height: 30),
-
-                const SizedBox(height: 20),
                 // Answer Selection Row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

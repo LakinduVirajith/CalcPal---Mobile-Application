@@ -1,4 +1,5 @@
 import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/services/common_service.dart';
 import 'package:calcpal/services/practognostic_service.dart';
 import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/widgets/answer_box.dart';
@@ -56,9 +57,7 @@ class _ActivityPractonosticScreenState
         systemNavigationBarIconBrightness: Brightness.light,
       ),
     );
-
-    // LOADING ACTIVITY DATA
-    _initiated();
+    _setupLanguage();
     _activityFuture = _loadActivity();
   }
 
@@ -69,10 +68,6 @@ class _ActivityPractonosticScreenState
     selectedLanguageCode = languageCode;
   }
 
-  Future<void> _initiated() async {
-    await _setupLanguage();
-  }
-
   // FUNCTION TO LOAD THE ACTIVITY
   Future<void> _loadActivity() async {
     try {
@@ -80,12 +75,12 @@ class _ActivityPractonosticScreenState
         isErrorOccurred = false;
         isDataLoading = true;
       });
-
+      await Future.delayed(const Duration(milliseconds: 200));
       developer.log('API CURRENT NUMBER: ${currentActivityNumber.toString()}');
       // FETCHING THE ACTIVITY FROM THE SERVICE
       final activity = await _practognosticService.fetchActivity(
         currentActivityNumber,
-        "English",
+        CommonService.getLanguageForAPI(selectedLanguageCode),
         context,
       );
 
@@ -100,6 +95,15 @@ class _ActivityPractonosticScreenState
           correctAnswer = activity.correctAnswer;
         });
 
+        // DECODE BASE64 ENCODED QUESTION
+        if (selectedLanguageCode != 'en') {
+          setState(() => question = CommonService.decodeString(question));
+          setState(
+              () => questionText = CommonService.decodeString(questionText));
+          setState(() => answers = CommonService.decodeList(answers));
+          setState(
+              () => correctAnswer = CommonService.decodeString(correctAnswer));
+        }
         // VALIDATING THE QUESTION DATA
         // await _validateQuestion();
       } else {
@@ -157,7 +161,25 @@ class _ActivityPractonosticScreenState
                     _buildBackgound(),
                     Positioned(
                       child: _buildContent(snapshot, constraints),
-                    )
+                    ),
+                    // Add the back button at the top left corner
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context)
+                                .pushNamed(activityDashboardRoute);
+                          },
+                          child: Image.asset(
+                            'assets/icons/back.png',
+                            width: 40,
+                            height: 40,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 );
               });
@@ -224,6 +246,7 @@ class _ActivityPractonosticScreenState
                 ),
                 child: Column(
                   children: [
+                    const SizedBox(height: 12.0),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -231,9 +254,9 @@ class _ActivityPractonosticScreenState
                           question,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 30,
+                              fontSize: 18,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -244,9 +267,9 @@ class _ActivityPractonosticScreenState
                           questionText,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 24,
+                              fontSize: 18,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -267,7 +290,7 @@ class _ActivityPractonosticScreenState
                           Image.asset('assets/images/activity4.png'),
                       ],
                     ),
-                    const SizedBox(height: 38.0),
+                    const SizedBox(height: 6.0),
                     // ANSWER OPTIONS
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
@@ -313,13 +336,14 @@ class _ActivityPractonosticScreenState
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        const SizedBox(height: 12.0),
                         Text(
                           question,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 30,
+                              fontSize: 18,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -330,9 +354,9 @@ class _ActivityPractonosticScreenState
                           questionText,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 24,
+                              fontSize: 18,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -365,7 +389,6 @@ class _ActivityPractonosticScreenState
                           ),
                       ],
                     ),
-                    const SizedBox(height: 38.0),
                     // ANSWER OPTIONS
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
@@ -415,9 +438,9 @@ class _ActivityPractonosticScreenState
                           question,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 25,
+                              fontSize: 18,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -428,9 +451,9 @@ class _ActivityPractonosticScreenState
                           questionText,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 20,
+                              fontSize: 18,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -463,7 +486,6 @@ class _ActivityPractonosticScreenState
                           ),
                       ],
                     ),
-                    const SizedBox(height: 38.0),
                     // ANSWER OPTIONS
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
@@ -506,6 +528,7 @@ class _ActivityPractonosticScreenState
                 ),
                 child: Column(
                   children: [
+                    const SizedBox(height: 12.0),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -513,9 +536,9 @@ class _ActivityPractonosticScreenState
                           question,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 25,
+                              fontSize: 20,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -528,7 +551,7 @@ class _ActivityPractonosticScreenState
                               color: Colors.black,
                               fontSize: 20,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),

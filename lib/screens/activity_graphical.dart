@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 import 'package:calcpal/screens/activities_graphical_levelTwo.dart';
+import 'package:calcpal/constants/routes.dart';
 
 class ActivityGraphicalScreen extends StatefulWidget {
   const ActivityGraphicalScreen({super.key});
@@ -56,35 +57,50 @@ class _ActivityGraphicalScreenState extends State<ActivityGraphicalScreen> {
     }
   }
 
-  // List of drawing questions
+  // Shuffled List of drawing questions
   final List<String> _questions = [
-    'Draw an addition symbol.',
-    'Draw a subtraction symbol.',
     'Draw a multiplication symbol.',
     'Draw a division symbol.',
+    'Draw an addition symbol.',
     'Draw an equal symbol.',
+    'Draw a subtraction symbol.',
+    'Draw a multiplication symbol.',
+    'Draw an addition symbol.',
+    'Draw an equal symbol.',
+    'Draw a subtraction symbol.',
+    'Draw a division symbol.',
   ];
 
-  // List of image paths corresponding to each question
+  // Shuffled List of image paths corresponding to each question
   final List<String> _questionImages = [
-    'assets/images/add.png',
-    'assets/images/subs.png',
     'assets/images/multi.png',
     'assets/images/division.png',
-    'assets/images/equal.jpg'
+    'assets/images/add.png',
+    'assets/images/equal.jpg',
+    'assets/images/subs.png',
+    'assets/images/multi.png',
+    'assets/images/add.png',
+    'assets/images/equal.jpg',
+    'assets/images/subs.png',
+    'assets/images/division.png'
   ];
 
-  //list of image path for the hand written images
+  // Shuffled List of image paths for the hand-drawn images
   final List<String> _drawnImages = [
-    'assets/images/plus.jpg',
-    'assets/images/subs.jpg',
     'assets/images/mul.jpg',
     'assets/images/devide.jpg',
+    'assets/images/plus.jpg',
     'assets/images/equa.jpg',
+    'assets/images/subs.jpg',
+    'assets/images/mul.jpg',
+    'assets/images/plus.jpg',
+    'assets/images/equa.jpg',
+    'assets/images/subs.jpg',
+    'assets/images/devide.jpg',
   ];
 
   // Store points for each question separately
-  final List<List<Offset?>> _questionPoints = List.generate(5, (_) => []);
+  final List<List<Offset?>> _questionPoints = List.generate(10, (_) => []);
 
   @override
   Widget build(BuildContext context) {
@@ -124,9 +140,28 @@ class _ActivityGraphicalScreenState extends State<ActivityGraphicalScreen> {
 
               return Column(
                 children: [
+                  // back button at the top left corner
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context)
+                              .pushNamed(activityDashboardRoute);
+                        },
+                        child: Image.asset(
+                          'assets/icons/back.png',
+                          width: 40,
+                          height: 40,
+                        ),
+                      ),
+                    ),
+                  ),
+
                   // Question text
                   Padding(
-                    padding: const EdgeInsets.only(top: 60.0),
+                    padding: const EdgeInsets.only(top: 5.0),
                     child: Text(
                       _questions[_currentQuestionIndex],
                       style: const TextStyle(

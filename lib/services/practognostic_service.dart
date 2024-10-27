@@ -21,12 +21,13 @@ class PractognosticService {
 
   // FETCH A QUESTION BASED ON NUMBER AND LANGUAGE
   Future<PractognosticQuestion?> fetchQuestion(
-      int questionNumber, BuildContext context) async {
-    final url = Uri.parse('$_baseUrl/practognostic/question/$questionNumber');
+      int questionNumber, String language, BuildContext context) async {
+    print("Sinhala:$language");
+    final url = Uri.parse(
+        '$_baseUrl/practognostic/question/$questionNumber?language=$language');
 
     try {
       final response = await http.get(url);
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return PractognosticQuestion.fromJson(data);
@@ -48,8 +49,6 @@ class PractognosticService {
   Future<FlaskDiagnosisResult?> getDiagnosisResult(
       Diagnosis diagnosis, BuildContext context) async {
     final url = Uri.parse('$_modelBaseUrl/practognostic');
-
-    print(url);
     try {
       final body = jsonEncode(diagnosis.toJson());
 

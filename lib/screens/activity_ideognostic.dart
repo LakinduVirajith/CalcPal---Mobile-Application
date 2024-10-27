@@ -1,9 +1,12 @@
+import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/screens/ideognostic_result_report.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../screens/number_line_activity.dart';
 import '../screens/fraction_activity.dart';
 import '../screens/number_creation_activity.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ActivityIdeognosticScreen extends StatelessWidget {
   const ActivityIdeognosticScreen({super.key});
@@ -16,77 +19,111 @@ class ActivityIdeognosticScreen extends StatelessWidget {
       DeviceOrientation.landscapeRight,
     ]);
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Background image
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(
-                    'assets/images/operational_activity_dashboard.png'), // Background image path
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          // Buttons
-          Center(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return FractionallySizedBox(
-                  widthFactor: 0.5, // 60% of the screen width
-                  heightFactor: 0.5, // 60% of the screen height
-                  child: GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 10.0,
-                      mainAxisSpacing: 10.0,
-                      childAspectRatio: 1.5, // Adjust as needed
-                    ),
-                    padding: EdgeInsets.all(10.0),
-                    itemCount: 5,
-                    itemBuilder: (context, index) {
-                      switch (index) {
-                        case 0:
-                          return DashboardButton(
-                            text: 'Level 1 - Number Lines',
-                            onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        NumberLineActivity())),
-                          );
-                        case 1:
-                          return DashboardButton(
-                            text: 'Level 2 - Fractions',
-                            onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        FractionActivityScreen())),
-                          );
-                        case 2:
-                          return DashboardButton(
-                            text: 'Level 2 - Number Creation',
-                            onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        NumberCreationActivityScreen())),
-                          );
-                        default:
-                          return SizedBox
-                              .shrink(); // Return an empty widget if out of range
-                      }
-                    },
+    return PopScope(
+        // PREVENT ROUTE FROM POPPING
+        canPop: false,
+        // HANDLING BACK BUTTON PRESS
+        onPopInvoked: (didPop) {
+          if (didPop) return;
+          Navigator.of(context).pushNamed(activityDashboardRoute);
+        },
+        child: Scaffold(
+          body: Stack(
+            children: [
+              // Background image
+              Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(
+                        'assets/images/operational_activity_dashboard.png'), // Background image path
+                    fit: BoxFit.cover,
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+              Positioned(
+                top: 20.0,
+                right: 20.0,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white, // White background
+                    foregroundColor: Colors.black, // Black text color
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TableScreenIde()),
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context)!.activityReportsTitle,
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                ),
+              ),
+              // Buttons
+              Center(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return FractionallySizedBox(
+                      widthFactor: 0.5, // 60% of the screen width
+                      heightFactor: 0.5, // 60% of the screen height
+                      child: GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 10.0,
+                          mainAxisSpacing: 10.0,
+                          childAspectRatio: 1.5, // Adjust as needed
+                        ),
+                        padding: EdgeInsets.all(10.0),
+                        itemCount: 5,
+                        itemBuilder: (context, index) {
+                          switch (index) {
+                            case 0:
+                              return DashboardButton(
+                                text: AppLocalizations.of(context)!
+                                    .level1NumberLinesLbl,
+                                onPressed: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            NumberLineActivity())),
+                              );
+                            case 1:
+                              return DashboardButton(
+                                text: AppLocalizations.of(context)!
+                                    .level2FractionsLbl,
+                                onPressed: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            FractionActivityScreen())),
+                              );
+                            case 2:
+                              return DashboardButton(
+                                text: AppLocalizations.of(context)!
+                                    .level2NumberCreationLbl,
+                                onPressed: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            NumberCreationActivityScreen())),
+                              );
+                            default:
+                              return SizedBox
+                                  .shrink(); // Return an empty widget if out of range
+                          }
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        ));
   }
 }
 

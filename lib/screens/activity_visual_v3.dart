@@ -106,8 +106,12 @@ class _ShapeDrawingPageState extends State<ShapeDrawingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Draw Shapes"),
-        backgroundColor: const Color.fromARGB(255, 105, 214, 91),
+        title: const Text(
+          "Draw Shapes",
+          style: TextStyle(color: Colors.white, fontSize: 20.0),
+        ),
+        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+        toolbarHeight: 50.0,
       ),
       body: Row(
         children: [
@@ -121,23 +125,23 @@ class _ShapeDrawingPageState extends State<ShapeDrawingPage> {
                 children: [
                   Text(
                     shapes[currentShapeIndex]['name']!,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.deepPurple,
+                      color: Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   Image.asset(
                     shapes[currentShapeIndex]['image']!,
-                    width: 120,
-                    height: 120,
+                    width: 90,
+                    height: 90,
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Text(
                     shapes[currentShapeIndex]['details']!,
-                    style: TextStyle(
-                      fontSize: 18,
+                    style: const TextStyle(
+                      fontSize: 14,
                       color: Colors.black54,
                       fontWeight: FontWeight.w700,
                     ),
@@ -153,8 +157,9 @@ class _ShapeDrawingPageState extends State<ShapeDrawingPage> {
               children: [
                 Expanded(
                   child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                    padding: EdgeInsets.all(10),
+                    margin: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 20),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),

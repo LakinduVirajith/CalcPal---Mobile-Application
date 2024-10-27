@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'dart:ui' as ui;
 import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/services/toast_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
+import 'package:http/http.dart' as http;
 
 class ActivitiesGraphicalScreenLevelTwo extends StatefulWidget {
   const ActivitiesGraphicalScreenLevelTwo({super.key});
@@ -19,15 +22,29 @@ class _ActivitiesGraphicalScreenLevelTwoState
   final GlobalKey _whiteboardKey = GlobalKey();
   final GlobalKey _repaintBoundaryKey = GlobalKey(); // for the screenshot
   int _currentQuestionIndex = 0;
+  List<bool> userResponses = [];
 
   // New variable to track activity level
   int activityLevel = 1;
 
   Future<void> _handlePress() async {
     if (_currentQuestionIndex < _questions.length - 1) {
-      await _captureScreenshot();
+      final response = await _captureScreenshot();
+      print(response);
       setState(() {
-        _currentQuestionIndex++;
+        // _currentQuestionIndex++;
+        setState(() {
+          if (response == _correctQuestionAnwers[_currentQuestionIndex]) {
+            _toastService.infoToast(
+              'Congratulations!! You Are Correct 👏👏🎉🎉!!',
+            );
+            _currentQuestionIndex++; // Move to the next question
+          } else {
+            _toastService.infoToast(
+              'Try again!! ☹️☹️!!',
+            );
+          }
+        });
       });
     } else {
       await _captureScreenshot();
@@ -40,7 +57,8 @@ class _ActivitiesGraphicalScreenLevelTwoState
     }
   }
 
-  Future<void> _captureScreenshot() async {
+  Future<String> _captureScreenshot() async {
+    String predictedLabel = "";
     try {
       RenderRepaintBoundary boundary = _repaintBoundaryKey.currentContext!
           .findRenderObject() as RenderRepaintBoundary;
@@ -49,34 +67,75 @@ class _ActivitiesGraphicalScreenLevelTwoState
           await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-      // Now you have the screenshot in pngBytes. You can save it, display it, etc.
-      // For example, you can print its length to see that it has been captured:
-      print("Screenshot captured: ${pngBytes.length} bytes");
+      String base64String = base64Encode(pngBytes);
+
+      final responseSymbol = await http.post(
+        Uri.parse('http://149.102.141.132:5002/predict-symbol'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"image": base64String}),
+      );
+
+      if (responseSymbol.statusCode == 200) {
+        final Map<String, dynamic> responseData =
+            jsonDecode(responseSymbol.body);
+        predictedLabel = responseData['predicted_class'];
+        return predictedLabel;
+      } else {
+        print(
+            "Failed to send first image. Status code: ${responseSymbol.statusCode}");
+      }
     } catch (e) {
       print("Error capturing screenshot: $e");
     }
+    return predictedLabel;
   }
 
-  // List of drawing questions
+  // Shuffled List of drawing questions
   final List<String> _questions = [
-    'Draw an addition symbol.',
-    'Draw a subtraction symbol.',
-    'Draw a multiplication symbol.',
     'Draw a division symbol.',
     'Draw an equal symbol.',
+    'Draw a multiplication symbol.',
+    'Draw a subtraction symbol.',
+    'Draw an addition symbol.',
+    'Draw an equal symbol.',
+    'Draw a division symbol.',
+    'Draw an addition symbol.',
+    'Draw a multiplication symbol.',
+    'Draw a subtraction symbol.',
   ];
 
-  // List of image paths corresponding to each question
+  // Shuffled List of image paths corresponding to each question
   final List<String> _questionImages = [
-    'assets/images/add.png',
-    'assets/images/subs.png',
-    'assets/images/multi.png',
     'assets/images/division.png',
-    'assets/images/equal.jpg'
+    'assets/images/equal.jpg',
+    'assets/images/multi.png',
+    'assets/images/subs.png',
+    'assets/images/add.png',
+    'assets/images/equal.jpg',
+    'assets/images/division.png',
+    'assets/images/add.png',
+    'assets/images/multi.png',
+    'assets/images/subs.png',
   ];
+
+  final List<String> _correctQuestionAnwers = [
+    'Divide',
+    'Equal',
+    'Multiply',
+    'Minus',
+    'Add',
+    'Equal',
+    'Divide',
+    'Add',
+    'Multiply',
+    'Minus',
+  ];
+
+  //Initialze the services
+  final ToastService _toastService = ToastService();
 
   // Store points for each question separately
-  final List<List<Offset?>> _questionPoints = List.generate(5, (_) => []);
+  final List<List<Offset?>> _questionPoints = List.generate(10, (_) => []);
 
   @override
   Widget build(BuildContext context) {
@@ -116,9 +175,28 @@ class _ActivitiesGraphicalScreenLevelTwoState
 
               return Column(
                 children: [
+                  // back button at the top left corner
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context)
+                              .pushNamed(activityDashboardRoute);
+                        },
+                        child: Image.asset(
+                          'assets/icons/back.png',
+                          width: 40,
+                          height: 40,
+                        ),
+                      ),
+                    ),
+                  ),
+
                   // Question text
                   Padding(
-                    padding: const EdgeInsets.only(top: 60.0),
+                    padding: const EdgeInsets.only(top: 5.0),
                     child: Text(
                       _questions[_currentQuestionIndex],
                       style: const TextStyle(
@@ -205,8 +283,7 @@ class _ActivitiesGraphicalScreenLevelTwoState
                             right: 0,
                             top: 50,
                             child: Image.asset(
-                              _questionImages[
-                                  _currentQuestionIndex], // Replace with your image path
+                              _questionImages[_currentQuestionIndex],
                               width: 100,
                               height: 100,
                             ),
@@ -226,6 +303,10 @@ class _ActivitiesGraphicalScreenLevelTwoState
                           onPressed: _currentQuestionIndex > 0
                               ? () {
                                   setState(() {
+                                    // Remove the last inserted value in the array if it exists
+                                    if (userResponses.isNotEmpty) {
+                                      userResponses.removeLast();
+                                    }
                                     _currentQuestionIndex--;
                                   });
                                 }

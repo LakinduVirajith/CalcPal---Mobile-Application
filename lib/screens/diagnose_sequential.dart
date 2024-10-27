@@ -70,6 +70,7 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
   Future<void> _setupLanguage() async {
     final prefs = await SharedPreferences.getInstance();
     final languageCode = prefs.getString('language_code') ?? 'en';
+    print(languageCode);
     DiagnoseSequentialScreen.selectedLanguageCode = languageCode;
   }
 
@@ -82,6 +83,7 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
         DiagnoseSequentialScreen.isDataLoading = true;
       });
 
+      await Future.delayed(const Duration(milliseconds: 200));
       final question = await _questionService.fetchQuestion(
           DiagnoseSequentialScreen.currentQuestionNumber,
           CommonService.getLanguageForAPI(
@@ -353,7 +355,7 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
                                   // DISPLAY QUESTION INSTRUCTIONS
                                   : Column(
                                       children: [
-                                        const SizedBox(height: 28.0),
+                                        const SizedBox(height: 14.0),
                                         Text(
                                           DiagnoseSequentialScreen.question,
                                           style: TextStyle(
