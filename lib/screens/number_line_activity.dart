@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:calcpal/models/activity_result.dart';
 import 'package:calcpal/screens/activity_ideognostic.dart';
 import 'package:calcpal/services/ideognostic_service.dart';
+import 'package:calcpal/services/toast_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -29,6 +30,7 @@ class _NumberLineActivityState extends State<NumberLineActivity> {
 
   final UserService _userService = UserService();
   final IdeognosticService _activityService = IdeognosticService();
+  final ToastService _toastService = ToastService();
 
   // Variables to track scores and retries
   List<bool> exerciseResults = [false, false, false, false, false];
@@ -171,6 +173,7 @@ class _NumberLineActivityState extends State<NumberLineActivity> {
             updateScoreAndStopwatch: updateScoreAndStopwatch,
             exerciseIndex: index,
             retries: retries,
+            toastService: _toastService,
           );
         },
       ),
@@ -186,15 +189,16 @@ class NumberLineExercise extends StatefulWidget {
       updateScoreAndStopwatch; // Callback for updating score and stopping the stopwatch
   final int exerciseIndex; // Index of the current exercise
   final List<int> retries; // List to track retries for each exercise
+  final ToastService toastService;
 
-  const NumberLineExercise({
-    super.key,
-    required this.exerciseNumber,
-    required this.pageController,
-    required this.updateScoreAndStopwatch,
-    required this.exerciseIndex,
-    required this.retries,
-  });
+  const NumberLineExercise(
+      {super.key,
+      required this.exerciseNumber,
+      required this.pageController,
+      required this.updateScoreAndStopwatch,
+      required this.exerciseIndex,
+      required this.retries,
+      required this.toastService});
 
   @override
   _NumberLineExerciseState createState() => _NumberLineExerciseState();
@@ -254,66 +258,50 @@ class _NumberLineExerciseState extends State<NumberLineExercise> {
     return randomNumbers;
   }
 
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Congratulations!'),
-        content: const Text('Correct! 🎉'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              widget.updateScoreAndStopwatch(
-                  true, widget.exerciseIndex); // Update score and stopwatch
+  void _showSuccessToast() {
+    // Show success toast
+    widget.toastService
+        .successToast(AppLocalizations.of(context)!.correctToast);
 
-              if (widget.exerciseNumber < 6) {
-                widget.pageController.nextPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              }
-            },
-            child: const Text('Next'),
-          ),
-        ],
-      ),
-    );
+    widget.updateScoreAndStopwatch(
+        true, widget.exerciseIndex); // Update score and stopwatch
+
+    // Wait for 2 seconds, then proceed to next exercise
+    Future.delayed(const Duration(seconds: 2), () {
+      if (widget.exerciseNumber < 6) {
+        widget.pageController.nextPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
-  void _showFailureDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Not Quite Right'),
-        content: retryCount < 2
-            ? const Text('Let\'s try again!')
-            : const Text("Not quite right, Let's try the next exercise"),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              if (retryCount < 2) {
-                setState(() {
-                  retryCount++;
-                  widget.retries[widget.exerciseIndex] =
-                      retryCount; // Update retries
-                  resetState(); // Reset the exercise state
-                });
-              } else {
-                widget.updateScoreAndStopwatch(false,
-                    widget.exerciseIndex); // Update stopwatch without score
-                widget.pageController.nextPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              }
-            },
-            child: Text(retryCount < 2 ? 'Retry' : 'Next'),
-          ),
-        ],
-      ),
-    );
+  void _showFailureToast() {
+    // Show failure toast using the toast service
+    widget.toastService.errorToast(retryCount < 2
+            ? AppLocalizations.of(context)!.tryAgainToast // "Let's try again!"
+            : AppLocalizations.of(context)!
+                .nextExcerciseToast // "Not quite right, let's try the next exercise"
+        );
+
+    // Delay before proceeding to next steps
+    Future.delayed(const Duration(seconds: 2), () {
+      if (retryCount < 2) {
+        setState(() {
+          retryCount++;
+          widget.retries[widget.exerciseIndex] = retryCount; // Update retries
+          resetState(); // Reset the exercise state
+        });
+      } else {
+        widget.updateScoreAndStopwatch(
+            false, widget.exerciseIndex); // Update stopwatch without score
+        widget.pageController.nextPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   void resetState() {
@@ -333,8 +321,7 @@ class _NumberLineExerciseState extends State<NumberLineExercise> {
         Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage(
-                  'assets/images/ideognostic_activities/numberline_1.png'),
+              image: AssetImage('assets/images/numberline_img.png'),
               fit: BoxFit.cover,
             ),
           ),
@@ -342,7 +329,7 @@ class _NumberLineExerciseState extends State<NumberLineExercise> {
         Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(10.0),
               child: Text(
                 '${widget.exerciseNumber}: ${AppLocalizations.of(context)!.numberLineTopic}',
                 style:
@@ -352,14 +339,14 @@ class _NumberLineExerciseState extends State<NumberLineExercise> {
             Expanded(
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black),
                     borderRadius: BorderRadius.circular(10),
                     color: Colors.grey.withOpacity(0.9),
                   ),
                   width: MediaQuery.of(context).size.width * 0.90,
-                  height: MediaQuery.of(context).size.height * 0.30,
+                  height: MediaQuery.of(context).size.height * 0.25,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -373,7 +360,7 @@ class _NumberLineExerciseState extends State<NumberLineExercise> {
                         children: numberLine
                             .map((number) => Padding(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 10.0),
+                                      horizontal: 8.0),
                                   child: missingNumbers.contains(number)
                                       ? DragTarget<int>(
                                           builder: (context, candidateData,
@@ -437,7 +424,7 @@ class _NumberLineExerciseState extends State<NumberLineExercise> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              padding: const EdgeInsets.symmetric(vertical: 10.0),
               child: DragTarget<int>(
                 builder: (context, candidateData, rejectedData) {
                   return Row(
@@ -486,13 +473,27 @@ class _NumberLineExerciseState extends State<NumberLineExercise> {
             ElevatedButton(
               onPressed: () {
                 if (isPlacedCorrectly.values.every((correct) => correct)) {
-                  _showSuccessDialog();
+                  _showSuccessToast();
                 } else {
-                  _showFailureDialog();
+                  _showFailureToast();
                 }
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black, // Black button background
+                foregroundColor: Colors.white, // White text color
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                textStyle: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(8), // Slightly rounded edges
+                ),
+              ),
               child: Text(AppLocalizations.of(context)!.checkAnsBtn),
-            ),
+            )
           ],
         ),
       ],

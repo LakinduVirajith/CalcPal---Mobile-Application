@@ -1,6 +1,7 @@
 import 'package:calcpal/models/activity_result.dart';
 import 'package:calcpal/models/user.dart';
 import 'package:calcpal/services/operational_service.dart';
+import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,6 +35,7 @@ class _OperationalLevel1ScreenState extends State<OperationalLevel1Screen> {
 
   final UserService _userService = UserService();
   final OperationalService _activityService = OperationalService();
+  final ToastService _toastService = ToastService();
 
   @override
   void initState() {
@@ -55,35 +57,14 @@ class _OperationalLevel1ScreenState extends State<OperationalLevel1Screen> {
     } else {
       retryCount++; // Increment retryCount if the answer is incorrect
     }
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: isCorrect
-              ? const Icon(Icons.check_circle, color: Colors.green, size: 50)
-              : const Icon(Icons.error, color: Colors.red, size: 50),
-          content: Text(
-            isCorrect ? 'Correct! 🎉' : 'Try Again!',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 24),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                if (isCorrect) {
-                  moveToNextActivity(); // Call this function only if the answer is correct
-                }
-              },
-              child: Text(
-                AppLocalizations.of(context)!.nextBtnText,
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    if (isCorrect) {
+      _toastService.successToast(AppLocalizations.of(context)!.correctToast);
+      Future.delayed(const Duration(seconds: 1), () {
+        moveToNextActivity(); // Move to next activity after 1 second
+      });
+    } else {
+      _toastService.errorToast(AppLocalizations.of(context)!.tryAgainToast);
+    }
   }
 
   Future<void> _submitResultsToDB() async {
@@ -192,8 +173,7 @@ class _OperationalLevel1ScreenState extends State<OperationalLevel1Screen> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(
-                    'assets/images/operational_activities/operational_level1.png'),
+                image: AssetImage('assets/images/level1general.png'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -205,20 +185,36 @@ class _OperationalLevel1ScreenState extends State<OperationalLevel1Screen> {
               children: [
                 // Title Text on Top Left
                 Positioned(
-                  top: 20,
+                  top: 40,
                   left: 20,
-                  child: Text(
-                    isActivity1
-                        ? "1 : ${AppLocalizations.of(context)!.opActivityLvl1Add} $number1 + $number2"
-                        : "2 : ${AppLocalizations.of(context)!.opActivityLvl1Add} $number1 + $number2",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4), // Add padding around the text
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(
+                          0.6), // Set a contrasting background color with some transparency
+                      border: Border.all(
+                        color: Colors
+                            .white, // Set border color to contrast with background
+                        width: 1, // Very thin border
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(4), // Optional: rounded corners
+                    ),
+                    child: Text(
+                      isActivity1
+                          ? "1 : ${AppLocalizations.of(context)!.opActivityLvl1Add} $number1 + $number2"
+                          : "2 : ${AppLocalizations.of(context)!.opActivityLvl1Add} $number1 + $number2",
+                      style: const TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 30),
                 // Number and Apples/Sweets Row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -247,8 +243,6 @@ class _OperationalLevel1ScreenState extends State<OperationalLevel1Screen> {
                 // Visualization of the Correct Answer (Without Number)
                 buildNumberBox(correctAnswer, showNumber: false),
                 const SizedBox(height: 30),
-
-                const SizedBox(height: 20),
                 // Answer Selection Row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

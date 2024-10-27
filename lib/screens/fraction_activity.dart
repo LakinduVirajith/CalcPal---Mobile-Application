@@ -2,6 +2,7 @@ import 'package:calcpal/models/activity_result.dart';
 import 'package:calcpal/models/user.dart';
 import 'package:calcpal/screens/activity_ideognostic.dart';
 import 'package:calcpal/services/ideognostic_service.dart';
+import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
@@ -36,6 +37,7 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
 
   final UserService _userService = UserService();
   final IdeognosticService _activityService = IdeognosticService();
+  final ToastService _toastService = ToastService();
 
   @override
   void initState() {
@@ -103,8 +105,7 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
         Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage(
-                  'assets/images/ideognostic_activities/fractionact_$exerciseNumber.png'),
+              image: AssetImage('assets/images/fractionsactimg.jpg'),
               fit: BoxFit.cover,
             ),
           ),
@@ -222,7 +223,21 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
                 children: <Widget>[
                   ElevatedButton(
                     onPressed: _validateAnswer,
-                    child: Text(AppLocalizations.of(context)!.nextBtnText),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black, // Black button background
+                      foregroundColor: Colors.white, // White text color
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 10),
+                      textStyle: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(8), // Slightly rounded edges
+                      ),
+                    ),
+                    child: Text(AppLocalizations.of(context)!.checkAnsBtn),
                   )
                 ],
               ),
@@ -292,54 +307,72 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
       } else {
         totalScore += 5;
       }
-      _showDialog('Correct!', '🎉 Congratulations! 🎉', true);
+      _showSuccessToast();
     } else {
       retryCount++;
       isCorrect = false;
       if (retryCount < 3) {
-        _showDialog('Incorrect', 'Let\'s try again.', false);
+        _showRetryToast();
       } else {
-        _showDialog('Correct Answer',
-            'The correct fraction is $coloredParts/$totalParts.', true);
+        _showCorrectAnswerToast();
       }
     }
   }
 
-  void _showDialog(String title, String content, bool isSuccess) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(content),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                if (exerciseNumber == 4) {
-                  //finalize date and time in last exercise
-                  completionDate =
-                      DateFormat('yyyy-MM-dd').format(DateTime.now());
+  void _showSuccessToast() {
+    // Display success toast message
+    _toastService.successToast(AppLocalizations.of(context)!
+        .correctToast); // Replace with localized success message
 
-                  stopwatch.stop();
-                  totalTimeTaken = stopwatch.elapsed.inSeconds;
-                  _submitResultsToDB();
-                } else if (isSuccess) {
-                  _pageController.nextPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeIn,
-                  );
-                } else {
-                  numeratorController.clear();
-                  denominatorController.clear();
-                }
-              },
-              child: Text(isSuccess ? 'Next' : 'Retry'),
-            ),
-          ],
+    // Proceed to the next page after a short delay
+    Future.delayed(const Duration(seconds: 2), () {
+      if (exerciseNumber == 4) {
+        // Finalize date and time in last exercise
+        completionDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+        stopwatch.stop();
+        totalTimeTaken = stopwatch.elapsed.inSeconds;
+        _submitResultsToDB();
+      } else {
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeIn,
         );
-      },
-    );
+      }
+    });
+  }
+
+  void _showRetryToast() {
+    // Display retry toast message
+    _toastService.errorToast(AppLocalizations.of(context)!
+        .tryAgainToast); // Replace with localized retry message
+
+    // Clear input fields for retry
+    numeratorController.clear();
+    denominatorController.clear();
+  }
+
+  void _showCorrectAnswerToast() {
+    // Display correct answer toast message
+    _toastService.successToast(
+        '${AppLocalizations.of(context)!.correctAns} : $coloredParts/$totalParts');
+
+    // Proceed to the next page after a short delay
+    Future.delayed(const Duration(seconds: 2), () {
+      if (exerciseNumber == 4) {
+        // Finalize date and time in last exercise
+        completionDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+        stopwatch.stop();
+        totalTimeTaken = stopwatch.elapsed.inSeconds;
+        _submitResultsToDB();
+      } else {
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeIn,
+        );
+      }
+    });
   }
 
   Future<void> _submitResultsToDB() async {
