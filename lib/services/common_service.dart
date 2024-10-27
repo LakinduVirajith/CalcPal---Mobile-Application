@@ -100,4 +100,48 @@ class CommonService {
       '400: ${AppLocalizations.of(context)!.commonServiceOtherError}',
     );
   }
+
+  // FUNCTION TO SHOW A DIALOG
+  static Future<bool> showCongratulatoryDialog(
+    BuildContext context,
+  ) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.showCongratulatoryDialogTitle,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                const SizedBox(height: 10),
+                Text(AppLocalizations.of(context)!
+                    .showCongratulatoryDialogContent),
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(AppLocalizations.of(context)!
+                      .showCongratulatoryDialogButton),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    return true;
+  }
 }

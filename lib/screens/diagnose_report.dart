@@ -149,7 +149,7 @@ class _DiagnoseReportScreenState extends State<DiagnoseReportScreen> {
       'Ideognostic': activityIdeognosticRoute,
       'Graphical': activityGraphicalRoute,
       'Practognostic': activityPractognosticRoute,
-      'Visual Spatial': activityVisualSpatialRoute,
+      'Visual Spatial': activityDrawVisualSpatialRoute,
       'Sequential': activitySequentialRoute,
     };
 

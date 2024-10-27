@@ -1,11 +1,13 @@
+import 'package:calcpal/screens/operational_result_report.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:calcpal/screens/division_level2.dart';
 import 'package:calcpal/screens/multiplication_level2.dart';
-import '../screens/addition_level1.dart';
-import '../screens/addition_level2.dart';
-import '../screens/subtraction_level2.dart';
+import 'package:calcpal/screens/addition_level1.dart';
+import 'package:calcpal/screens/addition_level2.dart';
+import 'package:calcpal/screens/subtraction_level2.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ActivityOperationalScreen extends StatelessWidget {
   const ActivityOperationalScreen({super.key});
@@ -31,6 +33,29 @@ class ActivityOperationalScreen extends StatelessWidget {
               ),
             ),
           ),
+          // "Reports" button
+          Positioned(
+            top: 20.0,
+            right: 20.0,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white, // White background
+                foregroundColor: Colors.black, // Black text color
+                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TableScreenOp()),
+              ),
+              child: Text(
+                AppLocalizations.of(context)!.activityReportsTitle,
+                style: TextStyle(fontSize: 16.0),
+              ),
+            ),
+          ),
           // Buttons
           Center(
             child: LayoutBuilder(
@@ -51,7 +76,8 @@ class ActivityOperationalScreen extends StatelessWidget {
                       switch (index) {
                         case 0:
                           return DashboardButton(
-                            text: 'Level 1 - General',
+                            text:
+                                AppLocalizations.of(context)!.level1GeneralLbl,
                             onPressed: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -60,7 +86,8 @@ class ActivityOperationalScreen extends StatelessWidget {
                           );
                         case 1:
                           return DashboardButton(
-                            text: 'Level 2 - Addition',
+                            text:
+                                AppLocalizations.of(context)!.level2AdditionLbl,
                             onPressed: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -68,7 +95,8 @@ class ActivityOperationalScreen extends StatelessWidget {
                           );
                         case 2:
                           return DashboardButton(
-                            text: 'Level 2 - Subtraction',
+                            text: AppLocalizations.of(context)!
+                                .level2SubtractionLbl,
                             onPressed: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -76,7 +104,8 @@ class ActivityOperationalScreen extends StatelessWidget {
                           );
                         case 3:
                           return DashboardButton(
-                            text: 'Level 2 - Multiplication',
+                            text: AppLocalizations.of(context)!
+                                .level2MultiplicationLbl,
                             onPressed: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -85,7 +114,8 @@ class ActivityOperationalScreen extends StatelessWidget {
                           );
                         case 4:
                           return DashboardButton(
-                            text: 'Level 2 - Division',
+                            text:
+                                AppLocalizations.of(context)!.level2DivisionLbl,
                             onPressed: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(

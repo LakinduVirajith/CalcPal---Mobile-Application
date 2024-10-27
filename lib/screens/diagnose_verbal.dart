@@ -105,6 +105,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
         isErrorOccurred = false;
         isDataLoading = true;
       });
+      await Future.delayed(const Duration(microseconds: 500));
 
       VerbalQuestion? response = await _questionService.fetchQuestion(
           currentQuestionNumber,
@@ -126,7 +127,7 @@ class _DiagnoseVerbalScreenState extends State<DiagnoseVerbalScreen> {
         // SYNTHESIZE SPEECH FOR THE QUESTION AND STORE THE AUDIO DATA
         questionVoice = await _textToSpeechService.synthesizeSpeech(
           question,
-          CommonService.getLanguageCode(selectedLanguageCode),
+          selectedLanguageCode,
         );
 
         await _toggleAudioPlayback();

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:async';
 import 'dart:math';
 import '../widgets/drag_drop_widgets.dart';
 import 'diagnose_ideognostic_type3.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DiagnoseIdeognosticType2Screen extends StatefulWidget {
   final int timeTaken;
@@ -94,8 +94,10 @@ class _DiagnoseIdeognosticType2ScreenState
                   children: [
                     Text(
                       questionNumber == 3
-                          ? 'Using these digits, make the largest number possible'
-                          : 'Using these digits, make the smallest number possible',
+                          ? AppLocalizations.of(context)!
+                              .ideognosticQuestionType2_largest
+                          : AppLocalizations.of(context)!
+                              .ideognosticQuestionType2_smallest,
                       style: TextStyle(
                         fontSize: 20,
                         color: Colors.white,
@@ -139,8 +141,8 @@ class _DiagnoseIdeognosticType2ScreenState
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text(
-                        'Next',
+                      child: Text(
+                        AppLocalizations.of(context)!.nextBtnText,
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.white,

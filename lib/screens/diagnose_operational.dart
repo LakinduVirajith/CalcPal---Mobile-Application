@@ -10,6 +10,7 @@ import '../services/operational_service.dart';
 import '../services/user_service.dart';
 import '../enums/disorder_types.dart';
 import '../constants/routes.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DiagnoseOperationalScreen extends StatefulWidget {
   const DiagnoseOperationalScreen({super.key});
@@ -94,7 +95,8 @@ class _DiagnoseOperationalScreenState extends State<DiagnoseOperationalScreen> {
     final accessToken = prefs.getString('access_token');
 
     if (accessToken == null) {
-      _handleErrorAndRedirect('Access token error. Please log in again.');
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
       return;
     }
 
@@ -102,7 +104,8 @@ class _DiagnoseOperationalScreenState extends State<DiagnoseOperationalScreen> {
     User? user = await _userService.getUser(accessToken, context);
 
     if (user == null || user.iqScore == null) {
-      _handleErrorAndRedirect('Error fetching user IQ score.');
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesIQScoreError);
       return;
     }
 
@@ -129,7 +132,8 @@ class _DiagnoseOperationalScreenState extends State<DiagnoseOperationalScreen> {
     if (diagnosis != null && diagnosis.prediction != null) {
       diagnoseStatus = diagnosis.prediction!;
     } else {
-      _handleErrorAndRedirect('Error fetching diagnosis result.');
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesResultError);
       return;
     }
 
@@ -168,7 +172,8 @@ class _DiagnoseOperationalScreenState extends State<DiagnoseOperationalScreen> {
         },
       );
     } else {
-      _handleErrorAndRedirect('Error updating diagnosis result.');
+      _handleErrorAndRedirect(
+          AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
     }
   }
 
@@ -240,8 +245,8 @@ class _DiagnoseOperationalScreenState extends State<DiagnoseOperationalScreen> {
                       children: [
                         const SizedBox(height: 50),
                         // Question Text
-                        const Text(
-                          'Select the correct answer for -',
+                        Text(
+                          AppLocalizations.of(context)!.operationalQuestion,
                           style: TextStyle(
                             fontSize: 24,
                             color: Colors.white,

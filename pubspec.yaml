@@ -102,6 +102,8 @@ dependencies:
   # A PACKAGE TO HANDLE RUNTIME PERMISSIONS FOR ACCESSING DEVICE FEATURES LIKE THE MICROPHONE, CAMERA, ETC.
   permission_handler: ^11.3.1
 
+  flutter_drawing_board: ^0.9.4
+
 dev_dependencies:
   # FLUTTER TESTING FRAMEWORK
   flutter_test:
@@ -149,58 +151,26 @@ flutter:
     - assets/images/diagnose_quiz_3.png
     - assets/images/diagnose_quiz_4.png
     - assets/images/diagnose_background_v1.png
-
+    - assets/images/diagnose_background_v3.png
+    - assets/images/diagnose_background_v4.png
     - assets/images/diagnose_op_background.png
+    - assets/images/level1general.png
+    - assets/images/level2addition.jpeg
+    - assets/images/level2subtraction.jpeg
+    - assets/images/level2multiplication.jpeg
+    - assets/images/level2_multiplication.png
+    - assets/images/level2division.jpeg
     - assets/images/operational_activity_dashboard.png
-    - assets/images/operational_activities/operational_level1.png
-    - assets/images/operational_activities/subtraction_level1.png
-    - assets/images/operational_activities/multiplication_level1.png
-    - assets/images/operational_activities/division_level1.png
-    - assets/images/operational_activities/addition_level2_1.png
-    - assets/images/operational_activities/addition_level2_2.png
-    - assets/images/operational_activities/addition_level2_3.png
-    - assets/images/operational_activities/addition_level2_4.png
-    - assets/images/operational_activities/subtraction_level2_1.png
-    - assets/images/operational_activities/subtraction_level2_2.png
-    - assets/images/operational_activities/subtraction_level2_3.png
-    - assets/images/operational_activities/subtraction_level2_4.png
-    - assets/images/operational_activities/multiplication_level2_1.png
-    - assets/images/operational_activities/multiplication_level2_2.png
-    - assets/images/operational_activities/multiplication_level2_3.png
-    - assets/images/operational_activities/multiplication_level2_4.png
-    - assets/images/operational_activities/division_level2_1.png
-    - assets/images/operational_activities/division_level2_2.png
-    - assets/images/operational_activities/division_level2_3.png
-    - assets/images/operational_activities/division_level2_4.png
+
+    - assets/images/numbercreationimg.png
+    - assets/images/numberline_img.png
+    - assets/images/fractionsactimg.jpg
 
     - assets/images/diagnose_id_background.png
-    - assets/images/ideognostic/ideo_q1_1.png
-    - assets/images/ideognostic/ideo_q1_2.png
-    - assets/images/ideognostic/ideo_q1_3.png
-    - assets/images/ideognostic/ideo_q1_4.png
-    - assets/images/ideognostic/ideo_q2_1.png
-    - assets/images/ideognostic/ideo_q2_2.png
-    - assets/images/ideognostic/ideo_q2_3.png
-    - assets/images/ideognostic/ideo_q2_4.png
-    - assets/images/ideognostic/ideo_q5.png
 
-    - assets/images/ideognostic_activities/numberline_1.png
-    - assets/images/ideognostic_activities/numberline_2.png
-    - assets/images/ideognostic_activities/numberline_3.png
-    - assets/images/ideognostic_activities/numbercre_1.png
-    - assets/images/ideognostic_activities/numbercre_2.png
-    - assets/images/ideognostic_activities/numbercre_3.png
-    - assets/images/ideognostic_activities/numbercre_4.png
-    - assets/images/ideognostic_activities/fractionact_1.png
-    - assets/images/ideognostic_activities/fractionact_2.png
-    - assets/images/ideognostic_activities/fractionact_3.png
-    - assets/images/ideognostic_activities/fractionact_4.png
-
+    - assets/images/Cube.png
     - assets/images/Circle.png
     - assets/images/Triangle.png
-    - assets/images/7.png
-    - assets/images/Cylinder.png
-    - assets/images/Cube.png
     - assets/images/Square.png
     - assets/images/Rectangle.png
     - assets/images/activity_background_v3.jpg
@@ -213,8 +183,20 @@ flutter:
     - assets/images/diagnose_report_background.png
     - assets/images/activity_background_v1.jpg
     - assets/images/activity_background_v2.jpg
+    - assets/images/activity_background_v3.jpg
+    - assets/images/activity_background_v5.jpg
     - assets/images/flip_card_front_background.jpg
     - assets/images/flip_card_back_background.jpg
+    - assets/images/Cube.png
+    - assets/images/Box.png
+    - assets/images/Visual1.png
+    - assets/images/Visual2.png
+    - assets/images/Visual3.png
+    - assets/images/Visual4.png
+    - assets/images/Rectangle.png
+    - assets/images/Cuboid.png
+    - assets/images/Cone.png
+    - assets/images/Prism.png
     - assets/images/graphical.jpg
     - assets/images/schoolVibe.png
     - assets/images/backImage.png
