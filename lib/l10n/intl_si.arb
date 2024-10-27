@@ -105,6 +105,7 @@
   "activityVerbalQuestion2Text": "පිළිතුර ලබා දී ඔබේ උත්සහය පරීක්ෂා කරන්න!",
 
   "activityLexicalMessageWrongAnswer": "අසන්නයි! නැවත උත්සහ කරමු.",
+  "activityLexicalMessageCorrectAnswer": "නියමයි! එය නිවැරදි පිළිතුරයි! අපි ඊළඟ අභියෝගයට මුහුණ දෙමු!",
   "activityLexicalQuestion1Text": "ඔබේ පිළිතුර මෙහි තබන්න!",
   "activityLexicalQuestion2Text": "මෙම අංකය ශබ්ද නගා කියවන්න",
 

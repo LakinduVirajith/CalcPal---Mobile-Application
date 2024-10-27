@@ -105,6 +105,7 @@
   "activityVerbalQuestion2Text": "Tap an answer to see if you got it right!",
 
   "activityLexicalMessageWrongAnswer": "Close! Let's try again and see if we can find the right answer!",
+  "activityLexicalMessageCorrectAnswer": "Awesome! That's the correct answer! Let’s tackle the next challenge!",
   "activityLexicalQuestion1Text": "Drop your answer here!",
   "activityLexicalQuestion2Text": "Read this number aloud",
 

@@ -105,6 +105,7 @@
   "activityVerbalQuestion2Text": "நீங்கள் சரியாகப் பெற்றீர்களா என்பதைப் பார்க்க பதிலைத் தட்டுங்கள்!",
 
   "activityLexicalMessageWrongAnswer": "அருகில்! மீண்டும் முயற்சிக்கிறோம் மற்றும் சரியான பதிலை கண்டுபிடிக்க முயற்சிக்கலாம்!",
+  "activityLexicalMessageCorrectAnswer": "அற்புதம்! அது சரியான பதில்! அடுத்த சவாலுக்கு தயாராகலாம்!",
   "activityLexicalQuestion1Text": "உங்கள் பதிலை இங்கே விடவும்!",
   "activityLexicalQuestion2Text": "இந்த எண்ணை ஒலியாகப் படியுங்கள்",
 

@@ -3,6 +3,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:calcpal/constants/routes.dart';
 import 'package:calcpal/services/common_service.dart';
 import 'package:calcpal/services/text_to_speech_service.dart';
+import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/services/verbal_service.dart';
 import 'package:calcpal/widgets/answer_box.dart';
 import 'package:flip_card/flip_card.dart';
@@ -46,6 +47,7 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
 
   // INITIALIZING SERVICEs
   final TextToSpeechService _textToSpeechService = TextToSpeechService();
+  final ToastService _toastService = ToastService();
   final VerbalService _verbalService = VerbalService();
   final AudioPlayer _audioPlayer = AudioPlayer();
   final GlobalKey<FlipCardState> _cardKey = GlobalKey<FlipCardState>();
@@ -210,11 +212,14 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
       await _audioPlayer.play(correctAnswerVoice);
       _cardKey.currentState?.toggleCard();
 
+      _toastService.successToast(
+        AppLocalizations.of(context)!.activityLexicalMessageCorrectAnswer,
+      );
       // SHOW A CONGRATULATORY DIALOG WHEN THE ANSWER IS CORRECT
-      bool status = await CommonService.showCongratulatoryDialog(context);
-      if (status) {
-        await _loadActivity();
-      }
+      // bool status = await CommonService.showCongratulatoryDialog(context);
+      // if (status) {
+      //   await _loadActivity();
+      // }
     } else {
       await _audioPlayer.play(wrongAnswerVoice);
     }
@@ -224,6 +229,7 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
       if (isCorrect) {
         _cardKey.currentState?.toggleCard();
         isCorrect = false;
+        await _loadActivity();
       }
     });
   }
