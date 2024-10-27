@@ -2,12 +2,9 @@ import 'dart:convert';
 import 'package:calcpal/models/diagnosis.dart';
 import 'package:calcpal/models/diagnosis_result.dart';
 import 'package:calcpal/models/flask_diagnosis_result.dart';
-import 'package:calcpal/models/verbal_activity.dart';
-import 'package:calcpal/models/verbal_question.dart';
 import 'package:calcpal/services/common_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
 

@@ -100,7 +100,6 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
         // DECODE BASE64 ENCODED QUESTION
         if (DiagnoseSequentialScreen.selectedLanguageCode != 'en') {
           _decodeQuestion(DiagnoseSequentialScreen.question);
-          
         }
         // START THE STOPWATCH FOR THE FIRST QUESTION ONLY
         if (DiagnoseSequentialScreen.currentQuestionNumber == 1) {
@@ -356,7 +355,7 @@ class _DiagnoseSequentialScreenState extends State<DiagnoseSequentialScreen> {
                                   // DISPLAY QUESTION INSTRUCTIONS
                                   : Column(
                                       children: [
-                                        const SizedBox(height: 28.0),
+                                        const SizedBox(height: 14.0),
                                         Text(
                                           DiagnoseSequentialScreen.question,
                                           style: TextStyle(

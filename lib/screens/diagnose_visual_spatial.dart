@@ -344,10 +344,10 @@ class _DiagnoseVisualScreenState extends State<DiagnoseVisualScreen> {
                               : (snapshot.hasError ||
                                       DiagnoseVisualScreen.isErrorOccurred)
                                   ? // Display error if loading failed
-                                  Center(
+                                  const Center(
                                       child: Text(
                                         "Error loading question", // Replace with localization
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 20,
                                             fontFamily: 'Roboto',
@@ -368,7 +368,7 @@ class _DiagnoseVisualScreenState extends State<DiagnoseVisualScreen> {
                                               fontFamily: 'Roboto',
                                               fontWeight: FontWeight.w400),
                                         ),
-                                        const SizedBox(height: 15.0),
+                                        const SizedBox(height: 5.0),
                                         DiagnoseVisualScreen
                                                     .currentQuestionNumber ==
                                                 5

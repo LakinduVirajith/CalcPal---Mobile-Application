@@ -171,6 +171,7 @@ flutter:
     - assets/images/Cube.png
     - assets/images/Circle.png
     - assets/images/Triangle.png
+    - assets/images/Cylinder.png
     - assets/images/Square.png
     - assets/images/Rectangle.png
     - assets/images/activity_background_v3.jpg

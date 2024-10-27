@@ -113,7 +113,7 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
         Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.only(top: 30.0, bottom: 10.0),
               child: Text(
                 '$exerciseNumber: ${AppLocalizations.of(context)!.ideognosticQuestionType3}',
                 style:
@@ -129,7 +129,7 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black),
                     borderRadius: BorderRadius.circular(10),
-                    color: Colors.grey.withOpacity(0.9),
+                    color: const Color.fromARGB(136, 164, 164, 164),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -151,6 +151,7 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
                                   decoration: BoxDecoration(
                                     border: Border.all(color: Colors.black),
                                     borderRadius: BorderRadius.circular(10),
+                                    color: Color.fromARGB(255, 145, 145, 145),
                                   ),
                                   child: _buildFractionVisual(
                                       totalParts, coloredParts, exerciseColor),

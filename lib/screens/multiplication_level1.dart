@@ -234,7 +234,7 @@ class _MultiplicationLevel1ScreenState
                     ),
                   ),
                 ),
-                const SizedBox(height: 60),
+                const SizedBox(height: 30),
                 // Number and Icons Row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

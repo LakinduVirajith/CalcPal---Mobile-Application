@@ -246,6 +246,7 @@ class _ActivityPractonosticScreenState
                 ),
                 child: Column(
                   children: [
+                    const SizedBox(height: 12.0),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -253,9 +254,9 @@ class _ActivityPractonosticScreenState
                           question,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 30,
+                              fontSize: 18,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -266,9 +267,9 @@ class _ActivityPractonosticScreenState
                           questionText,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 24,
+                              fontSize: 18,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -289,7 +290,7 @@ class _ActivityPractonosticScreenState
                           Image.asset('assets/images/activity4.png'),
                       ],
                     ),
-                    const SizedBox(height: 38.0),
+                    const SizedBox(height: 6.0),
                     // ANSWER OPTIONS
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
@@ -335,13 +336,14 @@ class _ActivityPractonosticScreenState
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        const SizedBox(height: 12.0),
                         Text(
                           question,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 30,
+                              fontSize: 18,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -352,9 +354,9 @@ class _ActivityPractonosticScreenState
                           questionText,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 20,
+                              fontSize: 18,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -387,7 +389,6 @@ class _ActivityPractonosticScreenState
                           ),
                       ],
                     ),
-                    const SizedBox(height: 38.0),
                     // ANSWER OPTIONS
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
@@ -437,9 +438,9 @@ class _ActivityPractonosticScreenState
                           question,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 25,
+                              fontSize: 18,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -450,9 +451,9 @@ class _ActivityPractonosticScreenState
                           questionText,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 20,
+                              fontSize: 18,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -485,7 +486,6 @@ class _ActivityPractonosticScreenState
                           ),
                       ],
                     ),
-                    const SizedBox(height: 38.0),
                     // ANSWER OPTIONS
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
@@ -528,6 +528,7 @@ class _ActivityPractonosticScreenState
                 ),
                 child: Column(
                   children: [
+                    const SizedBox(height: 12.0),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -535,9 +536,9 @@ class _ActivityPractonosticScreenState
                           question,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 25,
+                              fontSize: 20,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -550,7 +551,7 @@ class _ActivityPractonosticScreenState
                               color: Colors.black,
                               fontSize: 20,
                               fontFamily: 'Roboto',
-                              fontWeight: FontWeight.w400),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),

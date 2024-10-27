@@ -76,7 +76,6 @@ class _NumberLineJumpScreenState extends State<NumberLineJumpScreen> {
         title: Text('Number Line Jump - Level $currentLevel'),
       ),
       body: Container(
-        margin: const EdgeInsets.only(top: 20.0),
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/activity_background_v5.jpg'),
@@ -100,8 +99,8 @@ class _NumberLineJumpScreenState extends State<NumberLineJumpScreen> {
                       return DragTarget<int>(
                         builder: (context, candidateData, rejectedData) {
                           return AnimatedContainer(
-                            duration: Duration(milliseconds: 300),
-                            margin: EdgeInsets.all(8),
+                            duration: const Duration(milliseconds: 300),
+                            margin: const EdgeInsets.all(8),
                             width: 100,
                             height: 100,
                             decoration: BoxDecoration(
@@ -114,7 +113,7 @@ class _NumberLineJumpScreenState extends State<NumberLineJumpScreen> {
                             child: Center(
                               child: Text(
                                 placedNumbers[index]?.toString() ?? '',
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                             ),
@@ -144,7 +143,7 @@ class _NumberLineJumpScreenState extends State<NumberLineJumpScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               // Shuffled Numbers to Drag
               Center(
                 child: SizedBox(
@@ -158,7 +157,7 @@ class _NumberLineJumpScreenState extends State<NumberLineJumpScreen> {
                               return Draggable<int>(
                                 data: shuffledNumbers[index],
                                 child: Container(
-                                  width: 100,
+                                  width: 80,
                                   height: 60,
                                   margin: EdgeInsets.all(8),
                                   decoration: BoxDecoration(

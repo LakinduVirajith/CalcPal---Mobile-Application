@@ -124,7 +124,7 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
 
   // FUNTION VALIDATE QUESTION AND UPDATE STATE
   Future<void> _validateQuestion() async {
-    if (attempt == 10) {
+    if (attempt == 2) {
       setState(() {
         currentActivityNumber++;
         attempt = 1;

@@ -329,7 +329,8 @@ class _NumberLineExerciseState extends State<NumberLineExercise> {
         Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(10.0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 40.0, horizontal: 10.0),
               child: Text(
                 '${widget.exerciseNumber}: ${AppLocalizations.of(context)!.numberLineTopic}',
                 style:
@@ -493,7 +494,8 @@ class _NumberLineExerciseState extends State<NumberLineExercise> {
                 ),
               ),
               child: Text(AppLocalizations.of(context)!.checkAnsBtn),
-            )
+            ),
+            const SizedBox(height: 20.0)
           ],
         ),
       ],

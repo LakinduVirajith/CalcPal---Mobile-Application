@@ -227,7 +227,7 @@ class _DivisionLevel1ScreenState extends State<DivisionLevel1Screen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 60),
+                const SizedBox(height: 20),
                 // Number and Icons Row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

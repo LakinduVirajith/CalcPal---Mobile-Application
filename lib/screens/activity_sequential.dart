@@ -8,7 +8,6 @@ import 'package:calcpal/widgets/sequential_answer_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'dart:developer' as developer;
 
@@ -64,7 +63,7 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
   // FUNCTION TO SET THE SELECTED LANGUAGE BASED ON THE STORED LANGUAGE CODE
   Future<void> _setupLanguage() async {
     // final prefs = await SharedPreferences.getInstance();
-    final languageCode = "en";
+    const languageCode = "en";
     ActivitySequentialScreen.selectedLanguageCode = languageCode;
   }
 
@@ -254,7 +253,6 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
                                   // DISPLAY QUESTION INSTRUCTIONS
                                   : Column(
                                       children: [
-                                        SizedBox(height: 20.0),
                                         Text(
                                           AppLocalizations.of(context)!
                                               .sequentialQuestion,
@@ -263,13 +261,13 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
                                             fontSize: ActivitySequentialScreen
                                                         .selectedLanguageCode ==
                                                     'ta'
-                                                ? 20
-                                                : 24,
+                                                ? 18
+                                                : 22,
                                             fontFamily: 'Roboto-Bold',
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
-                                        Divider(
+                                        const Divider(
                                           color: Colors
                                               .grey, // Set the color of the line
                                           thickness:
@@ -280,10 +278,10 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
                                               20, // Optional: Add spacing after the line
                                         ),
 
-                                        SizedBox(height: 10.0),
+                                        const SizedBox(height: 5.0),
                                         ItemBuilder(
                                             ActivitySequentialScreen.type),
-                                        const SizedBox(height: 38.0),
+                                        const SizedBox(height: 15.0),
                                         // ANSWER OPTIONS
                                         AnimatedSwitcher(
                                           duration:

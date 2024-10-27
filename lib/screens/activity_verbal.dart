@@ -183,7 +183,7 @@ class _ActivityVerbalScreenState extends State<ActivityVerbalScreen> {
 
   // VALIDATE QUESTION AND UPDATE STATE
   Future<void> _validateQuestion() async {
-    if (attempt == 10) {
+    if (attempt == 2) {
       setState(() {
         currentActivityNumber++;
         attempt = 1;

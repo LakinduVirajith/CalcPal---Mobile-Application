@@ -295,7 +295,7 @@ class _DiagnosePractonosticScreenState
                       bottom: constraints.maxHeight * 0.1,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          vertical: 24.0,
+                          vertical: 12.0,
                           horizontal: 36.0,
                         ),
                         decoration: BoxDecoration(
@@ -380,7 +380,7 @@ class _DiagnosePractonosticScreenState
                                                   ),
                                               ],
                                             ),
-                                      const SizedBox(height: 38.0),
+                                      const SizedBox(height: 12.0),
                                       // ANSWER OPTIONS
                                       AnimatedSwitcher(
                                         duration:
@@ -396,7 +396,7 @@ class _DiagnosePractonosticScreenState
                                               onTap: () =>
                                                   _handleAnswer(answer),
                                               child: AnswerBox(
-                                                width: 120.0,
+                                                width: 150.0,
                                                 height: 60,
                                                 value: answer,
                                                 size: 18.0,
