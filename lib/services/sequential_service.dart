@@ -23,7 +23,7 @@ class SequentialService {
   Future<SequentialQuestion?> fetchQuestion(
       int questionNumber, String language, BuildContext context) async {
     final url = Uri.parse(
-        '$_baseUrl/sequential/quection/$questionNumber');
+        '$_baseUrl/sequential/quection/$questionNumber?language=$language');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -43,11 +43,11 @@ class SequentialService {
       return null;
     }
   }
+
   // FETCH A QUESTION BASED ON NUMBER AND LANGUAGE
   Future<SequentialQuestion?> fetchActivityQuestion(
       int questionNumber, String language, BuildContext context) async {
-    final url = Uri.parse(
-        '$_baseUrl/sequential/quection/$questionNumber');
+    final url = Uri.parse('$_baseUrl/sequential/quection/$questionNumber');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -67,6 +67,7 @@ class SequentialService {
       return null;
     }
   }
+
   // SUBMIT A DIAGNOSIS RESULT TO THE SERVER
   Future<bool> addDiagnosisResult(
       DiagnosisResult result, BuildContext context) async {

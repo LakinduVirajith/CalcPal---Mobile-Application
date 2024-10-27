@@ -144,5 +144,7 @@
   "userServiceResetPassword404": "ඊමේල් ලිපිනය සමඟ ගිණුමක් හමු නොවීය.",
   "userServiceUpdateUser200": "ඔබගේ විස්තර සාර්ථකව යාවත්කාලීන කර ඇත.",
   "userServiceUpdateUser404": "පරිශීලක ගිණුම හමු නොවීය. කරුණාකර ඔබ පිවිසී අති බව තහවුරු කරන්න.",
-  "userServiceUpdateIQ200": "සාර්ථකයි! ඔබේ IQ ලකුණ යාවත්කාලීන කර ඇත."
+  "userServiceUpdateIQ200": "සාර්ථකයි! ඔබේ IQ ලකුණ යාවත්කාලීන කර ඇත.",
+
+  "sequentialQuestion" :"ඊළඟ රටාව තෝරන්න"
 }

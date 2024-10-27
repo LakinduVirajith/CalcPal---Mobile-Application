@@ -1,12 +1,8 @@
 import 'dart:math';
-
 import 'package:calcpal/constants/routes.dart';
-import 'package:calcpal/screens/activity_dashboard.dart';
-import 'package:calcpal/screens/main_dashboard.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-
 import '../services/toast_service.dart';
+
 class ActivityVisualSpatialScreen extends StatefulWidget {
   const ActivityVisualSpatialScreen({super.key});
   @override
@@ -35,7 +31,6 @@ class _ActivityVisualSpatialScreenState
     super.initState();
     gridValues = List.generate(gridSize * gridSize, (index) => null);
     itemGenerate = generateRandomItems(shapes, 10);
-    print(itemGenerate);
   }
 
   int attept = 10;
@@ -134,8 +129,7 @@ class _ActivityVisualSpatialScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: itemGenerate.map((item) {
                   return GestureDetector(
-                    child: _shapeItem(item,
-                        "/Users/macbookpro2018/Desktop/SLIIT/Research/CalcPal---Mobile-Application/assets/images/${item}.png"),
+                    child: _shapeItem(item, "assets/images/${item}.png"),
                   );
                 }).toList(),
               ),

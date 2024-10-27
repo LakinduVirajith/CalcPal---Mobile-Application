@@ -144,5 +144,7 @@
   "userServiceResetPassword404": "No account found with the provided email.",
   "userServiceUpdateUser200": "Your details have been updated successfully.",
   "userServiceUpdateUser404": "User account not found. Please make sure you are logged in.",
-  "userServiceUpdateIQ200": "Success! Your IQ score is now up to date."
+  "userServiceUpdateIQ200": "Success! Your IQ score is now up to date.",
+
+  "sequentialQuestion" :"Select The Next Pattern"
 }
