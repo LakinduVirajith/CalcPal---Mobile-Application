@@ -1,6 +1,7 @@
 import 'package:calcpal/models/activity_result.dart';
 import 'package:calcpal/models/user.dart';
 import 'package:calcpal/services/operational_service.dart';
+import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -36,6 +37,7 @@ class _DivisionLevel2State extends State<DivisionLevel2> {
 
   final UserService _userService = UserService();
   final OperationalService _activityService = OperationalService();
+  final ToastService _toastService = ToastService();
 
   @override
   void initState() {
@@ -77,8 +79,7 @@ class _DivisionLevel2State extends State<DivisionLevel2> {
   }
 
   void _initializeExercise() {
-    backgroundImage =
-        'assets/images/operational_activities/division_level2_$exerciseNumber.png';
+    backgroundImage = 'assets/images/level2subtraction.jpeg';
     switch (exerciseNumber) {
       case 1:
         number1 = Random().nextInt(20) + 1; // Number1 between 1 and 20
@@ -284,15 +285,24 @@ class _DivisionLevel2State extends State<DivisionLevel2> {
                           SizedBox(height: 20),
                           ElevatedButton(
                             onPressed: layoutCompleted ? evaluateAnswer : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Colors.black, // Black button background
+                              foregroundColor: Colors.white, // White text color
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 30, vertical: 15),
+                              textStyle: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                    8), // Slightly rounded edges
+                              ),
+                            ),
                             child:
                                 Text(AppLocalizations.of(context)!.nextBtnText),
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 30, vertical: 15),
-                              textStyle: TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                          ),
+                          )
                         ],
                       ),
                     ),
@@ -333,59 +343,28 @@ class _DivisionLevel2State extends State<DivisionLevel2> {
   }
 
   void _showCelebrationPopup() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Congratulations! Good job 🎉🎉'),
-        content: Text('You got the correct answer!'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _nextExercise();
-            },
-            child: Text('Next'),
-          ),
-        ],
-      ),
-    );
+    // Show success toast
+    _toastService.successToast(AppLocalizations.of(context)!.correctToast);
+
+    // Wait and proceed to the next exercise
+    Future.delayed(const Duration(seconds: 2), () {
+      _nextExercise();
+    });
   }
 
   void _showTryAgainPopup() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Let's Try Again 😊"),
-        content: Text('That answer is incorrect.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('Retry'),
-          ),
-        ],
-      ),
-    );
+    _toastService.errorToast(AppLocalizations.of(context)!.tryAgainToast);
   }
 
   void _showCorrectAnswerDialog(int correctAnswer) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Correct Answer'),
-        content: Text('The correct answer was $correctAnswer.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _nextExercise();
-            },
-            child: Text('Next'),
-          ),
-        ],
-      ),
-    );
+    // Show info toast with the correct answer
+    _toastService.infoToast(
+        '${AppLocalizations.of(context)!.correctAns}: $correctAnswer');
+
+    // Wait briefly, then move to the next exercise
+    Future.delayed(const Duration(seconds: 2), () {
+      _nextExercise();
+    });
   }
 
   void _nextExercise() {

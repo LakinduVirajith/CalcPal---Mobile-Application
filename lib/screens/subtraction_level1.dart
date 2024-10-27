@@ -1,6 +1,7 @@
 import 'package:calcpal/models/activity_result.dart';
 import 'package:calcpal/models/user.dart';
 import 'package:calcpal/services/operational_service.dart';
+import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -44,6 +45,7 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
 
   final UserService _userService = UserService();
   final OperationalService _activityService = OperationalService();
+  final ToastService _toastService = ToastService();
 
   @override
   void initState() {
@@ -65,38 +67,15 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
     } else {
       retryCount++; // Increment retryCount if the answer is incorrect
     }
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: isCorrect
-              ? const Icon(Icons.check_circle, color: Colors.green, size: 50)
-              : const Icon(Icons.error, color: Colors.red, size: 50),
-          content: Text(
-            isCorrect ? 'Correct! 🎉' : 'Try Again!',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 24),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                if (isCorrect) {
-                  moveToNextActivity(
-                      context,
-                      widget
-                          .isActivity4); // Call this function only if the answer is correct
-                }
-              },
-              child: const Text(
-                'OK',
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    if (isCorrect) {
+      _toastService.successToast(AppLocalizations.of(context)!.correctToast);
+      Future.delayed(const Duration(seconds: 1), () {
+        moveToNextActivity(context,
+            widget.isActivity4); // Move to next activity after 1 second
+      });
+    } else {
+      _toastService.errorToast(AppLocalizations.of(context)!.tryAgainToast);
+    }
   }
 
   Future<void> _submitResultsToDB() async {
@@ -213,8 +192,7 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(
-                    'assets/images/operational_activities/subtraction_level1.png'),
+                image: AssetImage('assets/images/level1general.png'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -228,12 +206,27 @@ class _SubtractionLevel1ScreenState extends State<SubtractionLevel1Screen> {
                 Positioned(
                   top: 20,
                   left: 20,
-                  child: Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(
+                          0.6), // Contrasting background color with transparency
+                      border: Border.all(
+                        color: Colors
+                            .white, // Border color to contrast with background
+                        width: 1, // Thin border
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(4), // Optional: rounded corners
+                    ),
+                    child: Text(
+                      widget.title,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

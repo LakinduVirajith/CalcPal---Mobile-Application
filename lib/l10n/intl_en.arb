@@ -200,5 +200,8 @@
   "datePlayed": "Date Played",
   "score": "Score",
   "correctNumber": "Correct Number",
-  "timePlayedInSecs": "Time Played (in secs)"
+  "timePlayedInSecs": "Time Played (in secs)",
+  "correctToast":"🎉 Correct! 🎉",
+  "tryAgainToast":"Try Again!",
+  "correctAns":"Correct Answer"
 }
