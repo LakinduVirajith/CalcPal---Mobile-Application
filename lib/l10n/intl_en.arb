@@ -203,6 +203,7 @@
   "timePlayedInSecs": "Time Played (in secs)",
   "correctToast":"🎉 Correct! 🎉",
   "tryAgainToast":"Try Again!",
+  "nextExcerciseToast":"Not quite right, let's try the next exercise",
   "correctAns":"Correct Answer",
   
   "showCongratulatoryDialogTitle": "Congratulations!",

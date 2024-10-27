@@ -1,3 +1,4 @@
+import 'package:calcpal/services/toast_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async'; // Import for Stopwatch
@@ -35,6 +36,7 @@ class _NumberCreationActivityScreenState
 
   final UserService _userService = UserService();
   final IdeognosticService _activityService = IdeognosticService();
+  final ToastService _toastService = ToastService();
 
   @override
   void initState() {
@@ -147,20 +149,20 @@ class _NumberCreationActivityScreenState
         children: List.generate(4, (index) {
           final int exerciseNumber = index + 1;
           final String backgroundImagePath =
-              'assets/images/ideognostic_activities/numbercre_$exerciseNumber.png';
+              'assets/images/numbercreationimg.png';
           return NumberCreationExerciseScreen(
-            numberOfDigits: exerciseNumber == 1 || exerciseNumber == 2
-                ? 2
-                : (exerciseNumber == 3 ? 3 : 4),
-            exerciseTitle: _getExerciseTitle(exerciseNumber),
-            isLargestNumber:
-                exerciseNumber != 2, // Logic to determine largest or smallest
-            backgroundImagePath: backgroundImagePath,
-            pageController: _pageController,
-            onExerciseCompleted: (bool isCorrect, int retryCount) {
-              _updateResults(index, isCorrect, retryCount);
-            },
-          );
+              numberOfDigits: exerciseNumber == 1 || exerciseNumber == 2
+                  ? 2
+                  : (exerciseNumber == 3 ? 3 : 4),
+              exerciseTitle: _getExerciseTitle(exerciseNumber),
+              isLargestNumber:
+                  exerciseNumber != 2, // Logic to determine largest or smallest
+              backgroundImagePath: backgroundImagePath,
+              pageController: _pageController,
+              onExerciseCompleted: (bool isCorrect, int retryCount) {
+                _updateResults(index, isCorrect, retryCount);
+              },
+              toastService: _toastService);
         }),
       ),
     );
@@ -189,16 +191,17 @@ class NumberCreationExerciseScreen extends StatefulWidget {
   final String backgroundImagePath;
   final PageController pageController;
   final Function(bool isCorrect, int retryCount) onExerciseCompleted;
+  final ToastService toastService;
 
-  const NumberCreationExerciseScreen({
-    super.key,
-    required this.numberOfDigits,
-    required this.exerciseTitle,
-    required this.isLargestNumber,
-    required this.backgroundImagePath,
-    required this.pageController,
-    required this.onExerciseCompleted,
-  });
+  const NumberCreationExerciseScreen(
+      {super.key,
+      required this.numberOfDigits,
+      required this.exerciseTitle,
+      required this.isLargestNumber,
+      required this.backgroundImagePath,
+      required this.pageController,
+      required this.onExerciseCompleted,
+      required this.toastService});
 
   @override
   _NumberCreationExerciseScreenState createState() =>
@@ -243,81 +246,57 @@ class _NumberCreationExerciseScreenState
         totalScore = totalScore + 5;
       }
       correctCount++;
-      _showSuccessDialog();
+      _showSuccessToast();
     } else {
       _retryCount++;
       if (_retryCount < 3) {
-        _showRetryDialog();
+        _showRetryToast();
       } else {
         widget.onExerciseCompleted(false, _retryCount);
-        _showCorrectAnswerDialog();
+        _showCorrectAnswerToast();
       }
     }
   }
 
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Congratulations!'),
-        content: const Text('Correct! 🎉'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              widget.pageController.nextPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-            },
-            child: const Text('Next'),
-          ),
-        ],
-      ),
-    );
+  void _showSuccessToast() {
+    // Display success toast message
+    widget.toastService.successToast(AppLocalizations.of(context)!
+        .correctToast); // Replace with localized success message
+
+    // Delay briefly before navigating to the next page
+    Future.delayed(const Duration(seconds: 2), () {
+      widget.pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 
-  void _showRetryDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Not Quite Right'),
-        content: const Text('Let\'s try again!'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              setState(() {
-                _initializeExercise(); // Reset the screen
-              });
-            },
-            child: const Text('Retry'),
-          ),
-        ],
-      ),
-    );
+  void _showRetryToast() {
+    // Display retry toast message
+    widget.toastService.warningToast(AppLocalizations.of(context)!
+        .tryAgainToast); // Replace with localized retry message
+
+    // Reset the exercise after a short delay
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        _initializeExercise(); // Reset the screen
+      });
+    });
   }
 
-  void _showCorrectAnswerDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Correct Answer'),
-        content: Text('The correct answer is ${_correctAnswer.join()}'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              widget.pageController.nextPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-            },
-            child: const Text('Next'),
-          ),
-        ],
-      ),
-    );
+  void _showCorrectAnswerToast() {
+    // Display correct answer toast message
+    widget.toastService.successToast(
+        '${AppLocalizations.of(context)!.correctAns} : ${_correctAnswer.join()}');
+
+    // Proceed to the next page after a short delay
+    Future.delayed(const Duration(seconds: 2), () {
+      widget.pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 
   @override
@@ -337,7 +316,6 @@ class _NumberCreationExerciseScreenState
             padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 30),
             width: MediaQuery.of(context).size.width * 0.7,
             decoration: BoxDecoration(
-              color: Colors.grey.shade800.withOpacity(0.8),
               borderRadius: BorderRadius.circular(15),
             ),
             child: Column(
@@ -347,7 +325,7 @@ class _NumberCreationExerciseScreenState
                   widget.exerciseTitle,
                   style: const TextStyle(
                     fontSize: 20,
-                    color: Colors.white,
+                    color: Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -358,7 +336,7 @@ class _NumberCreationExerciseScreenState
                       .map((digit) => _buildDraggableDigit(digit))
                       .toList(),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 30),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(widget.numberOfDigits,
@@ -372,8 +350,23 @@ class _NumberCreationExerciseScreenState
                     children: <Widget>[
                       ElevatedButton(
                         onPressed: _checkAnswer,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Colors.black, // Black button background
+                          foregroundColor: Colors.white, // White text color
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 30, vertical: 10),
+                          textStyle: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                                8), // Slightly rounded edges
+                          ),
+                        ),
                         child: Text(AppLocalizations.of(context)!.checkAnsBtn),
-                      ),
+                      )
                     ],
                   ),
                 ),
@@ -419,7 +412,7 @@ class _NumberCreationExerciseScreenState
         width: 50,
         height: 50,
         decoration: BoxDecoration(
-          color: isEmpty ? Colors.grey : Colors.deepPurple,
+          color: isEmpty ? Colors.grey : Colors.green,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.black),
         ),
