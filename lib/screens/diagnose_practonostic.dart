@@ -5,6 +5,7 @@ import 'package:calcpal/models/diagnosis_result.dart';
 import 'package:calcpal/models/flask_diagnosis_result.dart';
 import 'package:calcpal/models/practognotic_question.dart';
 import 'package:calcpal/models/user.dart';
+import 'package:calcpal/services/common_service.dart';
 import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/services/practognostic_service.dart';
@@ -42,6 +43,7 @@ class _DiagnosePractonosticScreenState
   @override
   void initState() {
     super.initState();
+    _setupLanguage();
     // LOAD THE FIRST QUESTION WHEN THE WIDGET IS INITIALIZED
     _questionFuture = _loadQuestion();
   }
@@ -61,21 +63,23 @@ class _DiagnosePractonosticScreenState
 
   // FUNCTION TO SET THE SELECTED LANGUAGE BASED ON THE STORED LANGUAGE CODE
   Future<void> _setupLanguage() async {
-    final languageCode = 'en';
+    final prefs = await SharedPreferences.getInstance();
+    final languageCode = prefs.getString('language_code') ?? 'en';
+    print(languageCode);
     selectedLanguageCode = languageCode;
   }
 
   // FUNCTION TO LOAD AND PLAY QUESTION
   Future<void> _loadQuestion() async {
     try {
-      await _setupLanguage();
       setState(() {
         isErrorOccurred = false;
         isDataLoading = true;
       });
+      await Future.delayed(const Duration(milliseconds: 200));
       PractognosticQuestion? practoQuestion =
-          await _questionService.fetchQuestion(currentQuestionNumber, context);
-
+          await _questionService.fetchQuestion(currentQuestionNumber,
+              CommonService.getLanguageForAPI(selectedLanguageCode), context);
       if (practoQuestion != null) {
         setState(() {
           question = practoQuestion.question;
@@ -86,6 +90,14 @@ class _DiagnosePractonosticScreenState
           }
           if (practoQuestion.questionText != null) {
             questionText = practoQuestion.questionText!;
+          }
+
+          // DECODE BASE64 ENCODED QUESTION
+          if (selectedLanguageCode != 'en') {
+            setState(() => question = CommonService.decodeString(question));
+            setState(
+                () => questionText = CommonService.decodeString(questionText));
+            setState(() => answers = CommonService.decodeList(answers));
           }
 
           if (currentQuestionNumber == 1) {
@@ -270,7 +282,8 @@ class _DiagnosePractonosticScreenState
                     Container(
                       decoration: const BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage('assets/images/practo.png'),
+                          image: AssetImage(
+                              'assets/images/diagnose_background_v4.png'),
                           fit: BoxFit.cover,
                         ),
                       ),

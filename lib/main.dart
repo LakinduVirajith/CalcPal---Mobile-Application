@@ -166,7 +166,8 @@ class _ValidationScreenState extends State<ValidationScreen> {
 
   Future<void> _determineInitialRoute() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-
+    // Navigator.of(context).pushNamed(diagnoseGraphicalRoute);
+    // return;
     // WAIT FOR 2500 MILLISECONDS
     await Future.delayed(const Duration(milliseconds: 2500));
 
