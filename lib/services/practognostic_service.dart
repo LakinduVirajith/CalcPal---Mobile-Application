@@ -22,7 +22,7 @@ class PractognosticService {
   // FETCH A QUESTION BASED ON NUMBER AND LANGUAGE
   Future<PractognosticQuestion?> fetchQuestion(
       int questionNumber, String language, BuildContext context) async {
-    print("SInahala:$language");
+    print("Sinhala:$language");
     final url = Uri.parse(
         '$_baseUrl/practognostic/question/$questionNumber?language=$language');
 

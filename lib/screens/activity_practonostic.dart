@@ -1,4 +1,5 @@
 import 'package:calcpal/constants/routes.dart';
+import 'package:calcpal/services/common_service.dart';
 import 'package:calcpal/services/practognostic_service.dart';
 import 'package:calcpal/services/toast_service.dart';
 import 'package:calcpal/widgets/answer_box.dart';
@@ -56,9 +57,7 @@ class _ActivityPractonosticScreenState
         systemNavigationBarIconBrightness: Brightness.light,
       ),
     );
-
-    // LOADING ACTIVITY DATA
-    _initiated();
+    _setupLanguage();
     _activityFuture = _loadActivity();
   }
 
@@ -69,10 +68,6 @@ class _ActivityPractonosticScreenState
     selectedLanguageCode = languageCode;
   }
 
-  Future<void> _initiated() async {
-    await _setupLanguage();
-  }
-
   // FUNCTION TO LOAD THE ACTIVITY
   Future<void> _loadActivity() async {
     try {
@@ -80,12 +75,12 @@ class _ActivityPractonosticScreenState
         isErrorOccurred = false;
         isDataLoading = true;
       });
-
+      await Future.delayed(const Duration(milliseconds: 200));
       developer.log('API CURRENT NUMBER: ${currentActivityNumber.toString()}');
       // FETCHING THE ACTIVITY FROM THE SERVICE
       final activity = await _practognosticService.fetchActivity(
         currentActivityNumber,
-        "English",
+        CommonService.getLanguageForAPI(selectedLanguageCode),
         context,
       );
 
@@ -100,6 +95,15 @@ class _ActivityPractonosticScreenState
           correctAnswer = activity.correctAnswer;
         });
 
+        // DECODE BASE64 ENCODED QUESTION
+        if (selectedLanguageCode != 'en') {
+          setState(() => question = CommonService.decodeString(question));
+          setState(
+              () => questionText = CommonService.decodeString(questionText));
+          setState(() => answers = CommonService.decodeList(answers));
+          setState(
+              () => correctAnswer = CommonService.decodeString(correctAnswer));
+        }
         // VALIDATING THE QUESTION DATA
         // await _validateQuestion();
       } else {
@@ -134,6 +138,40 @@ class _ActivityPractonosticScreenState
     }
   }
 
+  // @override
+  // Widget build(BuildContext context) {
+  //   return PopScope(
+  //     // PREVENT ROUTE FROM POPPING
+  //     canPop: false,
+  //     // HANDLING BACK BUTTON PRESS
+  //     onPopInvoked: (didPop) {
+  //       if (didPop) return;
+  //       Navigator.of(context).pushNamed(activityDashboardRoute);
+  //     },
+  //     child: Scaffold(
+  //       body: SafeArea(
+  //         right: false,
+  //         left: false,
+  //         child: FutureBuilder(
+  //           future: _activityFuture,
+  //           builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+  //             return LayoutBuilder(builder: (context, constraints) {
+  //               return Stack(
+  //                 children: [
+  //                   _buildBackgound(),
+  //                   Positioned(
+  //                     child: _buildContent(snapshot, constraints),
+  //                   )
+  //                 ],
+  //               );
+  //             });
+  //           },
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -157,7 +195,24 @@ class _ActivityPractonosticScreenState
                     _buildBackgound(),
                     Positioned(
                       child: _buildContent(snapshot, constraints),
-                    )
+                    ),
+                    // Add the back button at the top left corner
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.pop(context);
+                          },
+                          child: Image.asset(
+                            'assets/icons/back.png',
+                            width: 40,
+                            height: 40,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 );
               });

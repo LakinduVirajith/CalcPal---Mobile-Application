@@ -33,6 +33,7 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
   int _currentQuestionIndex = 0;
   bool isErrorOccurred = false;
   bool isDataLoading = false;
+  String selectedLanguageCode = 'en';
 
   final Stopwatch _stopwatch = Stopwatch();
   List<bool> userResponses = [];
@@ -61,7 +62,7 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
         systemNavigationBarIconBrightness: Brightness.light,
       ),
     );
-
+    _setupLanguage();
     _stopwatch.start();
 
     // LOADING ACTIVITY DATA
@@ -76,6 +77,13 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
     _currentQuestionIndex = 0;
     userResponses = [];
     _stopwatch.reset();
+  }
+
+  // FUNCTION TO SET THE SELECTED LANGUAGE BASED ON THE STORED LANGUAGE CODE
+  Future<void> _setupLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final languageCode = prefs.getString('language_code') ?? 'en';
+    selectedLanguageCode = languageCode;
   }
 
   Future<void> _handlePress() async {
@@ -273,7 +281,7 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
     );
   }
 
-  // List of drawing questions
+  // List of drawing questions english
   final List<String> _questions = [
     'Draw an addition symbol.',
     'Draw a subtraction symbol.',
@@ -282,7 +290,7 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
     'Draw an equal symbol.',
   ];
 
-  // List of drawing questions
+  // List of drawing questions sinhala
   final List<String> _sinhalQuestions = [
     'එකතු කිරීමේ ලකුණ අඳින්න.',
     'අඩුකිරීමේ ලකුණ අඳින්න.',
@@ -291,6 +299,16 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
     'සමාන ලකුණ අඳින්න.',
   ];
 
+  // List of drawing questions tamil
+  final List<String> _tamilQuestions = [
+    'சேர்க்கை குறியை வரையவும்.',
+    'குறைப்புக்குறியை வரையவும்.',
+    'பெருக்கல் குறியை வரையவும்.',
+    'பகுத்தல் குறியை வரையவும்.',
+    'சமமான குறியை வரையவும்.',
+  ];
+
+  //List of answers
   final List<String> _questionAnwers = [
     'Add',
     'Minus',
@@ -345,7 +363,12 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
                   Padding(
                     padding: const EdgeInsets.only(top: 60.0),
                     child: Text(
-                      _questions[_currentQuestionIndex],
+                      // _questions[_currentQuestionIndex],
+                      selectedLanguageCode == 'en'
+                          ? _questions[_currentQuestionIndex]
+                          : selectedLanguageCode == 'si'
+                              ? _sinhalQuestions[_currentQuestionIndex]
+                              : _tamilQuestions[_currentQuestionIndex],
                       style: const TextStyle(
                           fontSize: 28, fontWeight: FontWeight.bold),
                     ),

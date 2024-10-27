@@ -81,8 +81,6 @@ class _DiagnosePractonosticScreenState
           await _questionService.fetchQuestion(currentQuestionNumber,
               CommonService.getLanguageForAPI(selectedLanguageCode), context);
       if (practoQuestion != null) {
-        print("practoQuestion.question: ${practoQuestion.question}");
-        print("practoQuestion.answers: ${practoQuestion.answers}");
         setState(() {
           question = practoQuestion.question;
           answers = practoQuestion.answers;
