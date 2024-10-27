@@ -1,9 +1,11 @@
+import 'package:calcpal/screens/ideognostic_result_report.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../screens/number_line_activity.dart';
 import '../screens/fraction_activity.dart';
 import '../screens/number_creation_activity.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ActivityIdeognosticScreen extends StatelessWidget {
   const ActivityIdeognosticScreen({super.key});
@@ -29,6 +31,28 @@ class ActivityIdeognosticScreen extends StatelessWidget {
               ),
             ),
           ),
+          Positioned(
+            top: 20.0,
+            right: 20.0,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white, // White background
+                foregroundColor: Colors.black, // Black text color
+                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TableScreenIde()),
+              ),
+              child: Text(
+                AppLocalizations.of(context)!.activityReportsTitle,
+                style: TextStyle(fontSize: 16.0),
+              ),
+            ),
+          ),
           // Buttons
           Center(
             child: LayoutBuilder(
@@ -49,7 +73,8 @@ class ActivityIdeognosticScreen extends StatelessWidget {
                       switch (index) {
                         case 0:
                           return DashboardButton(
-                            text: 'Level 1 - Number Lines',
+                            text: AppLocalizations.of(context)!
+                                .level1NumberLinesLbl,
                             onPressed: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -58,7 +83,8 @@ class ActivityIdeognosticScreen extends StatelessWidget {
                           );
                         case 1:
                           return DashboardButton(
-                            text: 'Level 2 - Fractions',
+                            text: AppLocalizations.of(context)!
+                                .level2FractionsLbl,
                             onPressed: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -67,7 +93,8 @@ class ActivityIdeognosticScreen extends StatelessWidget {
                           );
                         case 2:
                           return DashboardButton(
-                            text: 'Level 2 - Number Creation',
+                            text: AppLocalizations.of(context)!
+                                .level2NumberCreationLbl,
                             onPressed: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
