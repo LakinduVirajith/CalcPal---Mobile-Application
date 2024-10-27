@@ -182,7 +182,8 @@ class _ActivitiesGraphicalScreenLevelTwoState
                       padding: const EdgeInsets.all(16.0),
                       child: GestureDetector(
                         onTap: () {
-                          Navigator.pop(context);
+                          Navigator.of(context)
+                              .pushNamed(activityDashboardRoute);
                         },
                         child: Image.asset(
                           'assets/icons/back.png',
