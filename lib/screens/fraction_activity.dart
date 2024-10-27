@@ -115,7 +115,7 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                '$exerciseNumber: ${AppLocalizations.of(context)!.typeFractionLbl}',
+                '$exerciseNumber: ${AppLocalizations.of(context)!.ideognosticQuestionType3}',
                 style:
                     const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
