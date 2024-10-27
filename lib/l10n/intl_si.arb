@@ -204,4 +204,8 @@
   "correctToast":"නිවැරදියි! 🎉",
   "tryAgainToast":"නැවත උත්සාහ කරන්න!",
   "correctAns":"නිවැරදි පිළිතුර"
+
+  "showCongratulatoryDialogTitle": "සුභ පැතුම්!",
+  "showCongratulatoryDialogContent": "ඔබ නිවැරදිව පිළිතුරු ලබාදී ඇත!",
+  "showCongratulatoryDialogButton": "ඊළඟ"
 }

@@ -140,7 +140,11 @@ class _ActivityLexicalScreenState extends State<ActivityLexicalScreen> {
   // FUNTION TO CHECK USER DROP ANSWER
   Future<void> _checkAnswer(String answer) async {
     if (answer == correctAnswer) {
-      await _loadActivity();
+      // SHOW A CONGRATULATORY DIALOG WHEN THE ANSWER IS CORRECT
+      bool status = await CommonService.showCongratulatoryDialog(context);
+      if (status) {
+        await _loadActivity();
+      }
     } else {
       _toastService.infoToast(
         AppLocalizations.of(context)!.activityLexicalMessageWrongAnswer,

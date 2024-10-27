@@ -245,7 +245,7 @@ class _DiagnoseVisualScreenState extends State<DiagnoseVisualScreen> {
         diagnoseResultRoute,
         (route) => false,
         arguments: {
-          'diagnoseType': 'visual',
+          'diagnoseType': 'VisualSpatial',
           'totalScore': totalScore,
           'elapsedTime': roundedElapsedTimeInSeconds,
         },
@@ -362,12 +362,7 @@ class _DiagnoseVisualScreenState extends State<DiagnoseVisualScreen> {
                                               fontFamily: 'Roboto',
                                               fontWeight: FontWeight.w400),
                                         ),
-                                        SizedBox(
-                                            height: DiagnoseVisualScreen
-                                                        .correctAnswer ==
-                                                    '7'
-                                                ? 2.0
-                                                : 15.0),
+                                        const SizedBox(height: 15.0),
                                         Container(
                                           height: 80,
                                           width: 80,

@@ -1,14 +1,9 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:calcpal/constants/routes.dart';
-import 'package:calcpal/enums/disorder_types.dart';
-import 'package:calcpal/models/diagnosis.dart';
-import 'package:calcpal/models/diagnosis_result.dart';
-import 'package:calcpal/models/flask_diagnosis_result.dart';
-import 'package:calcpal/models/user.dart';
+import 'package:calcpal/screens/activity_sequential_v2.dart';
 import 'package:calcpal/services/common_service.dart';
 import 'package:calcpal/services/sequential_service.dart';
 import 'package:calcpal/services/toast_service.dart';
-import 'package:calcpal/services/user_service.dart';
 import 'package:calcpal/widgets/sequential_answer_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -45,8 +40,6 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
 
   // INITIALIZING THE VERBAL SERVICE
   final SequentialService _questionService = SequentialService();
-  // INITIALIZING THE USER SERVICE
-  final UserService _userService = UserService();
   // TOAST SERVICE TO SHOW MESSAGES
   final ToastService _toastService = ToastService();
   // STOPWATCH INSTANCE FOR TIMING
@@ -146,124 +139,16 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
       _toastService.successToast("Great !!!");
     }
     // CHECK IF THERE ARE MORE QUESTIONS LEFT
-    if (ActivitySequentialScreen.currentQuestionNumber != 25) {
+    if (ActivitySequentialScreen.currentQuestionNumber != 24) {
       ActivitySequentialScreen.currentQuestionNumber++;
       ActivitySequentialScreen.type++;
       _loadQuestion();
     } else {
-      _submitResultsToMLModel();
-    }
-  }
-
-  // FUNCTION TO SUBMIT RESULTS TO MACHINE LEARNING MODEL
-  Future<void> _submitResultsToMLModel() async {
-    // STOP THE TIMER AND RECORD ELAPSED TIME IN SECONDS
-    _stopwatch.stop();
-    final elapsedTimeInSeconds = _stopwatch.elapsedMilliseconds / 1000;
-    final roundedElapsedTimeInSeconds = elapsedTimeInSeconds.round();
-
-    // CALCULATE THE TOTAL SCORE BASED ON TRUE RESPONSES
-    final int totalScore = ActivitySequentialScreen.userResponses
-        .where((response) => response)
-        .length;
-
-    // GET THE INSTANCE OF SHARED PREFERENCES
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('access_token');
-
-    // CHECK IF ACCESS TOKEN IS AVAILABLE
-    if (accessToken == null) {
-      _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.commonMessagesAccessTokenError);
-      return;
-    }
-
-    // FETCH USER INFO
-    User? user = await _userService.getUser(accessToken, context);
-
-    // CHECK IF USER AND IQ SCORE ARE AVAILABLE
-    if (user == null || user.iqScore == null) {
-      _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.commonMessagesIQScoreError);
-      return;
-    }
-
-    // VARIABLES TO STORE DIAGNOSIS AND UPDATE STATUS
-    late bool diagnoseStatus;
-    late bool status;
-    late bool updateStatus;
-
-    // PREPARE DIAGNOSIS DATA AND FETCH DIAGNOSIS RESULT FROM THE SERVICE
-    FlaskDiagnosisResult? diagnosis = await _questionService.getDiagnosisResult(
-        Diagnosis(
-          age: user.age,
-          iq: user.iqScore!,
-          q1: ActivitySequentialScreen.userResponses[0] ? 1 : 0,
-          q2: ActivitySequentialScreen.userResponses[1] ? 1 : 0,
-          q3: ActivitySequentialScreen.userResponses[2] ? 1 : 0,
-          q4: ActivitySequentialScreen.userResponses[3] ? 1 : 0,
-          q5: ActivitySequentialScreen.userResponses[4] ? 1 : 0,
-          seconds: roundedElapsedTimeInSeconds,
-        ),
-        context);
-
-    // CHECK IF DIAGNOSIS RESULT IS VALID AND GET DIAGNOSE STATUS
-    if (diagnosis != null && diagnosis.prediction != null) {
-      diagnoseStatus = diagnosis.prediction!;
-    } else {
-      _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.commonMessagesResultError);
-      return;
-    }
-
-    // UPDATE USER DISORDER STATUS IN THE DATABASE
-    status = await _questionService.addDiagnosisResult(
-        DiagnosisResult(
-          userEmail: user.email,
-          timeSeconds: roundedElapsedTimeInSeconds,
-          q1: ActivitySequentialScreen.userResponses[0],
-          q2: ActivitySequentialScreen.userResponses[1],
-          q3: ActivitySequentialScreen.userResponses[2],
-          q4: ActivitySequentialScreen.userResponses[3],
-          q5: ActivitySequentialScreen.userResponses[4],
-          totalScore: totalScore.toString(),
-          label: diagnoseStatus,
-        ),
-        context);
-
-    // UPDATE USER DISORDER TYPE IN THE SERVICE
-    if (diagnoseStatus) {
-      updateStatus = await _userService.updateDisorderType(
-          DisorderTypes.sequential, accessToken, context);
-    } else {
-      updateStatus = await _userService.updateDisorderType(
-          DisorderTypes.nonSequential, accessToken, context);
-    }
-
-    // NAVIGATE BASED ON THE STATUS OF UPDATES
-    if (status && updateStatus) {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        activityVisualSpatialRoute,
-        (route) => false,
-        arguments: {
-          'diagnoseType': 'visual',
-          'totalScore': totalScore,
-          'elapsedTime': roundedElapsedTimeInSeconds,
-        },
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SequentialFinishPage()),
       );
-    } else {
-      _handleErrorAndRedirect(
-          AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
     }
-  }
-
-  // FUNCTION TO HANDLE ERRORS AND REDIRECT TO LOGIN PAGE
-  void _handleErrorAndRedirect(String message) {
-    _toastService.warningToast(message);
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      loginRoute,
-      (route) => false,
-    );
   }
 
 // Function to generate a list of star widgets based on the count
@@ -282,31 +167,6 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
     }
     return stars;
   }
-
-  // // Function to generate a list of star widgets based on the count
-  // List<Widget> _buildStar(List<String> count) {
-  //   List<Widget> stars = [];
-
-  //   // Example: List of strings
-  //   List<String> stringList = ActivitySequentialScreen.answers;
-
-  //   // Convert to List of integers
-  //   List<int> intList = count.map(int.parse).toList();
-
-  //   for (int i = 0; i <= intList.length; i++) {
-  //     for (int j = 0; j <= intList[i]; j++) {
-  //       stars.add(
-  //         Image.asset(
-  //           'assets/icons/${ActivitySequentialScreen.question}.png', // Replace with your star image path
-  //           width: 24,
-  //           height: 24,
-  //         ),
-  //       );
-  //     }
-  //     stars.add(SizedBox(width: 4.0)); // Add spacing between stars
-  //   }
-  //   return stars;
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -353,7 +213,7 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
                         ),
                       ),
                       Positioned(
-                        top: constraints.maxHeight * 0.30,
+                        top: constraints.maxHeight * 0.35,
                         right: constraints.maxWidth * 0.18,
                         left: constraints.maxWidth * 0.18,
                         bottom: constraints.maxHeight * 0.05,
@@ -621,5 +481,96 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
         ],
       );
     }
+  }
+}
+
+class SequentialFinishPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Finish Sequential Game"),
+        backgroundColor: Colors.deepPurple,
+        automaticallyImplyLeading: false,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/activity_background_v3.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Center(
+          child: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  spreadRadius: 5,
+                  blurRadius: 7,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.celebration,
+                  size: 80,
+                  color: Colors.deepPurple,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Congratulations!",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.deepPurple,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "You've completed the Sequential Pattern Game",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NumberLineJumpScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: Text(
+                    'Start Visual Spatial Game',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

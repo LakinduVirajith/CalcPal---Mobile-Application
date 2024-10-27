@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:async';
 import 'dart:math';
 import '../widgets/drag_drop_widgets.dart';
 import 'diagnose_ideognostic_type3.dart';

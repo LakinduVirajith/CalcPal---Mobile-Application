@@ -203,5 +203,9 @@
   "timePlayedInSecs": "Time Played (in secs)",
   "correctToast":"🎉 Correct! 🎉",
   "tryAgainToast":"Try Again!",
-  "correctAns":"Correct Answer"
+  "correctAns":"Correct Answer",
+  
+  "showCongratulatoryDialogTitle": "Congratulations!",
+  "showCongratulatoryDialogContent": "You answered correctly!",
+  "showCongratulatoryDialogButton": "Next"
 }
