@@ -63,8 +63,8 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
 
   // FUNCTION TO SET THE SELECTED LANGUAGE BASED ON THE STORED LANGUAGE CODE
   Future<void> _setupLanguage() async {
-    final prefs = await SharedPreferences.getInstance();
-    final languageCode = prefs.getString('language_code') ?? 'en';
+    // final prefs = await SharedPreferences.getInstance();
+    final languageCode = "en";
     ActivitySequentialScreen.selectedLanguageCode = languageCode;
   }
 
@@ -133,7 +133,8 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
         correct = int.parse(ActivitySequentialScreen.correctAnswer) - 3;
     }
     if (correct != int.parse(userAnswer)) {
-      _toastService.warningToast("Incorrect Answer. Please Try Again !!!");
+      _toastService.warningToast(
+          AppLocalizations.of(context)!.activityLexicalMessageWrongAnswer);
       return;
     } else {
       _toastService.successToast("Great !!!");
@@ -255,7 +256,8 @@ class _ActivitySequentialScreenState extends State<ActivitySequentialScreen> {
                                       children: [
                                         SizedBox(height: 20.0),
                                         Text(
-                                          "Select The Next Pattern",
+                                          AppLocalizations.of(context)!
+                                              .sequentialQuestion,
                                           style: TextStyle(
                                             color: Colors.black87,
                                             fontSize: ActivitySequentialScreen

@@ -147,6 +147,9 @@
   "userServiceUpdateUser404": "பயனர் கணக்கு கிடைக்கவில்லை. உள்நுழைந்துள்ளீர்களா என்பதைக் சரிபார்க்கவும்.",
   "userServiceUpdateIQ200": "வெற்றி! உங்கள் IQ மதிப்பு இப்போது புதுப்பிக்கப்பட்டுள்ளது.",
 
+
+  "sequentialQuestion" :"அடுத்த வடிவத்தைத் தேர்ந்தெடுக்கவும்",
+
   "operationalQuestion":"Sசரியான பதிலைத் தேர்ந்தெடுக்கவும் -",
   "ideognosticQuestionType1":"படத்தில் காட்டப்பட்டுள்ள பகுதியைத் தேர்ந்தெடுக்கவும்",
   "ideognosticQuestionType2_largest":"மிகப்பெரிய எண்ணை சாத்தியமாக்குங்கள்",
@@ -210,4 +213,5 @@
   "showCongratulatoryDialogTitle": "அன்பு வாழ்த்துக்கள்!",
   "showCongratulatoryDialogContent": "நீங்கள் சரியாக பதிலளித்தீர்கள்!",
   "showCongratulatoryDialogButton": "அடுத்தது"
+
 }

@@ -147,6 +147,9 @@
   "userServiceUpdateUser404": "User account not found. Please make sure you are logged in.",
   "userServiceUpdateIQ200": "Success! Your IQ score is now up to date.",
 
+
+  "sequentialQuestion" :"Select The Next Pattern",
+
   "operationalQuestion":"Select the correct answer -",
   "ideognosticQuestionType1":"Select the fraction showed by the image",
   "ideognosticQuestionType2_largest":"Using these digits, make the largest number possible",
@@ -210,4 +213,5 @@
   "showCongratulatoryDialogTitle": "Congratulations!",
   "showCongratulatoryDialogContent": "You answered correctly!",
   "showCongratulatoryDialogButton": "Next"
+
 }

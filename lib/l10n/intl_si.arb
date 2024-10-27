@@ -147,6 +147,9 @@
   "userServiceUpdateUser404": "පරිශීලක ගිණුම හමු නොවීය. කරුණාකර ඔබ පිවිසී අති බව තහවුරු කරන්න.",
   "userServiceUpdateIQ200": "සාර්ථකයි! ඔබේ IQ ලකුණ යාවත්කාලීන කර ඇත.",
 
+
+  "sequentialQuestion" :"ඊළඟ රටාව තෝරන්න",
+
   "operationalQuestion":"නිවැරදි පිළිතුර තෝරන්න -",
   "ideognosticQuestionType1":"රූපයේ දැක්වෙන බාගය තෝරන්න ",
   "ideognosticQuestionType2_largest":"මෙම ඉලක්කම් භාවිතා කරමින්, විශාලතම අංකය සාදන්න",
@@ -210,4 +213,5 @@
   "showCongratulatoryDialogTitle": "සුභ පැතුම්!",
   "showCongratulatoryDialogContent": "ඔබ නිවැරදිව පිළිතුරු ලබාදී ඇත!",
   "showCongratulatoryDialogButton": "ඊළඟ"
+
 }
