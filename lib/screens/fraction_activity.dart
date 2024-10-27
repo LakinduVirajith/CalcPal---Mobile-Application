@@ -103,9 +103,9 @@ class _FractionActivityScreenState extends State<FractionActivityScreen> {
       children: [
         // Background Image
         Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/images/fractionsactimg.jpg'),
+              image: AssetImage('assets/images/fraction.jpg'),
               fit: BoxFit.cover,
             ),
           ),
