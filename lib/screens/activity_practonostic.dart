@@ -138,40 +138,6 @@ class _ActivityPractonosticScreenState
     }
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return PopScope(
-  //     // PREVENT ROUTE FROM POPPING
-  //     canPop: false,
-  //     // HANDLING BACK BUTTON PRESS
-  //     onPopInvoked: (didPop) {
-  //       if (didPop) return;
-  //       Navigator.of(context).pushNamed(activityDashboardRoute);
-  //     },
-  //     child: Scaffold(
-  //       body: SafeArea(
-  //         right: false,
-  //         left: false,
-  //         child: FutureBuilder(
-  //           future: _activityFuture,
-  //           builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-  //             return LayoutBuilder(builder: (context, constraints) {
-  //               return Stack(
-  //                 children: [
-  //                   _buildBackgound(),
-  //                   Positioned(
-  //                     child: _buildContent(snapshot, constraints),
-  //                   )
-  //                 ],
-  //               );
-  //             });
-  //           },
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -203,7 +169,8 @@ class _ActivityPractonosticScreenState
                         padding: const EdgeInsets.all(16.0),
                         child: GestureDetector(
                           onTap: () {
-                            Navigator.pop(context);
+                            Navigator.of(context)
+                                .pushNamed(activityDashboardRoute);
                           },
                           child: Image.asset(
                             'assets/icons/back.png',
@@ -385,7 +352,7 @@ class _ActivityPractonosticScreenState
                           questionText,
                           style: const TextStyle(
                               color: Colors.black,
-                              fontSize: 24,
+                              fontSize: 20,
                               fontFamily: 'Roboto',
                               fontWeight: FontWeight.w400),
                         ),

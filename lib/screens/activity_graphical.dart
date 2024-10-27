@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 import 'package:calcpal/screens/activities_graphical_levelTwo.dart';
+import 'package:calcpal/constants/routes.dart';
 
 class ActivityGraphicalScreen extends StatefulWidget {
   const ActivityGraphicalScreen({super.key});
@@ -146,7 +147,8 @@ class _ActivityGraphicalScreenState extends State<ActivityGraphicalScreen> {
                       padding: const EdgeInsets.all(16.0),
                       child: GestureDetector(
                         onTap: () {
-                          Navigator.pop(context);
+                          Navigator.of(context)
+                              .pushNamed(activityDashboardRoute);
                         },
                         child: Image.asset(
                           'assets/icons/back.png',

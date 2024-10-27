@@ -112,12 +112,6 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
           userResponses.insert(_currentQuestionIndex, false);
         }
       });
-      //navigate to the graphical diagnos results
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(
-      //       builder: (context) => const GraphicalDiagnosisresult()),
-      // );
       await _submitResultsToMLModel();
     }
   }
@@ -178,7 +172,6 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
       final accessToken = prefs.getString('access_token');
       // CHECK IF ACCESS TOKEN IS AVAILABLE
       if (accessToken == null) {
-        print("hello1");
         _handleErrorAndRedirect(
             AppLocalizations.of(context)!.commonMessagesAccessTokenError);
         return;
@@ -188,7 +181,6 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
 
       // CHECK IF USER AND IQ SCORE ARE AVAILABLE
       if (user == null || user.iqScore == null) {
-        print("hello2");
         _handleErrorAndRedirect(
             AppLocalizations.of(context)!.commonMessagesIQScoreError);
         return;
@@ -215,7 +207,6 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
       if (diagnosis != null && diagnosis.prediction != null) {
         diagnoseStatus = diagnosis.prediction!;
       } else {
-        print("hello3");
         _handleErrorAndRedirect(
             AppLocalizations.of(context)!.commonMessagesResultError);
         return;
@@ -242,8 +233,6 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
         updateStatus = await _userService.updateDisorderType(
             DisorderTypes.nonGraphical, accessToken, context);
       }
-      print("status: $status");
-      print("updateStatus: $updateStatus");
 
       // NAVIGATE BASED ON THE STATUS OF UPDATES
       if (status && updateStatus) {
@@ -257,7 +246,6 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
           },
         );
       } else {
-        print("hello4");
         _handleErrorAndRedirect(
             AppLocalizations.of(context)!.commonMessagesSomethingWrongError);
       }
@@ -461,15 +449,26 @@ class _DiagnoseGraphicalScreenState extends State<DiagnoseGraphicalScreen> {
                                   });
                                 }
                               : null,
-                          child: const Text('Back'),
+                          child: Text(AppLocalizations.of(context)!
+                              .forgotPasswordBackButton),
                         ),
                         const SizedBox(width: 20),
                         ElevatedButton(
-                          onPressed: _handlePress,
-                          child: Text(
-                              _currentQuestionIndex < _questions.length - 1
-                                  ? 'Next'
-                                  : 'Submit'),
+                          onPressed: isDataLoading ? null : _handlePress,
+                          child: isDataLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors
+                                        .white, // or any color that suits your design
+                                    strokeWidth: 2.0,
+                                  ),
+                                )
+                              : Text(_currentQuestionIndex <
+                                      _questions.length - 1
+                                  ? AppLocalizations.of(context)!.nextBtnText
+                                  : AppLocalizations.of(context)!.submitBtn),
                         ),
                       ],
                     ),

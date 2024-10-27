@@ -212,6 +212,7 @@
 
   "showCongratulatoryDialogTitle": "அன்பு வாழ்த்துக்கள்!",
   "showCongratulatoryDialogContent": "நீங்கள் சரியாக பதிலளித்தீர்கள்!",
-  "showCongratulatoryDialogButton": "அடுத்தது"
+  "showCongratulatoryDialogButton": "அடுத்தது",
 
+  "submitBtn":"சமர்ப்பி"
 }

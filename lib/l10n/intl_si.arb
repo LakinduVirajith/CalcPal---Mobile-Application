@@ -212,6 +212,8 @@
 
   "showCongratulatoryDialogTitle": "සුභ පැතුම්!",
   "showCongratulatoryDialogContent": "ඔබ නිවැරදිව පිළිතුරු ලබාදී ඇත!",
-  "showCongratulatoryDialogButton": "ඊළඟ"
+  "showCongratulatoryDialogButton": "ඊළඟ",
+
+  "submitBtn":"ඉදිරිපත් කරන්න"
 
 }

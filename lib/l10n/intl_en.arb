@@ -212,6 +212,9 @@
   
   "showCongratulatoryDialogTitle": "Congratulations!",
   "showCongratulatoryDialogContent": "You answered correctly!",
-  "showCongratulatoryDialogButton": "Next"
+  "showCongratulatoryDialogButton": "Next",
+
+  "submitBtn":"Submit"
+  
 
 }
